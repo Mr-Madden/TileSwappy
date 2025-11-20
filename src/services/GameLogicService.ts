@@ -1,0 +1,157 @@
+import { Tile, Move } from '../models/types';
+
+export class GameLogicService {
+  static getRotatedEdgeHash(tile: Tile, direction: string): string {
+    const directions = ['top', 'right', 'bottom', 'left'];
+    const currentIndex = directions.indexOf(direction);
+    const originalIndex = (currentIndex - tile.rotation + 4) % 4;
+    return tile.edgeHashes[directions[originalIndex] as keyof typeof tile.edgeHashes];
+  }
+
+  static shouldEdgesMatch(tile1Edge: string, tile2Edge: string): boolean {
+    const [row1, col1, side1] = tile1Edge.split('-');
+    const [row2, col2, side2] = tile2Edge.split('-');
+    
+    if (row1 === row2 && Math.abs(parseInt(col1) - parseInt(col2)) === 1) {
+      if ((col1 < col2 && side1 === 'right' && side2 === 'left') ||
+          (col1 > col2 && side1 === 'left' && side2 === 'right')) {
+        return true;
+      }
+    }
+    if (col1 === col2 && Math.abs(parseInt(row1) - parseInt(row2)) === 1) {
+      if ((row1 < row2 && side1 === 'bottom' && side2 === 'top') ||
+          (row1 > row2 && side1 === 'top' && side2 === 'bottom')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static isEdgeMatch(tile1: Tile, tile2: Tile, direction: string): boolean {
+    const oppositeDir: Record<string, string> = {
+      'right': 'left',
+      'bottom': 'top',
+      'left': 'right',
+      'top': 'bottom'
+    };
+    
+    const edge1 = this.getRotatedEdgeHash(tile1, direction);
+    const edge2 = this.getRotatedEdgeHash(tile2, oppositeDir[direction]);
+    return this.shouldEdgesMatch(edge1, edge2);
+  }
+
+  static checkEdgeMatches(tiles: Tile[]): Set<string> {
+    const matches = new Set<string>();
+    
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const currentTile = tiles.find(t => t.row === row && t.col === col);
+        if (!currentTile) continue;
+        
+        if (col < 2) {
+          const rightTile = tiles.find(t => t.row === row && t.col === col + 1);
+          if (rightTile && this.isEdgeMatch(currentTile, rightTile, 'right')) {
+            matches.add(`${row}-${col}-right`);
+          }
+        }
+        
+        if (row < 2) {
+          const bottomTile = tiles.find(t => t.row === row + 1 && t.col === col);
+          if (bottomTile && this.isEdgeMatch(currentTile, bottomTile, 'bottom')) {
+            matches.add(`${row}-${col}-bottom`);
+          }
+        }
+      }
+    }
+    
+    return matches;
+  }
+
+  static isPuzzleSolved(tiles: Tile[]): boolean {
+    if (tiles.length !== 9) return false;
+    
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const currentTile = tiles.find(t => t.row === row && t.col === col);
+        if (!currentTile) return false;
+        
+        if (col < 2) {
+          const rightTile = tiles.find(t => t.row === row && t.col === col + 1);
+          if (!rightTile || !this.isEdgeMatch(currentTile, rightTile, 'right')) {
+            return false;
+          }
+        }
+        
+        if (row < 2) {
+          const bottomTile = tiles.find(t => t.row === row + 1 && t.col === col);
+          if (!bottomTile || !this.isEdgeMatch(currentTile, bottomTile, 'bottom')) {
+            return false;
+          }
+        }
+      }
+    }
+    
+    return true;
+  }
+
+  static rotateTile(tiles: Tile[], tileId: string, direction: number): Tile[] {
+    return tiles.map(tile => 
+      tile.id === tileId 
+        ? { ...tile, rotation: (tile.rotation + direction + 4) % 4 } 
+        : tile
+    );
+  }
+
+  static swapTiles(tiles: Tile[], tile1Id: string, tile2Id: string): Tile[] {
+    const tile1 = tiles.find(t => t.id === tile1Id);
+    const tile2 = tiles.find(t => t.id === tile2Id);
+    
+    if (!tile1 || !tile2) return tiles;
+    
+    return tiles.map(tile => {
+      if (tile.id === tile1.id) return { ...tile, row: tile2.row, col: tile2.col };
+      if (tile.id === tile2.id) return { ...tile, row: tile1.row, col: tile1.col };
+      return tile;
+    });
+  }
+  
+  static undoMove(tiles: Tile[], move: Move): Tile[] {
+  if (move.type === 'rotate' && move.tileId !== undefined && move.previousRotation !== undefined) {
+    return tiles.map(tile =>
+      tile.id === move.tileId ? { ...tile, rotation: move.previousRotation as number } : tile
+    );
+  } else if (move.type === 'swap' && move.tile1Id && move.tile2Id && move.tile1PrevPos && move.tile2PrevPos) {
+    return tiles.map(tile => {
+      if (tile.id === move.tile1Id) {
+        return { ...tile, row: move.tile1PrevPos!.row, col: move.tile1PrevPos!.col };
+      }
+      if (tile.id === move.tile2Id) {
+        return { ...tile, row: move.tile2PrevPos!.row, col: move.tile2PrevPos!.col };
+      }
+      return tile;
+    });
+  }
+  return tiles;
+}
+
+  static shuffleAllTiles(tiles: Tile[]): Tile[] {
+    const positions: { row: number; col: number }[] = [];
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        positions.push({ row, col });
+      }
+    }
+    
+    for (let i = positions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [positions[i], positions[j]] = [positions[j], positions[i]];
+    }
+    
+    return tiles.map((tile, index) => ({
+      ...tile,
+      row: positions[index].row,
+      col: positions[index].col,
+      rotation: Math.floor(Math.random() * 4)
+    }));
+  }
+}
