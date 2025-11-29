@@ -10,3 +10,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* Bouncing TileSwappy Logo Background Animation */
+.bouncing-logo {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  will-change: transform;
+}

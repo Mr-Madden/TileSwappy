@@ -90,3 +90,32 @@
   right: 30%;
   transform: translateY(-50%) rotate(15deg);
 }
+/* TileSwappy Logo Animations */
+
+@keyframes bounce-float {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(15px, -20px);
+  }
+  50% {
+    transform: translate(-10px, 10px);
+  }
+  75% {
+    transform: translate(20px, 5px);
+  }
+}
+
+.animate-bounce-float {
+  animation: bounce-float 8s ease-in-out infinite;
+}
+
+/* Optional: Different speed variations */
+.animate-bounce-float-slow {
+  animation: bounce-float 12s ease-in-out infinite;
+}
+
+.animate-bounce-float-fast {
+  animation: bounce-float 5s ease-in-out infinite;
+}

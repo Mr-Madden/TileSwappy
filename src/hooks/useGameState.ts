@@ -189,22 +189,6 @@ export const useGameState = () => {
     }, 500);
   }, [createTilesFromCanvas]);
 
-  // Check if puzzle is solved
-  const checkIfSolved = useCallback(() => {
-    if (gameState.tiles.length !== 9) return false;
-    
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        const tile = gameState.tiles.find(t => t.row === row && t.col === col);
-        if (!tile) return false;
-        if (tile.originalRow !== row || tile.originalCol !== col || tile.rotation !== 0) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }, [gameState.tiles]);
-
   // Helper functions for edge matching
   const getRotatedEdge = (tile: Tile, direction: 'top' | 'right' | 'bottom' | 'left'): string => {
     const directions = ['top', 'right', 'bottom', 'left'];
@@ -231,6 +215,63 @@ export const useGameState = () => {
     }
     return false;
   };
+
+  // Helper function to check solution with a specific global rotation
+  const checkSolutionWithGlobalRotation = useCallback((globalRotation: number): boolean => {
+    // Create virtually rotated tiles
+    const rotatedTiles = gameState.tiles.map(tile => ({
+      ...tile,
+      rotation: (tile.rotation + globalRotation) % 4
+    }));
+    
+    // Check if all edges match with this global rotation
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        const currentTile = rotatedTiles.find(t => t.row === row && t.col === col);
+        if (!currentTile) return false;
+        
+        // Check right edge
+        if (col < 2) {
+          const rightTile = rotatedTiles.find(t => t.row === row && t.col === col + 1);
+          if (!rightTile) return false;
+          
+          const currentRightEdge = getRotatedEdge(currentTile, 'right');
+          const rightLeftEdge = getRotatedEdge(rightTile, 'left');
+          if (!shouldEdgesMatch(currentRightEdge, rightLeftEdge)) {
+            return false;
+          }
+        }
+        
+        // Check bottom edge
+        if (row < 2) {
+          const bottomTile = rotatedTiles.find(t => t.row === row + 1 && t.col === col);
+          if (!bottomTile) return false;
+          
+          const currentBottomEdge = getRotatedEdge(currentTile, 'bottom');
+          const bottomTopEdge = getRotatedEdge(bottomTile, 'top');
+          if (!shouldEdgesMatch(currentBottomEdge, bottomTopEdge)) {
+            return false;
+          }
+        }
+      }
+    }
+    
+    return true;
+  }, [gameState.tiles]);
+
+  // Check if puzzle is solved
+  const checkIfSolved = useCallback(() => {
+    if (gameState.tiles.length !== 9) return false;
+    
+    // Check all 4 possible global rotations
+    for (let globalRotation = 0; globalRotation < 4; globalRotation++) {
+      if (checkSolutionWithGlobalRotation(globalRotation)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }, [gameState.tiles, checkSolutionWithGlobalRotation]);
 
   // Check edge matches - FIXED VERSION
   const checkEdgeMatches = useCallback(() => {

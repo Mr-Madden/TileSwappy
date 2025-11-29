@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { RotateCw, Calendar, Settings, BarChart3 } from 'lucide-react';
 import { useGameState } from './hooks/useGameState';
 import { StartScreen } from './components/screens/StartScreen';
+import { TutorialScreen } from './components/screens/TutorialScreen';
 import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
 import { ArchiveModal } from './components/modals/ArchiveModal';
 import { SettingsModal } from './components/modals/SettingModal';
 import { PlayerStatsModal } from './components/modals/PlayerStatsModal';
 import { StreakModal } from './components/modals/StreakModal';
+import { BouncingTileSwappyLogo } from './components/BouncingTileSwappyLogo';
 
 // Local Storage Keys
 const STORAGE_KEYS = {
@@ -52,6 +54,8 @@ const App: React.FC = () => {
   const [showStreak, setShowStreak] = useState(false);
   const [showCompletionAnimation, setShowCompletionAnimation] = useState(false);
   const [hasProcessedCompletion, setHasProcessedCompletion] = useState(false);
+  const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
+  const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
   
   // Load state from localStorage on mount
   const [completedPuzzleIds, setCompletedPuzzleIds] = useState<Set<string>>(() => 
@@ -113,6 +117,27 @@ const App: React.FC = () => {
     saveToStorage(STORAGE_KEYS.DAILY_PUZZLES, dailyPuzzles);
   }, [dailyPuzzles]);
 
+  // Show tutorial overlay when game starts (if not completed before)
+  useEffect(() => {
+    if (gameState.gameState.status === 'playing' && !hasShownTutorialForCurrentPuzzle) {
+      const tutorialCompleted = localStorage.getItem('tutorialCompleted');
+      
+      if (!tutorialCompleted) {
+        // Pause the game and show tutorial
+        gameState.pauseGame();
+        setShowTutorialOverlay(true);
+      }
+      
+      setHasShownTutorialForCurrentPuzzle(true);
+    }
+  }, [gameState.gameState.status, hasShownTutorialForCurrentPuzzle]);
+
+  const handleTutorialComplete = () => {
+    setShowTutorialOverlay(false);
+    // Resume the game
+    gameState.resumeGame();
+  };
+
   const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
     console.log('🎮 App.tsx: Starting puzzle with:', puzzle);
     
@@ -126,9 +151,10 @@ const App: React.FC = () => {
       console.log('🔄 Normalized puzzle data:', normalizedPuzzle);
     }
     
-    // Reset completion flags
+    // Reset completion flags and tutorial flag
     setHasProcessedCompletion(false);
     setShowCompletionAnimation(false);
+    setHasShownTutorialForCurrentPuzzle(false);
     
     // Use provided date or default to today
     const dateToUse = puzzleDate || new Date().toISOString().split('T')[0];
@@ -148,7 +174,8 @@ const App: React.FC = () => {
 
   const handleTileInteraction = (tileId: string, deltaX: number, deltaY: number) => {
     if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
-      const direction = deltaX > 0 ? 1 : -1;
+      // REVERSED LOGIC: swipe right = counter-clockwise, swipe left = clockwise
+      const direction = deltaX > 0 ? -1 : 1;
       gameState.rotateTile(tileId, direction);
     } else if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
       if (gameState.gameState.selectedTile === null) {
@@ -209,121 +236,113 @@ const App: React.FC = () => {
     return `${seconds}.${centiseconds.toString().padStart(2, '0')}s`;
   };
 
-  // Handle puzzle completion - ENHANCED WITH DEBUG LOGS
-  // In App.tsx, update the puzzle completion useEffect
-// In App.tsx, find the puzzle completion useEffect and update it:
-
-useEffect(() => {
-  console.log('🔍 Completion Check - Status:', gameState.gameState.status, 'HasProcessed:', hasProcessedCompletion);
-  
-  if (gameState.gameState.status === 'solved' && !hasProcessedCompletion) {
-    console.log('🎉 CELEBRATION TRIGGERED! Showing animation');
-    console.log('📊 Stats - Moves:', gameState.gameState.moves, 'Swaps:', gameState.gameState.swaps, 'Time:', gameState.gameState.solveTime);
+  // Handle puzzle completion
+  useEffect(() => {
+    console.log('🔍 Completion Check - Status:', gameState.gameState.status, 'HasProcessed:', hasProcessedCompletion);
     
-    setHasProcessedCompletion(true);
-    setShowCompletionAnimation(true);
-    setTotalGamesPlayed(prev => prev + 1);
-    
-    // Use date as the key instead of ID - this is the fix!
-    const puzzleKey = currentPuzzle?.date || currentPuzzleDate || 'today';
-    const puzzleTitle = currentPuzzle?.title || null;
-    
-    console.log('🔑 Using puzzle key:', puzzleKey);
-    console.log('📝 Puzzle title:', puzzleTitle);
-    
-    setCompletedPuzzleIds(prev => new Set([...prev, puzzleKey]));
-    
-    // Only add to completedDates if this is an admin-uploaded puzzle
-    const isAdminPuzzle = currentPuzzle?.imageUrl || currentPuzzle?.image_url || currentPuzzle?.fromDatabase;
-    if (isAdminPuzzle) {
-      console.log('📅 Adding admin puzzle to streak calendar:', currentPuzzleDate);
-      setCompletedDates(prev => new Set([...prev, currentPuzzleDate]));
-    } else {
-      console.log('⏭️ Skipping randomly generated puzzle for streak calendar');
-    }
-    
-    // Update puzzle stats with date as key and title stored
-    setPuzzleStats(prev => {
-      const currentStats = prev[puzzleKey] || {
-        attempts: 0,
-        bestTime: null,
-        bestMoves: null,
-        bestSwaps: null,
-        completionDates: [],
-        puzzleTitle: null
-      };
+    if (gameState.gameState.status === 'solved' && !hasProcessedCompletion) {
+      console.log('🎉 CELEBRATION TRIGGERED! Showing animation');
+      console.log('📊 Stats - Moves:', gameState.gameState.moves, 'Swaps:', gameState.gameState.swaps, 'Time:', gameState.gameState.solveTime);
       
-      const finalTime = gameState.gameState.solveTime || 0;
-      const isNewBest = !currentStats.bestTime || finalTime < currentStats.bestTime;
+      setHasProcessedCompletion(true);
+      setShowCompletionAnimation(true);
+      setTotalGamesPlayed(prev => prev + 1);
       
-      return {
-        ...prev,
-        [puzzleKey]: {
-          attempts: currentStats.attempts + 1,
-          bestTime: isNewBest ? finalTime : currentStats.bestTime,
-          bestMoves: isNewBest ? gameState.gameState.moves : currentStats.bestMoves,
-          bestSwaps: isNewBest ? gameState.gameState.swaps : currentStats.bestSwaps,
-          lastPlayedTime: finalTime,
-          lastPlayedMoves: gameState.gameState.moves,
-          lastPlayedSwaps: gameState.gameState.swaps,
-          completionDates: [...currentStats.completionDates, new Date().toISOString()],
-          puzzleTitle: puzzleTitle || currentStats.puzzleTitle // Store the title from the puzzle
-        }
-      };
-    });
-    
-    // Show streak modal after celebration
-    setTimeout(() => {
-      console.log('⏰ Celebration timeout complete, transitioning to streak modal');
-      setShowCompletionAnimation(false);
-      setShowStreak(true);
-    }, 4000);
-  }
-}, [gameState.gameState.status, gameState.gameState.solveTime, gameState.gameState.moves, gameState.gameState.swaps, hasProcessedCompletion, currentPuzzle, currentPuzzleDate]);
-
-// Add this useEffect right after all your state declarations in App.tsx
-// This will clean up old UUID-based stats and migrate them if possible
-useEffect(() => {
-  const cleanupOldStats = () => {
-    const stats = loadFromStorage(STORAGE_KEYS.PUZZLE_STATS, {});
-    let needsCleanup = false;
-    const cleanedStats: Record<string, any> = {};
-    
-    Object.entries(stats).forEach(([key, value]) => {
-      // Check if key is a UUID (long alphanumeric with hyphens)
-      const isUUID = key.length > 30 && key.includes('-');
+      const puzzleKey = currentPuzzle?.date || currentPuzzleDate || 'today';
+      const puzzleTitle = currentPuzzle?.title || null;
       
-      if (isUUID) {
-        console.log('🧹 Found old UUID-based stat:', key);
-        needsCleanup = true;
-        // Don't copy UUID-based stats to cleaned version
+      console.log('🔑 Using puzzle key:', puzzleKey);
+      console.log('📝 Puzzle title:', puzzleTitle);
+      
+      setCompletedPuzzleIds(prev => new Set([...prev, puzzleKey]));
+      
+      const isAdminPuzzle = currentPuzzle?.imageUrl || currentPuzzle?.image_url || currentPuzzle?.fromDatabase;
+      if (isAdminPuzzle) {
+        console.log('📅 Adding admin puzzle to streak calendar:', currentPuzzleDate);
+        setCompletedDates(prev => new Set([...prev, currentPuzzleDate]));
       } else {
-        // Keep date-based or "today" stats
-        cleanedStats[key] = value;
+        console.log('⏭️ Skipping randomly generated puzzle for streak calendar');
       }
-    });
-    
-    if (needsCleanup) {
-      console.log('🧹 Cleaning up old stats...');
-      console.log('📊 Old stats count:', Object.keys(stats).length);
-      console.log('📊 New stats count:', Object.keys(cleanedStats).length);
-      setPuzzleStats(cleanedStats);
-      saveToStorage(STORAGE_KEYS.PUZZLE_STATS, cleanedStats);
-      console.log('✅ Cleanup complete!');
+      
+      setPuzzleStats(prev => {
+        const currentStats = prev[puzzleKey] || {
+          attempts: 0,
+          bestTime: null,
+          bestMoves: null,
+          bestSwaps: null,
+          completionDates: [],
+          puzzleTitle: null
+        };
+        
+        const finalTime = gameState.gameState.solveTime || 0;
+        const isNewBest = !currentStats.bestTime || finalTime < currentStats.bestTime;
+        
+        return {
+          ...prev,
+          [puzzleKey]: {
+            attempts: currentStats.attempts + 1,
+            bestTime: isNewBest ? finalTime : currentStats.bestTime,
+            bestMoves: isNewBest ? gameState.gameState.moves : currentStats.bestMoves,
+            bestSwaps: isNewBest ? gameState.gameState.swaps : currentStats.bestSwaps,
+            lastPlayedTime: finalTime,
+            lastPlayedMoves: gameState.gameState.moves,
+            lastPlayedSwaps: gameState.gameState.swaps,
+            completionDates: [...currentStats.completionDates, new Date().toISOString()],
+            puzzleTitle: puzzleTitle || currentStats.puzzleTitle
+          }
+        };
+      });
+      
+      setTimeout(() => {
+        console.log('⏰ Celebration timeout complete, transitioning to streak modal');
+        setShowCompletionAnimation(false);
+        setShowStreak(true);
+      }, 4000);
     }
-  };
-  
-  cleanupOldStats();
-}, []); // Run once on mount
+  }, [gameState.gameState.status, gameState.gameState.solveTime, gameState.gameState.moves, gameState.gameState.swaps, hasProcessedCompletion, currentPuzzle, currentPuzzleDate]);
+
+  // Cleanup old UUID-based stats
+  useEffect(() => {
+    const cleanupOldStats = () => {
+      const stats = loadFromStorage(STORAGE_KEYS.PUZZLE_STATS, {});
+      let needsCleanup = false;
+      const cleanedStats: Record<string, any> = {};
+      
+      Object.entries(stats).forEach(([key, value]) => {
+        const isUUID = key.length > 30 && key.includes('-');
+        
+        if (isUUID) {
+          console.log('🧹 Found old UUID-based stat:', key);
+          needsCleanup = true;
+        } else {
+          cleanedStats[key] = value;
+        }
+      });
+      
+      if (needsCleanup) {
+        console.log('🧹 Cleaning up old stats...');
+        console.log('📊 Old stats count:', Object.keys(stats).length);
+        console.log('📊 New stats count:', Object.keys(cleanedStats).length);
+        setPuzzleStats(cleanedStats);
+        saveToStorage(STORAGE_KEYS.PUZZLE_STATS, cleanedStats);
+        console.log('✅ Cleanup complete!');
+      }
+    };
+    
+    cleanupOldStats();
+  }, []);
 
   return (
     <div className="min-h-screen bg-navy">
-      {/* Start Screen - Shows once on first launch */}
+      {/* Bouncing background logo */}
+      <BouncingTileSwappyLogo size={150} />
+      
+      {/* Start Screen */}
       {gameState.gameState.status === 'start' && (
         <StartScreen onStart={gameState.dismissStartScreen} />
       )}
 
-      {/* Home Screen - Only show when idle (not playing/solved) */}
+      {/* Home Screen */}
       {gameState.gameState.status === 'idle' && (
         <HomeScreen
           onStartPuzzle={(puzzle) => handleStartPuzzle(puzzle)}
@@ -331,6 +350,7 @@ useEffect(() => {
           onOpenStreak={() => setShowStreak(true)}
           onOpenStats={() => setShowPlayerStats(true)}
           onOpenSettings={() => setShowSettings(true)}
+          onOpenTutorial={() => setShowTutorialOverlay(true)}
         />
       )}
 
@@ -369,10 +389,14 @@ useEffect(() => {
         />
       )}
 
-      {/* Enhanced Completion Animation with Celebration */}
+      {/* Tutorial Overlay - Shows over game board */}
+      {showTutorialOverlay && (
+        <TutorialScreen onComplete={handleTutorialComplete} />
+      )}
+
+      {/* Completion Animation */}
       {showCompletionAnimation && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center overflow-hidden">
-          {/* Animated Confetti Background */}
           <div className="absolute inset-0 pointer-events-none">
             {[...Array(30)].map((_, i) => (
               <div
@@ -389,9 +413,7 @@ useEffect(() => {
             ))}
           </div>
 
-          {/* Main Celebration Content */}
           <div className="text-center relative z-10">
-            {/* Trophy Icon with Glow */}
             <div className="mb-6 animate-bounce-in">
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-teal/30 rounded-full blur-2xl animate-pulse"></div>
@@ -401,14 +423,12 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Success Text */}
             <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
               <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal via-coral to-teal mb-4 animate-gradient">
                 Puzzle Solved!
               </h2>
             </div>
 
-            {/* Stats Cards */}
             <div className="flex gap-4 justify-center mb-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
               <div className="bg-navy-light/80 backdrop-blur-sm border-2 border-coral rounded-xl px-6 py-3 shadow-coral-glow">
                 <div className="text-3xl font-bold text-coral">
@@ -432,7 +452,6 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Encouraging Message */}
             <div className="animate-slide-up" style={{ animationDelay: '0.6s' }}>
               <p className="text-xl text-offwhite font-semibold">
                 {gameState.gameState.moves < 20 ? '🌟 Amazing!' : 
@@ -442,7 +461,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Particle Effects and Animations */}
           <style>{`
             @keyframes confetti {
               0% {
@@ -524,142 +542,78 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Game View - Only show when playing or solved */}
+      {/* Game View */}
       {(gameState.gameState.status === 'playing' || gameState.gameState.status === 'solved') && (
-        <div className="min-h-screen bg-navy p-4 pb-24">
-          {/* Header */}
-          <div className="max-w-md mx-auto mb-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-offwhite">
-                {currentPuzzle?.title || 'Daily Puzzle'}
-              </h1>
-              <div className="text-xs text-teal">
-                {currentPuzzle?.difficulty || 'Medium'}
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="max-w-md mx-auto grid grid-cols-3 gap-2 mb-4">
-            <div className="text-center bg-navy-light rounded-lg py-2 border border-navy-dark">
-              <div className="text-lg font-bold text-coral">
-                {gameState.gameState.moves}
-              </div>
-              <div className="text-[10px] text-teal">Moves</div>
-            </div>
-            <div className="text-center bg-navy-light rounded-lg py-2 border border-navy-dark">
-              <div className="text-lg font-bold text-coral">
-                {gameState.gameState.undos}
-              </div>
-              <div className="text-[10px] text-teal">Undos</div>
-            </div>
-            <div className="text-center bg-navy-light rounded-lg py-2 border border-navy-dark">
-              <div className="text-lg font-bold font-mono text-coral">
-                {formatTime(gameState.gameState.currentTime)}
-              </div>
-              <div className="text-[10px] text-teal">Time</div>
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="text-center mb-4">
-            <div className="bg-navy-light rounded-lg py-2 max-w-24 mx-auto border border-navy-dark">
-              <div className="text-lg font-bold text-teal">
-                {Math.round((gameState.gameState.matchingEdges.size / 12) * 100)}%
-              </div>
-              <div className="text-[10px] text-offwhite">Complete</div>
-            </div>
-          </div>
-
-          {/* Instructions */}
-          {gameState.gameState.status === 'playing' && (
-            <div className="text-center mb-4">
-              <p className="text-teal text-xs">
-                Drag tiles left/right to rotate • Click two tiles to swap
-              </p>
-            </div>
-          )}
-
-          {/* Success Message */}
-          {gameState.gameState.status === 'solved' && (
-            <div className="text-center mb-4">
-              <div className="bg-teal text-navy px-4 py-3 rounded-xl mx-auto inline-block shadow-teal-glow">
-                <div className="flex items-center gap-2 text-lg font-bold mb-1">
-                  🎉 Puzzle Solved!
-                </div>
-                <div className="text-xs font-semibold">
-                  {gameState.gameState.moves} moves • {gameState.gameState.swaps} swaps •{' '}
-                  {formatTime(gameState.gameState.solveTime || 0)}
+        <div className="min-h-screen bg-navy flex flex-col">
+          {/* Header - Fixed at top */}
+          <div className="flex-shrink-0 p-3 bg-navy">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-lg font-bold text-offwhite">
+                  {currentPuzzle?.title || 'Daily Puzzle'}
+                </h1>
+                <div className="text-xs text-teal">
+                  {currentPuzzle?.difficulty || 'Medium'}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Game Board */}
-          <GameBoard
-            tiles={gameState.gameState.tiles}
-            selectedTile={gameState.gameState.selectedTile}
-            matchingEdges={gameState.gameState.matchingEdges}
-            onTileInteraction={handleTileInteraction}
-          />
-
-          {/* Controls */}
-          <div className="flex gap-2 justify-center mt-4 flex-wrap">
-            {gameState.gameState.status === 'playing' && (
-              <>
+              
+              {/* Help Button - Opens Tutorial */}
+              <div className="flex justify-center mb-2">
                 <button
-                  onClick={gameState.undoLastMove}
-                  disabled={gameState.gameState.moveHistory.length === 0}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
-                    gameState.gameState.moveHistory.length === 0
-                      ? 'bg-navy-dark text-gray-500 cursor-not-allowed border border-navy-light'
-                      : 'bg-coral hover:bg-coral-dark text-offwhite'
-                  }`}
+                  onClick={() => setShowTutorialOverlay(true)}
+                  className="px-4 py-2 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-sm font-medium flex items-center gap-2"
                 >
-                  Undo
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  How to Play
                 </button>
+              </div>
 
-                <button 
-                  onClick={gameState.shuffleAll} 
-                  className="bg-teal hover:bg-teal-dark text-navy px-4 py-2.5 rounded-xl text-sm font-semibold transition"
-                >
-                  Shuffle
-                </button>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-4 gap-2">
+                <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
+                  <div className="text-base font-bold text-coral">{gameState.gameState.moves}</div>
+                  <div className="text-[9px] text-teal">Moves</div>
+                </div>
+                <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
+                  <div className="text-base font-bold text-coral">{gameState.gameState.undos}</div>
+                  <div className="text-[9px] text-teal">Undos</div>
+                </div>
+                <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
+                  <div className="text-base font-bold font-mono text-coral">{formatTime(gameState.gameState.currentTime)}</div>
+                  <div className="text-[9px] text-teal">Time</div>
+                </div>
+                <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
+                  <div className="text-base font-bold text-teal">{Math.round((gameState.gameState.matchingEdges.size / 12) * 100)}%</div>
+                  <div className="text-[9px] text-teal">Complete</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                <button 
-                  onClick={gameState.pauseGame} 
-                  className="bg-navy-light hover:bg-navy-dark text-offwhite px-4 py-2.5 rounded-xl text-sm font-semibold transition border border-navy-dark"
-                >
-                  Pause
-                </button>
-              </>
-            )}
-
-            <button
-              onClick={() => {
-                if (gameState.gameState.status === 'solved') {
-                  setCurrentPuzzle(null);
-                  setHasProcessedCompletion(false);
-                  setShowCompletionAnimation(false);
-                  gameState.resetGame();
-                } else {
-                  if (window.confirm('Restart this puzzle? Your progress will be lost.')) {
-                    console.log('🔄 Restarting with puzzle:', currentPuzzle);
-                    setHasProcessedCompletion(false);
-                    setShowCompletionAnimation(false);
-                    gameState.startGame(currentPuzzle);
-                  }
-                }
-              }}
-              className="bg-coral hover:bg-coral-dark text-offwhite px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-semibold transition"
-            >
-              <RotateCw size={16} />
-              {gameState.gameState.status === 'solved' ? 'Back to Home' : 'Restart'}
-            </button>
+          {/* Game Board - Centered with proper spacing */}
+          <div className="flex-1 flex items-center justify-center py-2">
+            <GameBoard
+              tiles={gameState.gameState.tiles}
+              selectedTile={gameState.gameState.selectedTile}
+              matchingEdges={gameState.gameState.matchingEdges}
+              onTileInteraction={handleTileInteraction}
+              onUndo={gameState.undoLastMove}
+              onShuffle={gameState.shuffleAll}
+              onPause={gameState.gameState.isPaused ? gameState.resumeGame : gameState.pauseGame}
+              onRestart={gameState.resetGame}
+              canUndo={gameState.gameState.moveHistory.length > 0}
+              isPaused={gameState.gameState.isPaused}
+              showControlsModal={false}
+              showHowToSolveModal={false}
+              onCloseControlsModal={() => {}}
+              onCloseHowToSolveModal={() => {}}
+            />
           </div>
 
           {/* Pause Modal */}
-          {gameState.gameState.isPaused && (
+          {gameState.gameState.isPaused && !showTutorialOverlay && (
             <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
               <div className="bg-navy-light rounded-2xl p-8 max-w-sm w-full border-2 border-navy-dark">
                 <div className="text-center">
@@ -716,32 +670,84 @@ useEffect(() => {
             </div>
           )}
 
-          {/* Bottom Navigation */}
-          <div className="fixed bottom-0 left-0 right-0 bg-navy-light/90 backdrop-blur-md px-4 py-3 border-t border-navy-dark">
-            <div className="flex justify-center gap-6 max-w-md mx-auto">
-              <button
-                onClick={() => setShowArchive(true)}
-                className="flex flex-col items-center gap-1 text-teal hover:text-coral transition"
-              >
-                <Calendar size={22} />
-                <span className="text-[10px]">Archive</span>
-              </button>
+          {/* Bottom Navigation - Fixed at bottom */}
+          <div className="flex-shrink-0 bg-navy-light/90 backdrop-blur-md px-3 py-2 border-t border-navy-dark">
+            <div className="max-w-4xl mx-auto">
+              {/* Action Buttons Row */}
+              <div className="flex justify-center gap-2 mb-2 flex-wrap">
+                <button
+                  onClick={gameState.undoLastMove}
+                  disabled={gameState.gameState.moveHistory.length === 0}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    gameState.gameState.moveHistory.length === 0
+                      ? 'bg-navy-dark/80 text-gray-500 cursor-not-allowed border border-navy-dark'
+                      : 'bg-offwhite text-navy-lightest border border-navy-dark hover:border-teal'
+                  }`}
+                >
+                  Undo
+                </button>
+                
+                <button
+                  onClick={gameState.shuffleAll}
+                  className="px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium"
+                >
+                  Shuffle
+                </button>
+                
+                <button
+                  onClick={gameState.gameState.isPaused ? gameState.resumeGame : gameState.pauseGame}
+                  className="px-3 py-1.5 bg-offwhite text-navy-lightest rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
+                >
+                  {gameState.gameState.isPaused ? 'Resume' : 'Pause'}
+                </button>
+                
+                <button
+                  onClick={() => {
+                    if (gameState.gameState.status === 'solved') {
+                      setCurrentPuzzle(null);
+                      setHasProcessedCompletion(false);
+                      setShowCompletionAnimation(false);
+                      gameState.resetGame();
+                    } else {
+                      if (window.confirm('Restart this puzzle? Your progress will be lost.')) {
+                        setHasProcessedCompletion(false);
+                        setShowCompletionAnimation(false);
+                        gameState.startGame(currentPuzzle);
+                      }
+                    }
+                  }}
+                  className="px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-white transition-all duration-200 text-xs font-medium"
+                >
+                  Restart
+                </button>
+              </div>
 
-              <button
-                onClick={() => setShowPlayerStats(true)}
-                className="flex flex-col items-center gap-1 text-teal hover:text-coral transition"
-              >
-                <BarChart3 size={22} />
-                <span className="text-[10px]">Stats</span>
-              </button>
+              {/* Navigation Icons Row */}
+              <div className="flex justify-center gap-6 pt-2 border-t border-navy-dark/50">
+                <button
+                  onClick={() => setShowArchive(true)}
+                  className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
+                >
+                  <Calendar size={20} />
+                  <span className="text-[9px]">Archive</span>
+                </button>
 
-              <button
-                onClick={() => setShowSettings(true)}
-                className="flex flex-col items-center gap-1 text-teal hover:text-coral transition"
-              >
-                <Settings size={22} />
-                <span className="text-[10px]">Settings</span>
-              </button>
+                <button
+                  onClick={() => setShowPlayerStats(true)}
+                  className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
+                >
+                  <BarChart3 size={20} />
+                  <span className="text-[9px]">Stats</span>
+                </button>
+
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
+                >
+                  <Settings size={20} />
+                  <span className="text-[9px]">Settings</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

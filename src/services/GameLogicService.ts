@@ -70,20 +70,38 @@ export class GameLogicService {
   static isPuzzleSolved(tiles: Tile[]): boolean {
     if (tiles.length !== 9) return false;
     
+    // Check all 4 possible global rotations
+    for (let globalRotation = 0; globalRotation < 4; globalRotation++) {
+      if (this.checkSolutionWithGlobalRotation(tiles, globalRotation)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  static checkSolutionWithGlobalRotation(tiles: Tile[], globalRotation: number): boolean {
+    // Create virtually rotated tiles
+    const rotatedTiles = tiles.map(tile => ({
+      ...tile,
+      rotation: (tile.rotation + globalRotation) % 4
+    }));
+    
+    // Check if all edges match with this global rotation
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
-        const currentTile = tiles.find(t => t.row === row && t.col === col);
+        const currentTile = rotatedTiles.find(t => t.row === row && t.col === col);
         if (!currentTile) return false;
         
         if (col < 2) {
-          const rightTile = tiles.find(t => t.row === row && t.col === col + 1);
+          const rightTile = rotatedTiles.find(t => t.row === row && t.col === col + 1);
           if (!rightTile || !this.isEdgeMatch(currentTile, rightTile, 'right')) {
             return false;
           }
         }
         
         if (row < 2) {
-          const bottomTile = tiles.find(t => t.row === row + 1 && t.col === col);
+          const bottomTile = rotatedTiles.find(t => t.row === row + 1 && t.col === col);
           if (!bottomTile || !this.isEdgeMatch(currentTile, bottomTile, 'bottom')) {
             return false;
           }
@@ -116,23 +134,23 @@ export class GameLogicService {
   }
   
   static undoMove(tiles: Tile[], move: Move): Tile[] {
-  if (move.type === 'rotate' && move.tileId !== undefined && move.previousRotation !== undefined) {
-    return tiles.map(tile =>
-      tile.id === move.tileId ? { ...tile, rotation: move.previousRotation as number } : tile
-    );
-  } else if (move.type === 'swap' && move.tile1Id && move.tile2Id && move.tile1PrevPos && move.tile2PrevPos) {
-    return tiles.map(tile => {
-      if (tile.id === move.tile1Id) {
-        return { ...tile, row: move.tile1PrevPos!.row, col: move.tile1PrevPos!.col };
-      }
-      if (tile.id === move.tile2Id) {
-        return { ...tile, row: move.tile2PrevPos!.row, col: move.tile2PrevPos!.col };
-      }
-      return tile;
-    });
+    if (move.type === 'rotate' && move.tileId !== undefined && move.previousRotation !== undefined) {
+      return tiles.map(tile =>
+        tile.id === move.tileId ? { ...tile, rotation: move.previousRotation as number } : tile
+      );
+    } else if (move.type === 'swap' && move.tile1Id && move.tile2Id && move.tile1PrevPos && move.tile2PrevPos) {
+      return tiles.map(tile => {
+        if (tile.id === move.tile1Id) {
+          return { ...tile, row: move.tile1PrevPos!.row, col: move.tile1PrevPos!.col };
+        }
+        if (tile.id === move.tile2Id) {
+          return { ...tile, row: move.tile2PrevPos!.row, col: move.tile2PrevPos!.col };
+        }
+        return tile;
+      });
+    }
+    return tiles;
   }
-  return tiles;
-}
 
   static shuffleAllTiles(tiles: Tile[]): Tile[] {
     const positions: { row: number; col: number }[] = [];

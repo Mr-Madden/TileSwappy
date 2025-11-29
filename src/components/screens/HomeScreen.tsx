@@ -8,6 +8,7 @@ interface HomeScreenProps {
   onOpenStreak?: () => void;
   onOpenStats?: () => void;
   onOpenSettings?: () => void;
+  onOpenTutorial?: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -15,7 +16,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenArchive,
   onOpenStreak,
   onOpenStats,
-  onOpenSettings
+  onOpenSettings,
+  onOpenTutorial
 }) => {
   const [carouselOffset, setCarouselOffset] = useState(0);
   const [carouselSwipeStart, setCarouselSwipeStart] = useState({ x: 0, y: 0, touching: false, startTime: 0 });
@@ -29,8 +31,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       const startDate = addDays(today, -3);
       const endDate = addDays(today, 3);
       
+      console.log('=== PUZZLE FETCH DEBUG ===');
+      console.log('Today:', today);
+      console.log('Date range:', startDate, 'to', endDate);
+      
       try {
         const puzzles = await getWeekPuzzles(startDate, endDate);
+        console.log('Fetched puzzles:', puzzles);
+        console.log('Number of puzzles:', puzzles?.length || 0);
         setRealPuzzles(puzzles || []);
         setCarouselOffset(0);
       } catch (error) {
@@ -92,6 +100,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     });
   }, [realPuzzles]);
 
+  // Find today's puzzle
+  const todaysPuzzle = dailyPuzzles.find(p => p.status === 'today');
+
+  useEffect(() => {
+    console.log('=== DAILY PUZZLES DEBUG ===');
+    console.log('Daily puzzles array:', dailyPuzzles);
+    console.log('Today puzzle:', todaysPuzzle);
+    console.log('Today has real data:', todaysPuzzle?.realPuzzleData);
+  }, [dailyPuzzles, todaysPuzzle]);
+
   const handleCarouselSwipeStart = (x: number, y: number) => {
     setCarouselSwipeStart({ x, y, touching: true, startTime: Date.now() });
   };
@@ -114,13 +132,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     setCarouselSwipeStart({ x: 0, y: 0, touching: false, startTime: 0 });
   };
 
-  // Find today's puzzle
-  const todaysPuzzle = dailyPuzzles.find(p => p.status === 'today');
-  const hasTodaysPuzzle = todaysPuzzle?.realPuzzleData;
-
   return (
-    <div className="min-h-screen bg-navy overflow-y-auto">
+    <div className="min-h-screen bg-navy overflow-hidden">
       <div className="flex items-center justify-center p-4">
+        {/* Tutorial Button - Top Left */}
+        <button
+          onClick={onOpenTutorial}
+          aria-label="How to Play Tutorial"
+          className="fixed top-6 left-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2EC4B6" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <span className="text-teal text-[10px] font-semibold">Tutorial</span>
+        </button>
+
         {/* Settings Button - Top Right */}
         <button
           onClick={onOpenSettings}
@@ -174,28 +202,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       <div className="text-offwhite text-sm">Loading today's puzzle...</div>
                     </div>
                   </div>
-                ) : !hasTodaysPuzzle ? (
-                  // No Puzzle Available State
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center p-6">
-                      <div className="text-4xl mb-3">😔</div>
-                      <div className="text-offwhite text-lg font-semibold mb-2">No Puzzle Today</div>
-                      <div className="text-teal text-sm mb-4">Check back later!</div>
-                      <button
-                        onClick={() => window.location.reload()}
-                        className="bg-coral hover:bg-coral/80 text-offwhite px-4 py-2 rounded-lg text-sm font-semibold transition"
-                      >
-                        Refresh
-                      </button>
-                    </div>
-                  </div>
                 ) : (
                   <div className="relative w-full h-full">
                     {dailyPuzzles.map((day, index) => {
                       const centerOffset = (index - 3 - carouselOffset + 7) % 7;
                       const adjustedOffset = centerOffset > 3 ? centerOffset - 7 : centerOffset;
-                      const xPos = adjustedOffset * 95; // Bring cards even closer
-                      const yPos = Math.abs(adjustedOffset) * 6; // Minimal vertical displacement
+                      const xPos = adjustedOffset * 95;
+                      const yPos = Math.abs(adjustedOffset) * 6;
                       
                       let scale = 1;
                       let width = 180;
@@ -204,27 +217,28 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       if (adjustedOffset === 0) {
                         scale = 1.3;
                         width = 120;
-                        opacity = 1; // Today - fully visible
+                        opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 1) {
                         scale = 0.85;
                         width = 105;
-                        opacity = 1; // Yesterday/Tomorrow - fully visible
+                        opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 2) {
                         scale = 0.65;
                         width = 90;
-                        opacity = adjustedOffset === -2 ? 0.6 : 0.4; // 2 days ago: 60%, in 2 days: 40%
+                        opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 3) {
                         scale = 0.5;
                         width = 75;
-                        opacity = adjustedOffset === -3 ? 0.6 : 0.4; // 3 days ago: 60%, in 3 days: 40%
+                        opacity = 1;
                       } else {
                         scale = 0.3;
                         width = 50;
-                        opacity = 0.2; // Just barely there
+                        opacity = 1;
                       }
 
                       const isToday = day.status === 'today';
                       const isCentered = adjustedOffset === 0;
+                      const hasPuzzleData = !!day.realPuzzleData;
 
                       const cardStyle: React.CSSProperties = {
                         position: 'absolute',
@@ -235,45 +249,63 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         width: `${width}px`,
                         opacity: opacity,
                         zIndex: 10 - Math.abs(adjustedOffset),
-                        pointerEvents: (isCentered && isToday ? 'auto' : 'none')
+                        pointerEvents: (isCentered && isToday && hasPuzzleData ? 'auto' : 'none')
                       };
 
                       if (isToday && isCentered) {
                         return (
                           <div key={day.id} style={cardStyle}>
-                            <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const puzzleData = {
-                                id: day.id,
-                                title: day.title,
-                                difficulty: day.difficulty,
-                                gradient: day.gradient.match(/#[a-fA-F0-9]{6}/g) || ['#FF4C4C', '#2EC4B6'],
-                                imageUrl: day.imageUrl,
-                                fromDatabase: !!day.realPuzzleData
-                              };
-                              onStartPuzzle(puzzleData);
-                            }}
-                              className="w-full transform hover:scale-105 transition-all"
-                            >
-                              <div className="rounded-2xl overflow-hidden border-4 border-coral shadow-coral-glow">
-                                <div className="aspect-square relative overflow-hidden">
-                                  {day.imageUrl ? (
-                                    <>
-                                      <img src={day.imageUrl} alt={day.title} className="absolute inset-0 w-full h-full object-cover blur-sm opacity-70" />
-                                      <div className="absolute inset-0 bg-gradient-to-br from-teal/30 to-coral/30" />
-                                    </>
-                                  ) : (
-                                    <div className="w-full h-full bg-gradient-to-br from-teal to-coral" />
-                                  )}
-                                  <div className="absolute top-2 right-2 bg-coral text-offwhite text-xs font-bold px-2 py-1 rounded-full">TODAY</div>
+                            {hasPuzzleData ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const puzzleData = {
+                                    id: day.id,
+                                    title: day.title,
+                                    difficulty: day.difficulty,
+                                    gradient: day.gradient.match(/#[a-fA-F0-9]{6}/g) || ['#FF4C4C', '#2EC4B6'],
+                                    imageUrl: day.imageUrl,
+                                    fromDatabase: !!day.realPuzzleData
+                                  };
+                                  onStartPuzzle(puzzleData);
+                                }}
+                                className="w-full transform hover:scale-105 transition-all"
+                              >
+                                <div className="rounded-2xl overflow-hidden border-4 border-coral shadow-coral-glow">
+                                  <div className="aspect-square relative overflow-hidden">
+                                    {day.imageUrl ? (
+                                      <>
+                                        <img src={day.imageUrl} alt={day.title} className="absolute inset-0 w-full h-full object-cover blur-sm opacity-70" />
+                                        <div className="absolute inset-0 bg-gradient-to-br from-teal/30 to-coral/30" />
+                                      </>
+                                    ) : (
+                                      <div className="w-full h-full bg-gradient-to-br from-teal to-coral" />
+                                    )}
+                                    <div className="absolute top-2 right-2 bg-coral text-offwhite text-xs font-bold px-2 py-1 rounded-full">TODAY</div>
+                                  </div>
+                                  <div className="p-3 text-center bg-gradient-to-b from-coral/20 to-transparent">
+                                    <div className="text-offwhite text-sm font-bold">{day.label}</div>
+                                    <div className="text-teal text-xs">{day.date}</div>
+                                  </div>
                                 </div>
-                                <div className="p-3 text-center bg-gradient-to-b from-coral/20 to-transparent">
-                                  <div className="text-offwhite text-sm font-bold">{day.label}</div>
-                                  <div className="text-teal text-xs">{day.date}</div>
+                              </button>
+                            ) : (
+                              <div className="w-full">
+                                <div className="rounded-2xl overflow-hidden border-4 border-navy-light bg-navy-dark">
+                                  <div className="aspect-square relative overflow-hidden flex items-center justify-center">
+                                    <div className="text-center p-4">
+                                      <div className="text-3xl mb-2">😔</div>
+                                      <div className="text-offwhite text-xs font-semibold mb-1">No Puzzle</div>
+                                      <div className="text-teal text-[10px]">Check back later</div>
+                                    </div>
+                                  </div>
+                                  <div className="p-3 text-center bg-gradient-to-b from-navy-light/20 to-transparent">
+                                    <div className="text-offwhite text-sm font-bold">{day.label}</div>
+                                    <div className="text-teal text-xs">{day.date}</div>
+                                  </div>
                                 </div>
                               </div>
-                            </button>
+                            )}
                           </div>
                         );
                       }
@@ -362,17 +394,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   <p className="text-[9px] text-teal">View</p>
                 </button>
               </div>        
-            </div>
-
-            {/* How to Play Info Card */}
-            <div className="bg-navy-light backdrop-blur-sm rounded-xl p-4 border border-navy-dark">
-              <h3 className="text-offwhite font-semibold text-sm mb-2">How to Play</h3>
-              <ul className="text-teal text-xs space-y-1">
-                <li>• Rotate tiles by dragging left or right</li>
-                <li>• Swap tiles by tapping two tiles</li>
-                <li>• Match all edges to complete the puzzle</li>
-                <li>• New puzzles available daily at midnight</li>
-              </ul>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { DailyPuzzleNotifications } from '../DailyPuzzleNotifications';
 
 interface AppSettings {
   selectedLanguage: string;
@@ -107,43 +108,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
 
-            {/* Notifications */}
+            {/* Daily Puzzle Notifications - NEW! */}
             <div className="bg-white/10 rounded-lg mb-2 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-white font-semibold">Notifications</span>
-                <button
-                  onClick={() =>
-                    onUpdateSettings({ notificationsEnabled: !settings.notificationsEnabled })
-                  }
-                  className={`relative w-12 h-6 rounded-full transition ${
-                    settings.notificationsEnabled ? 'bg-green-500' : 'bg-white/20'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      settings.notificationsEnabled ? 'translate-x-6' : ''
-                    }`}
-                  ></div>
-                </button>
-              </div>
-            </div>
-
-            {/* Vibrate */}
-            <div className="bg-white/10 rounded-lg mb-2 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-white font-semibold">Vibrate</span>
-                <button
-                  onClick={() => onUpdateSettings({ vibrateEnabled: !settings.vibrateEnabled })}
-                  className={`relative w-12 h-6 rounded-full transition ${
-                    settings.vibrateEnabled ? 'bg-green-500' : 'bg-white/20'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                      settings.vibrateEnabled ? 'translate-x-6' : ''
-                    }`}
-                  ></div>
-                </button>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="text-white font-semibold mb-1">Daily Puzzle Alerts</div>
+                  <p className="text-xs text-white/60">Get notified when new puzzles are available</p>
+                </div>
+                <div className="flex-shrink-0">
+                  <DailyPuzzleNotifications />
+                </div>
               </div>
             </div>
 
@@ -151,7 +125,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {settings.soundEnabled !== undefined && (
               <div className="bg-white/10 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-white font-semibold">Sound</span>
+                  <span className="text-white font-semibold">Audio~(Coming Soon)</span>
                   <button
                     onClick={() => onUpdateSettings({ soundEnabled: !settings.soundEnabled })}
                     className={`relative w-12 h-6 rounded-full transition ${
