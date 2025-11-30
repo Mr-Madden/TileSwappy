@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
 import { Lock } from 'lucide-react';
-import { adminUploadPuzzleImage, adminUploadPuzzle } from '../services/adminSupabase';
+
+// Conditionally import admin functions only in development
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// Create a placeholder for production
+const adminUploadPuzzleImage = isDevelopment 
+  ? require('../services/adminSupabase').adminUploadPuzzleImage 
+  : async () => { throw new Error('Admin features disabled in production'); };
+
+const adminUploadPuzzle = isDevelopment 
+  ? require('../services/adminSupabase').adminUploadPuzzle 
+  : async () => { throw new Error('Admin features disabled in production'); };
 
 export const AdminPage: React.FC = () => {
+  // ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL RETURNS
   // Password protection state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  // Existing state
+  // Form state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [puzzleDate, setPuzzleDate] = useState('');
@@ -92,6 +104,28 @@ export const AdminPage: React.FC = () => {
       setIsUploading(false);
     }
   };
+
+  // NOW we can do conditional rendering - AFTER all hooks
+  // If not in development, show message
+  if (!isDevelopment) {
+    return (
+      <div className="min-h-screen bg-navy flex items-center justify-center p-4">
+        <div className="bg-navy-light rounded-2xl p-8 max-w-md w-full shadow-2xl border-2 border-navy-dark text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-navy-dark rounded-3xl mb-4 border-2 border-coral">
+            <Lock className="text-coral" size={40} />
+          </div>
+          <h1 className="text-3xl font-bold text-offwhite mb-4">Admin Access Disabled</h1>
+          <p className="text-teal mb-6">Admin features are only available in development mode for security reasons.</p>
+          <a 
+            href="/" 
+            className="inline-flex items-center gap-2 text-teal hover:text-coral transition font-semibold"
+          >
+            ← Back to TileSwappy
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   // Show password screen if not authenticated
   if (!isAuthenticated) {
