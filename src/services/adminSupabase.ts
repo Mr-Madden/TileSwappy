@@ -2,6 +2,12 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL!;
 const serviceRoleKey = process.env.REACT_APP_SUPABASE_SERVICE_ROLE_KEY!;
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// Only allow admin features in development
+if (!isDevelopment) {
+  throw new Error('Admin features are only available in development mode');
+}
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error('Missing Supabase admin environment variables!');
