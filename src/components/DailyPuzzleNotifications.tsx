@@ -1,25 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 
 export const DailyPuzzleNotifications: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission>('default');
 
-  useEffect(() => {
-    // Check if notifications are supported
-    if ('Notification' in window) {
-      setPermission(Notification.permission);
-      
-      // Check if user has enabled notifications
-      const enabled = localStorage.getItem('dailyPuzzleNotifications') === 'true';
-      setNotificationsEnabled(enabled);
-
-      // Check for new puzzle on load
-      checkForNewPuzzle();
-    }
-  }, []);
-
-  const checkForNewPuzzle = () => {
+  const checkForNewPuzzle = useCallback(() => {
     const lastPuzzleDate = localStorage.getItem('lastPuzzleDate');
     const today = new Date().toDateString();
 
@@ -38,7 +23,19 @@ export const DailyPuzzleNotifications: React.FC = () => {
       // Update last puzzle date (set this when user completes or starts today's puzzle)
       // localStorage.setItem('lastPuzzleDate', today);
     }
-  };
+  }, [notificationsEnabled]);
+
+  useEffect(() => {
+    // Check if notifications are supported
+    if ('Notification' in window) {
+      // Check if user has enabled notifications
+      const enabled = localStorage.getItem('dailyPuzzleNotifications') === 'true';
+      setNotificationsEnabled(enabled);
+
+      // Check for new puzzle on load
+      checkForNewPuzzle();
+    }
+  }, [checkForNewPuzzle]);
 
   const requestNotificationPermission = async () => {
     if (!('Notification' in window)) {
@@ -47,7 +44,6 @@ export const DailyPuzzleNotifications: React.FC = () => {
     }
 
     const permission = await Notification.requestPermission();
-    setPermission(permission);
 
     if (permission === 'granted') {
       setNotificationsEnabled(true);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RotateCw, Calendar, Settings, BarChart3 } from 'lucide-react';
+import { Calendar, Settings, BarChart3 } from 'lucide-react';
 import { useGameState } from './hooks/useGameState';
 import { StartScreen } from './components/screens/StartScreen';
 import { TutorialScreen } from './components/screens/TutorialScreen';
@@ -118,7 +118,7 @@ const App: React.FC = () => {
   }, [dailyPuzzles]);
 
   // Show tutorial overlay when game starts (if not completed before)
-  useEffect(() => {
+ useEffect(() => {
     if (gameState.gameState.status === 'playing' && !hasShownTutorialForCurrentPuzzle) {
       const tutorialCompleted = localStorage.getItem('tutorialCompleted');
       
@@ -130,7 +130,7 @@ const App: React.FC = () => {
       
       setHasShownTutorialForCurrentPuzzle(true);
     }
-  }, [gameState.gameState.status, hasShownTutorialForCurrentPuzzle]);
+  }, [gameState, hasShownTutorialForCurrentPuzzle]);
 
   const handleTutorialComplete = () => {
     setShowTutorialOverlay(false);

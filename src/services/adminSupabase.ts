@@ -23,7 +23,7 @@ export const adminSupabase = createClient(supabaseUrl, serviceRoleKey, {
 
 // Upload image with admin privileges
 export const adminUploadPuzzleImage = async (file: File, fileName: string) => {
-  const { data, error } = await adminSupabase.storage
+  const { error } = await adminSupabase.storage
     .from('puzzle-images')
     .upload(fileName, file, {
       cacheControl: '3600',
