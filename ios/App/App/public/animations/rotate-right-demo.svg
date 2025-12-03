@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <style>
+      @keyframes rotateRight {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(90deg); }
+      }
+      @keyframes fadeArrow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+      .tile {
+        transform-origin: center;
+        animation: rotateRight 2s ease-in-out infinite;
+      }
+      .arrow {
+        animation: fadeArrow 2s ease-in-out infinite;
+      }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="200" fill="#1a2332"/>
+  
+  <!-- Left Arrow (faint) -->
+  <g class="arrow" opacity="0.3">
+    <path d="M 40 100 L 60 85 L 60 95 L 40 95 Z" fill="#2EC4B6"/>
+    <text x="50" y="75" font-family="Arial" font-size="24" font-weight="bold" fill="#2EC4B6" text-anchor="middle">←</text>
+  </g>
+  
+  <!-- Tile (rotates) -->
+  <g class="tile">
+    <rect x="75" y="75" width="50" height="50" rx="4" fill="#FF4C4C"/>
+    <rect x="75" y="75" width="50" height="25" fill="#2EC4B6"/>
+    <rect x="75" y="75" width="25" height="25" fill="#F59E0B"/>
+  </g>
+  
+  <!-- Right Arrow -->
+  <g class="arrow">
+    <path d="M 160 100 L 140 85 L 140 95 L 160 95 Z" fill="#2EC4B6"/>
+    <text x="150" y="75" font-family="Arial" font-size="24" font-weight="bold" fill="#2EC4B6" text-anchor="middle">→</text>
+  </g>
+  
+  <!-- Label -->
+  <text x="100" y="170" font-family="Arial" font-size="12" fill="#e2e8f0" text-anchor="middle">Drag right to rotate</text>
+</svg>

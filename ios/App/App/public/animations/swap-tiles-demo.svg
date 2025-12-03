@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <style>
+      @keyframes swapLeft {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(70px); }
+      }
+      @keyframes swapRight {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(-70px); }
+      }
+      @keyframes fadeSwapArrows {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+      .tile1 {
+        animation: swapLeft 2s ease-in-out infinite;
+      }
+      .tile2 {
+        animation: swapRight 2s ease-in-out infinite;
+      }
+      .swap-arrows {
+        animation: fadeSwapArrows 2s ease-in-out infinite;
+      }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="200" fill="#1a2332"/>
+  
+  <!-- Swap arrows -->
+  <g class="swap-arrows">
+    <path d="M 70 60 L 130 60 L 125 55 M 130 60 L 125 65" stroke="#FC8181" stroke-width="2" fill="none"/>
+    <path d="M 130 140 L 70 140 L 75 135 M 70 140 L 75 145" stroke="#FC8181" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- Tile 1 - Purple/Pink (swaps left to right) -->
+  <g class="tile1">
+    <rect x="40" y="75" width="50" height="50" rx="4" fill="#8B5CF6"/>
+    <rect x="40" y="75" width="50" height="25" fill="#EC4899"/>
+    <rect x="40" y="75" width="25" height="25" fill="#F59E0B"/>
+  </g>
+  
+  <!-- Tile 2 - Blue/Green (swaps right to left) -->
+  <g class="tile2">
+    <rect x="110" y="75" width="50" height="50" rx="4" fill="#3B82F6"/>
+    <rect x="110" y="75" width="50" height="25" fill="#10B981"/>
+    <rect x="110" y="75" width="25" height="25" fill="#F59E0B"/>
+  </g>
+  
+  <!-- Labels -->
+  <text x="100" y="165" font-family="Arial" font-size="12" fill="#e2e8f0" text-anchor="middle">Click second tile to swap</text>
+  <text x="100" y="185" font-family="Arial" font-size="10" fill="#FC8181" text-anchor="middle">Step 2 of 2</text>
+</svg>

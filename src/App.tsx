@@ -29,7 +29,9 @@ const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
   } catch (error) {
-    console.error(`Error loading ${key} from localStorage:`, error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`Error loading ${key} from localStorage:`, error);
+    }
     return defaultValue;
   }
 };
@@ -39,7 +41,9 @@ const saveToStorage = (key: string, value: any): void => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`Error saving ${key} to localStorage:`, error);
+    }
   }
 };
 
@@ -139,7 +143,9 @@ const App: React.FC = () => {
   };
 
   const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
-    console.log('🎮 App.tsx: Starting puzzle with:', puzzle);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎮 App.tsx: Starting puzzle with:', puzzle);
+    }
     
     // Normalize the puzzle data - convert image_url to imageUrl if needed
     let normalizedPuzzle = puzzle;
@@ -148,7 +154,9 @@ const App: React.FC = () => {
         ...puzzle,
         imageUrl: puzzle.image_url
       };
-      console.log('🔄 Normalized puzzle data:', normalizedPuzzle);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Normalized puzzle data:', normalizedPuzzle);
+      }
     }
     
     // Reset completion flags and tutorial flag
@@ -201,22 +209,30 @@ const App: React.FC = () => {
   };
 
   const handleDateSelect = (dateStr: string, puzzleData?: any) => {
-    console.log('🗓️ Selected date:', dateStr);
-    console.log('📦 Puzzle data received:', puzzleData);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🗓️ Selected date:', dateStr);
+      console.log('📦 Puzzle data received:', puzzleData);
+    }
     
     // If we have puzzle data from the calendar, use it directly
     if (puzzleData) {
-      console.log('✅ Using puzzle data from calendar');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Using puzzle data from calendar');
+      }
       handleStartPuzzle(puzzleData, dateStr);
     } else {
       // Fallback: check if we have a puzzle stored locally for this date
       const puzzleForDate = dailyPuzzles[dateStr];
       
       if (puzzleForDate) {
-        console.log('📦 Found puzzle in local storage for date:', puzzleForDate);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📦 Found puzzle in local storage for date:', puzzleForDate);
+        }
         handleStartPuzzle(puzzleForDate, dateStr);
       } else {
-        console.log('⚠️ No puzzle found for date, using default');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚠️ No puzzle found for date, using default');
+        }
         handleStartPuzzle(undefined, dateStr);
       }
     }
@@ -238,11 +254,15 @@ const App: React.FC = () => {
 
   // Handle puzzle completion
   useEffect(() => {
-    console.log('🔍 Completion Check - Status:', gameState.gameState.status, 'HasProcessed:', hasProcessedCompletion);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Completion Check - Status:', gameState.gameState.status, 'HasProcessed:', hasProcessedCompletion);
+    }
     
     if (gameState.gameState.status === 'solved' && !hasProcessedCompletion) {
-      console.log('🎉 CELEBRATION TRIGGERED! Showing animation');
-      console.log('📊 Stats - Moves:', gameState.gameState.moves, 'Swaps:', gameState.gameState.swaps, 'Time:', gameState.gameState.solveTime);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎉 CELEBRATION TRIGGERED! Showing animation');
+        console.log('📊 Stats - Moves:', gameState.gameState.moves, 'Swaps:', gameState.gameState.swaps, 'Time:', gameState.gameState.solveTime);
+      }
       
       setHasProcessedCompletion(true);
       setShowCompletionAnimation(true);
@@ -251,17 +271,23 @@ const App: React.FC = () => {
       const puzzleKey = currentPuzzle?.date || currentPuzzleDate || 'today';
       const puzzleTitle = currentPuzzle?.title || null;
       
-      console.log('🔑 Using puzzle key:', puzzleKey);
-      console.log('📝 Puzzle title:', puzzleTitle);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔑 Using puzzle key:', puzzleKey);
+        console.log('📝 Puzzle title:', puzzleTitle);
+      }
       
       setCompletedPuzzleIds(prev => new Set([...prev, puzzleKey]));
       
       const isAdminPuzzle = currentPuzzle?.imageUrl || currentPuzzle?.image_url || currentPuzzle?.fromDatabase;
       if (isAdminPuzzle) {
-        console.log('📅 Adding admin puzzle to streak calendar:', currentPuzzleDate);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📅 Adding admin puzzle to streak calendar:', currentPuzzleDate);
+        }
         setCompletedDates(prev => new Set([...prev, currentPuzzleDate]));
       } else {
-        console.log('⏭️ Skipping randomly generated puzzle for streak calendar');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⏭️ Skipping randomly generated puzzle for streak calendar');
+        }
       }
       
       setPuzzleStats(prev => {
@@ -294,7 +320,9 @@ const App: React.FC = () => {
       });
       
       setTimeout(() => {
-        console.log('⏰ Celebration timeout complete, transitioning to streak modal');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⏰ Celebration timeout complete, transitioning to streak modal');
+        }
         setShowCompletionAnimation(false);
         setShowStreak(true);
       }, 4000);
@@ -312,7 +340,9 @@ const App: React.FC = () => {
         const isUUID = key.length > 30 && key.includes('-');
         
         if (isUUID) {
-          console.log('🧹 Found old UUID-based stat:', key);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🧹 Found old UUID-based stat:', key);
+          }
           needsCleanup = true;
         } else {
           cleanedStats[key] = value;
@@ -320,12 +350,16 @@ const App: React.FC = () => {
       });
       
       if (needsCleanup) {
-        console.log('🧹 Cleaning up old stats...');
-        console.log('📊 Old stats count:', Object.keys(stats).length);
-        console.log('📊 New stats count:', Object.keys(cleanedStats).length);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🧹 Cleaning up old stats...');
+          console.log('📊 Old stats count:', Object.keys(stats).length);
+          console.log('📊 New stats count:', Object.keys(cleanedStats).length);
+        }
         setPuzzleStats(cleanedStats);
         saveToStorage(STORAGE_KEYS.PUZZLE_STATS, cleanedStats);
-        console.log('✅ Cleanup complete!');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Cleanup complete!');
+        }
       }
     };
     
