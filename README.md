@@ -21,4 +21,4 @@ npm install
 npm start
 ```
 
-Built by [Mr-Madden](https://github.com/Mr-Madden)
+Built by [Mr._Madden](https://github.com/Mr-Madden)

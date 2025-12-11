@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, BookOpen, Info, HelpCircle, FileText, Newspaper } from 'lucide-react';
 import { DailyPuzzleNotifications } from '../DailyPuzzleNotifications';
 
 interface AppSettings {
@@ -24,6 +24,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const handleSettingClick = (type: string) => {
     switch (type) {
+      case 'howToPlay':
+        window.open('/how-to-play.html', '_blank');
+        break;
+      case 'about':
+        window.open('/about.html', '_blank');
+        break;
+      case 'faq':
+        window.open('/faq.html', '_blank');
+        break;
+      case 'blog':
+        window.open('/blog/gradient-science.html', '_blank');
+        break;
       case 'privacy':
         window.open('/privacy.html', '_blank');
         break;
@@ -57,31 +69,75 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Content */}
         <div className="overflow-y-auto flex-1">
-          {/* General Section */}
+          {/* Learn & Info Section */}
           <div className="px-6 py-4">
-            <h3 className="text-white/60 text-xs font-semibold uppercase mb-3">General</h3>
+            <h3 className="text-white/60 text-xs font-semibold uppercase mb-3">Learn & Info</h3>
+
+            <button
+              onClick={() => handleSettingClick('howToPlay')}
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
+            >
+              <BookOpen size={20} className="text-teal" />
+              <span className="text-white font-semibold flex-1 text-left">How to Play</span>
+              <span className="text-white/60">→</span>
+            </button>
+
+            <button
+              onClick={() => handleSettingClick('about')}
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
+            >
+              <Info size={20} className="text-teal" />
+              <span className="text-white font-semibold flex-1 text-left">About TileSwappy</span>
+              <span className="text-white/60">→</span>
+            </button>
+
+            <button
+              onClick={() => handleSettingClick('faq')}
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
+            >
+              <HelpCircle size={20} className="text-teal" />
+              <span className="text-white font-semibold flex-1 text-left">FAQ</span>
+              <span className="text-white/60">→</span>
+            </button>
+
+            <button
+              onClick={() => handleSettingClick('blog')}
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
+            >
+              <Newspaper size={20} className="text-teal" />
+              <span className="text-white font-semibold flex-1 text-left">Blog & Strategies</span>
+              <span className="text-white/60">→</span>
+            </button>
+          </div>
+
+          {/* Legal Section */}
+          <div className="px-6 py-4 border-t border-white/10">
+            <h3 className="text-white/60 text-xs font-semibold uppercase mb-3">Legal</h3>
 
             <button
               onClick={() => handleSettingClick('privacy')}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
             >
-              <span className="text-white font-semibold">Privacy Policy</span>
+              <FileText size={20} className="text-white/60" />
+              <span className="text-white font-semibold flex-1 text-left">Privacy Policy</span>
               <span className="text-white/60">→</span>
             </button>
 
             <button
               onClick={() => handleSettingClick('terms')}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
             >
-              <span className="text-white font-semibold">Terms of Service</span>
+              <FileText size={20} className="text-white/60" />
+              <span className="text-white font-semibold flex-1 text-left">Terms of Service</span>
               <span className="text-white/60">→</span>
             </button>
 
             <button
               onClick={() => handleSettingClick('support')}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
+              className="w-full flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/15 rounded-lg mb-2 transition"
             >
-              <span className="text-white font-semibold">Support</span>
+              <FileText size={20} className="text-white/60" />
+              <span className="text-white font-semibold flex-1 text-left">Support</span>
               <span className="text-white/60">→</span>
             </button>
           </div>
@@ -108,7 +164,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
 
-            {/* Daily Puzzle Notifications - NEW! */}
+            {/* Daily Puzzle Notifications */}
             <div className="bg-white/10 rounded-lg mb-2 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
@@ -125,7 +181,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             {settings.soundEnabled !== undefined && (
               <div className="bg-white/10 rounded-lg p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-white font-semibold">Audio~(Coming Soon)</span>
+                  <span className="text-white font-semibold">Audio (Coming Soon)</span>
                   <button
                     onClick={() => onUpdateSettings({ soundEnabled: !settings.soundEnabled })}
                     className={`relative w-12 h-6 rounded-full transition ${
@@ -168,7 +224,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="px-6 py-4 border-t border-white/10">
             <div className="text-center text-sm text-white/40">
               <p>TileSwappy v1.0.0</p>
-              <p className="text-xs mt-1">© 2025 All rights reserved</p>
+              <p className="text-xs mt-1">© 2025 Mad_Den Gaming Co.</p>
+              <p className="text-xs mt-1">All rights reserved</p>
             </div>
           </div>
         </div>
