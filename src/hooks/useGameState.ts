@@ -19,6 +19,8 @@ export const useGameState = () => {
     pausedTime: 0
   });
 
+  const [zoomLevel, setZoomLevel] = useState(1.0);
+
   // Timer effect
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -32,6 +34,19 @@ export const useGameState = () => {
     }
     return () => clearInterval(interval);
   }, [gameState.status, gameState.isPaused]);
+
+  // Zoom functions
+  const zoomIn = useCallback(() => {
+    setZoomLevel(prev => Math.min(prev + 0.1, 1.5));
+  }, []);
+
+  const zoomOut = useCallback(() => {
+    setZoomLevel(prev => Math.max(prev - 0.1, 0.7));
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    setZoomLevel(1.0);
+  }, []);
 
   // Create tiles from canvas - INTERNAL HELPER FUNCTION
   const createTilesFromCanvas = useCallback((canvas: HTMLCanvasElement) => {
@@ -106,6 +121,9 @@ export const useGameState = () => {
   // Start game
   const startGame = useCallback((puzzle?: any) => {
     console.log('🎯 useGameState.startGame called with:', puzzle);
+    
+    // Reset zoom when starting a new game
+    resetZoom();
     
     setGameState(prev => ({
       ...prev,
@@ -187,7 +205,7 @@ export const useGameState = () => {
         createTilesFromCanvas(canvas);
       }
     }, 500);
-  }, [createTilesFromCanvas]);
+  }, [createTilesFromCanvas, resetZoom]);
 
   // Helper functions for edge matching
   const getRotatedEdge = (tile: Tile, direction: 'top' | 'right' | 'bottom' | 'left'): string => {
@@ -487,6 +505,7 @@ export const useGameState = () => {
 
   // Reset game - go back to idle/home state
   const resetGame = useCallback(() => {
+    resetZoom();
     setGameState({
       tiles: [],
       status: 'idle',
@@ -502,10 +521,14 @@ export const useGameState = () => {
       isPaused: false,
       pausedTime: 0
     });
-  }, []);
+  }, [resetZoom]);
 
   return {
     gameState,
+    zoomLevel,
+    zoomIn,
+    zoomOut,
+    resetZoom,
     startGame,
     rotateTile,
     swapTiles,

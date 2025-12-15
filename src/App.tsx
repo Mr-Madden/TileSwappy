@@ -643,6 +643,9 @@ const App: React.FC = () => {
               showHowToSolveModal={false}
               onCloseControlsModal={() => {}}
               onCloseHowToSolveModal={() => {}}
+              zoomLevel={gameState.zoomLevel}
+              onZoomIn={gameState.zoomIn}
+              onZoomOut={gameState.zoomOut}
             />
           </div>
 
@@ -707,53 +710,75 @@ const App: React.FC = () => {
           {/* Bottom Navigation - Fixed at bottom */}
           <div className="flex-shrink-0 bg-navy-light/90 backdrop-blur-md px-3 py-2 border-t border-navy-dark">
             <div className="max-w-4xl mx-auto">
-              {/* Action Buttons Row */}
-              <div className="flex justify-center gap-2 mb-2 flex-wrap">
-                <button
-                  onClick={gameState.undoLastMove}
-                  disabled={gameState.gameState.moveHistory.length === 0}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                    gameState.gameState.moveHistory.length === 0
-                      ? 'bg-navy-dark/80 text-gray-500 cursor-not-allowed border border-navy-dark'
-                      : 'bg-offwhite text-navy-lightest border border-navy-dark hover:border-teal'
-                  }`}
-                >
-                  Undo
-                </button>
-                
-                <button
-                  onClick={gameState.shuffleAll}
-                  className="px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium"
-                >
-                  Shuffle
-                </button>
-                
-                <button
-                  onClick={gameState.gameState.isPaused ? gameState.resumeGame : gameState.pauseGame}
-                  className="px-3 py-1.5 bg-offwhite text-navy-lightest rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
-                >
-                  {gameState.gameState.isPaused ? 'Resume' : 'Pause'}
-                </button>
-                
-                <button
-                  onClick={() => {
-                    if (gameState.gameState.status === 'solved') {
-                      setCurrentPuzzle(null);
-                      setHasProcessedCompletion(false);
-                      setShowCompletionAnimation(false);
-                      gameState.resetGame();
-                    } else {
-                      if (window.confirm('Restart this puzzle? Your progress will be lost.')) {
+              {/* Action Buttons - Two Rows */}
+              <div className="space-y-2 mb-2">
+                {/* First Row: Undo, Pause, Zoom In */}
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={gameState.undoLastMove}
+                    disabled={gameState.gameState.moveHistory.length === 0}
+                    className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                      gameState.gameState.moveHistory.length === 0
+                        ? 'bg-navy-dark/80 text-gray-500 cursor-not-allowed border border-navy-dark'
+                        : 'bg-offwhite text-navy-lightest border border-navy-dark hover:border-teal'
+                    }`}
+                  >
+                    Undo
+                  </button>
+                  
+                  <button
+                    onClick={gameState.gameState.isPaused ? gameState.resumeGame : gameState.pauseGame}
+                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-offwhite text-navy-lightest rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
+                  >
+                    {gameState.gameState.isPaused ? 'Resume' : 'Pause'}
+                  </button>
+                  
+                  <button
+                    onClick={gameState.zoomIn}
+                    disabled={gameState.zoomLevel >= 1.5}
+                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-teal/20 disabled:hover:text-teal"
+                  >
+                    Zoom In
+                  </button>
+                </div>
+
+                {/* Second Row: Shuffle, Restart, Zoom Out */}
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={gameState.shuffleAll}
+                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium"
+                  >
+                    Shuffle
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      if (gameState.gameState.status === 'solved') {
+                        setCurrentPuzzle(null);
                         setHasProcessedCompletion(false);
                         setShowCompletionAnimation(false);
-                        gameState.startGame(currentPuzzle);
+                        gameState.resetGame();
+                      } else {
+                        if (window.confirm('Restart this puzzle? Your progress will be lost.')) {
+                          setHasProcessedCompletion(false);
+                          setShowCompletionAnimation(false);
+                          gameState.startGame(currentPuzzle);
+                        }
                       }
-                    }
-                  }}
-                  className="px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-white transition-all duration-200 text-xs font-medium"
-                >
-                  Restart
-                </button>
+                    }}
+                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-white transition-all duration-200 text-xs font-medium"
+                  >
+                    Restart
+                  </button>
+                  
+                  <button
+                    onClick={gameState.zoomOut}
+                    disabled={gameState.zoomLevel <= 0.7}
+                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-teal/20 disabled:hover:text-teal"
+                  >
+                    Zoom Out
+                  </button>
+                </div>
               </div>
 
               {/* Navigation Icons Row */}

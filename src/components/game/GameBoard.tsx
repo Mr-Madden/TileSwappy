@@ -16,6 +16,9 @@ interface GameBoardProps {
   showHowToSolveModal?: boolean;
   onCloseControlsModal?: () => void;
   onCloseHowToSolveModal?: () => void;
+  zoomLevel: number;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({
@@ -32,9 +35,23 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   showControlsModal = false,
   showHowToSolveModal = false,
   onCloseControlsModal,
-  onCloseHowToSolveModal
+  onCloseHowToSolveModal,
+  zoomLevel,
+  onZoomIn,
+  onZoomOut
 }) => {
   const [swipeStart, setSwipeStart] = React.useState({ x: 0, y: 0, tileId: '' });
+  const [panOffset, setPanOffset] = React.useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = React.useState(false);
+  const [panStart, setPanStart] = React.useState({ x: 0, y: 0 });
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Reset pan when zoom returns to 1.0
+  React.useEffect(() => {
+    if (zoomLevel === 1.0) {
+      setPanOffset({ x: 0, y: 0 });
+    }
+  }, [zoomLevel]);
 
   const handlePointerDown = (e: React.MouseEvent | React.TouchEvent, tileId: string) => {
     e.preventDefault();
@@ -54,6 +71,34 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     setSwipeStart({ x: 0, y: 0, tileId: '' });
   };
 
+  // Container panning handlers (for when zoomed in)
+  const handleContainerPointerDown = (e: React.MouseEvent | React.TouchEvent) => {
+    if (zoomLevel <= 1.0) return; // Only allow panning when zoomed in
+    
+    const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    setIsPanning(true);
+    setPanStart({ x: x - panOffset.x, y: y - panOffset.y });
+  };
+
+  const handleContainerPointerMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isPanning || zoomLevel <= 1.0) return;
+    
+    e.preventDefault();
+    const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    setPanOffset({
+      x: x - panStart.x,
+      y: y - panStart.y
+    });
+  };
+
+  const handleContainerPointerUp = () => {
+    setIsPanning(false);
+  };
+
   const handleCloseControls = (dontShowAgain: boolean) => {
     if (dontShowAgain) {
       localStorage.setItem('hideControlsModal', 'true');
@@ -70,62 +115,78 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   return (
     <>
-      {/* Game Board - Properly sized without fixed positioning */}
+      {/* Game Board Container with Zoom and Pan */}
       <div 
-        className="grid grid-cols-3 gap-1 bg-navy-light backdrop-blur-sm p-1.5 rounded-xl border-2 border-navy-dark mx-auto" 
-        style={{ 
-          width: 'min(90vw, 65vh)', 
-          height: 'min(90vw, 65vh)',
-          maxWidth: '600px',
-          maxHeight: '600px'
-        }}
+        ref={containerRef}
+        className="flex justify-center items-center overflow-hidden"
+        style={{ cursor: zoomLevel > 1.0 ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
+        onMouseDown={handleContainerPointerDown}
+        onMouseMove={handleContainerPointerMove}
+        onMouseUp={handleContainerPointerUp}
+        onMouseLeave={handleContainerPointerUp}
+        onTouchStart={handleContainerPointerDown}
+        onTouchMove={handleContainerPointerMove}
+        onTouchEnd={handleContainerPointerUp}
       >
-        {[...tiles].sort((a, b) => {
-          if (a.row !== b.row) return a.row - b.row;
-          return a.col - b.col;
-        }).map((tile) => (
-          <div key={tile.id} className="relative aspect-square">
-            <div
-              onMouseDown={(e) => handlePointerDown(e, tile.id)}
-              onMouseUp={(e) => handlePointerUp(e, tile.id)}
-              onTouchStart={(e) => handlePointerDown(e, tile.id)}
-              onTouchEnd={(e) => handlePointerUp(e, tile.id)}
-              className={`w-full h-full rounded-lg overflow-hidden cursor-pointer touch-none transition-all duration-300 ${
-                selectedTile === tile.id 
-                  ? 'border-4 border-coral shadow-coral-glow' 
-                  : 'border-2 border-navy-dark hover:border-teal'
-              }`}
-              style={{ 
-                transform: `rotate(${tile.rotation * 90}deg)`, 
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' 
-              }}
-            >
-              <img src={tile.imageData} alt="" className="w-full h-full object-cover" draggable={false} />
+        <div 
+          className="grid grid-cols-3 gap-1 bg-navy-light backdrop-blur-sm p-1.5 rounded-xl border-2 border-navy-dark transition-transform duration-300 ease-out" 
+          style={{ 
+            width: 'min(90vw, 65vh)', 
+            height: 'min(90vw, 65vh)',
+            maxWidth: '600px',
+            maxHeight: '600px',
+            transform: `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`,
+            transformOrigin: 'center center',
+            pointerEvents: isPanning ? 'none' : 'auto'
+          }}
+        >
+          {[...tiles].sort((a, b) => {
+            if (a.row !== b.row) return a.row - b.row;
+            return a.col - b.col;
+          }).map((tile) => (
+            <div key={tile.id} className="relative aspect-square">
+              <div
+                onMouseDown={(e) => handlePointerDown(e, tile.id)}
+                onMouseUp={(e) => handlePointerUp(e, tile.id)}
+                onTouchStart={(e) => handlePointerDown(e, tile.id)}
+                onTouchEnd={(e) => handlePointerUp(e, tile.id)}
+                className={`w-full h-full rounded-lg overflow-hidden cursor-pointer touch-none transition-all duration-300 ${
+                  selectedTile === tile.id 
+                    ? 'border-4 border-coral shadow-coral-glow' 
+                    : 'border-2 border-navy-dark hover:border-teal'
+                }`}
+                style={{ 
+                  transform: `rotate(${tile.rotation * 90}deg)`, 
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' 
+                }}
+              >
+                <img src={tile.imageData} alt="" className="w-full h-full object-cover" draggable={false} />
+              </div>
+              
+              {/* Edge matching indicators - full edge illumination */}
+              {matchingEdges.has(`${tile.row}-${tile.col}-right`) && tile.col < 2 && (
+                <div 
+                  className="absolute top-0 -right-1 bg-green-500 transform animate-pulse"
+                  style={{ 
+                    width: '5px', 
+                    height: '100%',
+                    boxShadow: '0 0 20px rgba(34, 197, 94, 1), 0 0 40px rgba(34, 197, 94, 0.6), 0 0 60px rgba(34, 197, 94, 0.3)'
+                  }}
+                ></div>
+              )}
+              {matchingEdges.has(`${tile.row}-${tile.col}-bottom`) && tile.row < 2 && (
+                <div 
+                  className="absolute -bottom-1 left-0 bg-green-500 transform animate-pulse"
+                  style={{ 
+                    width: '100%', 
+                    height: '5px',
+                    boxShadow: '0 0 20px rgba(34, 197, 94, 1), 0 0 40px rgba(34, 197, 94, 0.6), 0 0 60px rgba(34, 197, 94, 0.3)'
+                  }}
+                ></div>
+              )}
             </div>
-            
-            {/* Edge matching indicators - full edge illumination */}
-            {matchingEdges.has(`${tile.row}-${tile.col}-right`) && tile.col < 2 && (
-              <div 
-                className="absolute top-0 -right-1 bg-green-500 transform animate-pulse"
-                style={{ 
-                  width: '5px', 
-                  height: '100%',
-                  boxShadow: '0 0 20px rgba(34, 197, 94, 1), 0 0 40px rgba(34, 197, 94, 0.6), 0 0 60px rgba(34, 197, 94, 0.3)'
-                }}
-              ></div>
-            )}
-            {matchingEdges.has(`${tile.row}-${tile.col}-bottom`) && tile.row < 2 && (
-              <div 
-                className="absolute -bottom-1 left-0 bg-green-500 transform animate-pulse"
-                style={{ 
-                  width: '100%', 
-                  height: '5px',
-                  boxShadow: '0 0 20px rgba(34, 197, 94, 1), 0 0 40px rgba(34, 197, 94, 0.6), 0 0 60px rgba(34, 197, 94, 0.3)'
-                }}
-              ></div>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Controls Modal */}
