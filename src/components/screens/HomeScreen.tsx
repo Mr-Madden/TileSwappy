@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { getCurrentDate, formatDisplayDate, addDays, getRelativeDayLabel } from '../../utils/helpers';
 import { getWeekPuzzles } from '../../services/supabase';
+import { IdleHintsPopup } from '../IdleHintsPopup';
 
 interface HomeScreenProps {
   onStartPuzzle: (puzzle?: any) => void;
@@ -23,6 +24,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [carouselSwipeStart, setCarouselSwipeStart] = useState({ x: 0, y: 0, touching: false, startTime: 0 });
   const [realPuzzles, setRealPuzzles] = useState<any[]>([]);
   const [isLoadingPuzzles, setIsLoadingPuzzles] = useState(true);
+  const [showIdleHints, setShowIdleHints] = useState(true);
 
   // Auto-load puzzles on mount - no authentication needed
   useEffect(() => {
@@ -357,6 +359,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-2">
                 <button 
+                  data-button="archive"
                   onClick={onOpenArchive}
                   className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
                 >
@@ -366,22 +369,24 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     <rect x="14" y="14" width="7" height="7"></rect>
                     <rect x="3" y="14" width="7" height="7"></rect>
                   </svg>
-                  <p className="text-[10px] text-offwhite font-semibold">Archive</p>
-                  <p className="text-[9px] text-teal">Browse</p>
+                  <p className="text-[15px] text-offwhite font-semibold">Archive</p>
+                  <p className="text-[12px] text-teal">Browse</p>
                 </button>
 
                 <button 
+                  data-button="streak"
                   onClick={onOpenStreak}
                   className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF4C4C" strokeWidth="2" className="mx-auto mb-1">
                     <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
                   </svg>
-                  <p className="text-[10px] text-offwhite font-semibold">Streak</p>
-                  <p className="text-[9px] text-teal">Track</p>
+                  <p className="text-[15px] text-offwhite font-semibold">Streak</p>
+                  <p className="text-[12px] text-teal">Track</p>
                 </button>
 
                 <button 
+                  data-button="stats"
                   onClick={onOpenStats}
                   className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
                 >
@@ -390,14 +395,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     <line x1="18" y1="20" x2="18" y2="4"></line>
                     <line x1="6" y1="20" x2="6" y2="16"></line>
                   </svg>
-                  <p className="text-[10px] text-offwhite font-semibold">Stats</p>
-                  <p className="text-[9px] text-teal">View</p>
+                  <p className="text-[15px] text-offwhite font-semibold">Stats</p>
+                  <p className="text-[12px] text-teal">View</p>
                 </button>
               </div>        
             </div>
           </div>
         </div>
       </div>
+
+      {/* Idle Hints Popup */}
+      {showIdleHints && (
+        <IdleHintsPopup
+          onOpenArchive={onOpenArchive || (() => console.log('onOpenArchive not provided'))}
+          onOpenStreak={onOpenStreak || (() => console.log('onOpenStreak not provided'))}
+          onOpenStats={onOpenStats || (() => console.log('onOpenStats not provided'))}
+        />
+      )}
     </div>
   );
 };

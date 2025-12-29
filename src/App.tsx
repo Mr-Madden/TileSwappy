@@ -788,7 +788,7 @@ const App: React.FC = () => {
                   className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
                 >
                   <Calendar size={20} />
-                  <span className="text-[9px]">Archive</span>
+                  <span className="text-[12px]">Archive</span>
                 </button>
 
                 <button
@@ -796,7 +796,7 @@ const App: React.FC = () => {
                   className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
                 >
                   <BarChart3 size={20} />
-                  <span className="text-[9px]">Stats</span>
+                  <span className="text-[12px]">Stats</span>
                 </button>
 
                 <button
@@ -804,7 +804,7 @@ const App: React.FC = () => {
                   className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
                 >
                   <Settings size={20} />
-                  <span className="text-[9px]">Settings</span>
+                  <span className="text-[12px]">Settings</span>
                 </button>
               </div>
             </div>
