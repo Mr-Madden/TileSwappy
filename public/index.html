@@ -67,9 +67,213 @@
 
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/icon.png" />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  
+  <style>
+    /* Ensure body has no default margin/padding */
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Make header non-sticky */
+    #site-header {
+      position: relative;
+      background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%);
+      border-bottom: 2px solid rgba(31, 163, 154, 0.3);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+    }
+    
+    /* Hide puzzle banner by default */
+    #puzzle-banner {
+      display: none;
+    }
+    
+    /* Show banner when enabled */
+    body.show-banner #puzzle-banner {
+      display: block;
+    }
+  </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+    
+    <!-- SITE HEADER -->
+<header style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-bottom: 2px solid rgba(31, 163, 154, 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <a href="/index.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
+            <img 
+                src="/icon.png" 
+                alt="TileSwappy Logo" 
+                style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain;"
+            />
+            <span style="font-size: 1.75rem; font-weight: bold; color: #F4F4F4;">
+                TileSwappy
+            </span>
+        </a>
+
+        <nav style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <a href="/index.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Play</a>
+            <a href="/how-to-play.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">How to Play</a>
+            <a href="/faq.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">FAQ</a>
+            <a href="/blog/5-strategies.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Blog</a>
+            <a href="/about.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">About</a>
+            <a href="/support.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Support</a>
+        </nav>
+    </div>
+</header>
+
+    <!-- PUZZLE INFO BANNER (Optional - hidden by default) -->
+    <div id="puzzle-banner" style="background: linear-gradient(135deg, rgba(31, 163, 154, 0.1) 0%, rgba(230, 57, 70, 0.1) 100%); border-bottom: 1px solid rgba(31, 163, 154, 0.2); padding: 1rem 2rem;">
+        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2rem;">
+            <div style="text-align: center;">
+                <div style="font-size: 0.75rem; color: #1FA39A; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Today's Puzzle</div>
+                <div id="puzzleNumber" style="font-size: 1.5rem; font-weight: bold; color: white;">#---</div>
+                <div id="puzzleDate" style="font-size: 0.875rem; color: #999;">Loading...</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 0.75rem; color: #E63946; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Next Puzzle In</div>
+                <div id="countdown" style="font-size: 1.25rem; font-weight: bold; color: white; font-family: monospace;">--:--:--</div>
+                <div style="font-size: 0.875rem; color: #999;">New puzzle at midnight</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- YOUR REACT APP RENDERS HERE -->
     <div id="root"></div>
+
+    <!-- UNIVERSAL FOOTER - Use this footer on ALL pages (index.html, faq.html, about.html, etc.) -->
+<footer style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-top: 2px solid rgba(31, 163, 154, 0.3);">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+            <!-- Play Section - UPDATED FOR ALL PAGES -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Play</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;">
+                        <a 
+                            href="/index.html#calendar" 
+                            onclick="handleCalendarLink(event);"
+                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
+                            onmouseover="this.style.color='#1FA39A'" 
+                            onmouseout="this.style.color='#999'"
+                        >
+                            🎮 Today's Puzzle
+                        </a>
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">
+                        <a 
+                            href="/index.html#archive" 
+                            onclick="handleArchiveLink(event);"
+                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
+                            onmouseover="this.style.color='#1FA39A'" 
+                            onmouseout="this.style.color='#999'"
+                        >
+                            📚 Puzzle Archive
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Learn Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Learn</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/how-to-play.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📖 How to Play</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/faq.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">❓ FAQ</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">💡 Support</a></li>
+                </ul>
+            </div>
+
+            <!-- Blog Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Blog</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/blog/5-strategies.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🎯 5 Winning Strategies</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/blog/gradient-science.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔬 Science of Gradients</a></li>
+                </ul>
+            </div>
+
+            <!-- About Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">About</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/about.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">ℹ️ About TileSwappy</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔒 Privacy Policy</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📋 Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(31, 163, 154, 0.2); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <p style="color: #666; font-size: 0.875rem; margin: 0;">© 2025 Mad_Den Gaming Co. All rights reserved.</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Privacy</a>
+                <a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Terms</a>
+                <a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Support</a>
+                <a href="https://www.tiktok.com/@tileswappy" target="_blank" style="color: #999; text-decoration: none; font-size: 0.875rem;">TikTok</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+// Smart link handling for calendar and archive links
+function handleCalendarLink(event) {
+    // Check if we're on the index page and React app is loaded
+    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
+        if (window.openCalendarModal) {
+            event.preventDefault();
+            window.openCalendarModal();
+        } else {
+            // React not loaded yet, wait a bit and try again
+            console.log('⏳ Waiting for React to load...');
+            event.preventDefault();
+            
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (window.openCalendarModal) {
+                    clearInterval(checkInterval);
+                    window.openCalendarModal();
+                } else if (attempts > 20) {
+                    // After 2 seconds, fall back to hash navigation
+                    clearInterval(checkInterval);
+                    window.location.hash = '#calendar';
+                }
+            }, 100);
+        }
+    }
+    // If on other pages, let the link navigate to index.html#calendar
+}
+
+function handleArchiveLink(event) {
+    // Check if we're on the index page and React app is loaded
+    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
+        if (window.openArchiveModal) {
+            event.preventDefault();
+            window.openArchiveModal();
+        } else {
+            // React not loaded yet, wait a bit and try again
+            console.log('⏳ Waiting for React to load...');
+            event.preventDefault();
+            
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (window.openArchiveModal) {
+                    clearInterval(checkInterval);
+                    window.openArchiveModal();
+                } else if (attempts > 20) {
+                    // After 2 seconds, fall back to hash navigation
+                    clearInterval(checkInterval);
+                    window.location.hash = '#archive';
+                }
+            }, 100);
+        }
+    }
+    // If on other pages, let the link navigate to index.html#archive
+}
+</script>
   </body>
 </html>

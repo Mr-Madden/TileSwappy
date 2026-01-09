@@ -11,6 +11,16 @@ import { PlayerStatsModal } from './components/modals/PlayerStatsModal';
 import { StreakModal } from './components/modals/StreakModal';
 import { BouncingTileSwappyLogo } from './components/BouncingTileSwappyLogo';
 
+declare global {
+  interface Window {
+    openCalendarModal?: () => void;
+    openArchiveModal?: () => void;
+    showPuzzleBanner?: () => void;
+    hidePuzzleBanner?: () => void;
+    getHeaderHeight?: () => number;
+  }
+}
+
 // Local Storage Keys
 const STORAGE_KEYS = {
   COMPLETED_PUZZLES: 'tileswappy_completed_puzzles',
@@ -120,6 +130,65 @@ const App: React.FC = () => {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.DAILY_PUZZLES, dailyPuzzles);
   }, [dailyPuzzles]);
+
+  // Capture hash on initial load and store in sessionStorage
+  useEffect(() => {
+    const hash = window.location.hash;
+    console.log('🔍 Initial load - hash:', hash, 'status:', gameState.gameState.status);
+    
+    if (hash === '#calendar' || hash === '#archive') {
+      console.log('🔗 Detected hash on page load:', hash);
+      sessionStorage.setItem('pendingModalAction', hash);
+      // Clear the hash immediately
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
+  // Check and execute pending action whenever status changes
+  useEffect(() => {
+    const pendingAction = sessionStorage.getItem('pendingModalAction');
+    console.log('🔍 Status:', gameState.gameState.status, '| Pending:', pendingAction, '| ShowStreak:', showStreak, '| ShowArchive:', showArchive);
+    
+    // Execute on both 'start' and 'idle' states to catch all cases
+    if (gameState.gameState.status === 'idle' || gameState.gameState.status === 'start') {
+      if (pendingAction) {
+        console.log('✅ Executing pending action:', pendingAction);
+        
+        // Execute immediately
+        if (pendingAction === '#calendar') {
+          console.log('📅 Setting showStreak to true');
+          setShowStreak(true);
+        } else if (pendingAction === '#archive') {
+          console.log('📚 Setting showArchive to true');
+          setShowArchive(true);
+        }
+        
+        // Clear the pending action
+        sessionStorage.removeItem('pendingModalAction');
+      }
+    }
+  }, [gameState.gameState.status]);
+
+  // Expose modal functions to HTML footer
+  useEffect(() => {
+    // Function to open calendar modal (StreakModal)
+    window.openCalendarModal = () => {
+      console.log('📅 Opening calendar modal from footer link');
+      setShowStreak(true);
+    };
+    
+    // Function to open archive modal
+    window.openArchiveModal = () => {
+      console.log('📚 Opening archive modal from footer link');
+      setShowArchive(true);
+    };
+    
+    // Cleanup on unmount
+    return () => {
+      delete window.openCalendarModal;
+      delete window.openArchiveModal;
+    };
+  }, []);
 
   // Show tutorial overlay when game starts (if not completed before)
   useEffect(() => {
@@ -706,11 +775,11 @@ const App: React.FC = () => {
               </div>
             </div>
           )}
-
+          
           {/* Bottom Navigation - Fixed at bottom */}
           <div className="flex-shrink-0 bg-navy-light/90 backdrop-blur-md px-3 py-2 border-t border-navy-dark">
             <div className="max-w-4xl mx-auto">
-              {/* Action Buttons - Two Rows */}
+              {/* Action Buttons - One Row */}
               <div className="space-y-2 mb-2">
                 {/* First Row: Undo, Pause, Zoom In */}
                 <div className="flex justify-center gap-2">
@@ -726,24 +795,7 @@ const App: React.FC = () => {
                     Undo
                   </button>
                   
-                  <button
-                    onClick={gameState.gameState.isPaused ? gameState.resumeGame : gameState.pauseGame}
-                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-offwhite text-navy-lightest rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
-                  >
-                    {gameState.gameState.isPaused ? 'Resume' : 'Pause'}
-                  </button>
-                  
-                  <button
-                    onClick={gameState.zoomIn}
-                    disabled={gameState.zoomLevel >= 1.5}
-                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-teal/20 disabled:hover:text-teal"
-                  >
-                    Zoom In
-                  </button>
-                </div>
-
-                {/* Second Row: Shuffle, Restart, Zoom Out */}
-                <div className="flex justify-center gap-2">
+                  <div className="flex justify-center gap-2">
                   <button
                     onClick={gameState.shuffleAll}
                     className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium"
@@ -751,6 +803,13 @@ const App: React.FC = () => {
                     Shuffle
                   </button>
                   
+                  <button
+                    onClick={gameState.gameState.isPaused ? gameState.resumeGame : gameState.pauseGame}
+                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-offwhite text-navy-lightest rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
+                  >
+                    {gameState.gameState.isPaused ? 'Resume' : 'Pause'}
+                  </button>
+                </div>
                   <button
                     onClick={() => {
                       if (gameState.gameState.status === 'solved') {
@@ -769,14 +828,6 @@ const App: React.FC = () => {
                     className="flex-1 max-w-[120px] px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-white transition-all duration-200 text-xs font-medium"
                   >
                     Restart
-                  </button>
-                  
-                  <button
-                    onClick={gameState.zoomOut}
-                    disabled={gameState.zoomLevel <= 0.7}
-                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-teal/20 disabled:hover:text-teal"
-                  >
-                    Zoom Out
                   </button>
                 </div>
               </div>

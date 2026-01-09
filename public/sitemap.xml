@@ -2,32 +2,56 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.tileswappy.com/</loc>
-    <lastmod>2025-12-01</lastmod>
+    <lastmod>2026-01-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.tileswappy.com/archive</loc>
-    <lastmod>2025-12-01</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://www.tileswappy.com/how-to-play.html</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.tileswappy.com/how-to-play</loc>
-    <lastmod>2025-12-01</lastmod>
+    <loc>https://www.tileswappy.com/faq.html</loc>
+    <lastmod>2026-01-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.tileswappy.com/privacy</loc>
-    <lastmod>2025-12-01</lastmod>
+    <loc>https://www.tileswappy.com/about.html</loc>
+    <lastmod>2026-01-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.tileswappy.com/terms</loc>
-    <lastmod>2025-12-01</lastmod>
+    <loc>https://www.tileswappy.com/privacy.html</loc>
+    <lastmod>2026-01-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://www.tileswappy.com/terms.html</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://www.tileswappy.com/support.html</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.tileswappy.com/blog/5-strategies.html</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.tileswappy.com/blog/gradient-science.html</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

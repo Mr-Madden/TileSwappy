@@ -117,7 +117,7 @@ export const AdminPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-offwhite mb-4">Admin Access Disabled</h1>
           <p className="text-teal mb-6">Admin features are only available in development mode for security reasons.</p>
           <a 
-            href="/" 
+            href="/index.html" 
             className="inline-flex items-center gap-2 text-teal hover:text-coral transition font-semibold"
           >
             ← Back to TileSwappy
@@ -164,7 +164,7 @@ export const AdminPage: React.FC = () => {
 
           <div className="mt-6 text-center">
             <a 
-              href="/" 
+              href="/index.html" 
               className="inline-flex items-center gap-2 text-teal hover:text-coral transition text-sm"
             >
               ← Back to TileSwappy
@@ -376,7 +376,7 @@ export const AdminPage: React.FC = () => {
         {/* Back to App Link + Logout */}
         <div className="mt-6 text-center flex items-center justify-center gap-4">
           <a 
-            href="/" 
+            href="/index.html" 
             className="inline-flex items-center gap-2 text-teal hover:text-coral transition font-semibold"
           >
             ← Back to TileSwappy

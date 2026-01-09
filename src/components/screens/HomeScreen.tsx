@@ -136,40 +136,40 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div className="min-h-screen bg-navy overflow-hidden">
+      {/* Tutorial Button - Top Left - MOVED DOWN */}
+      <button
+        onClick={onOpenTutorial}
+        aria-label="How to Play Tutorial"
+        className="fixed top-24 left-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2EC4B6" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span className="text-teal text-[10px] font-semibold">Tutorial</span>
+      </button>
+
+      {/* Settings Button - Top Right - MOVED DOWN */}
+      <button
+        onClick={onOpenSettings}
+        aria-label="Settings"
+        className="fixed top-24 right-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F4F4F4" strokeWidth="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6"></path>
+          <path d="M4.22 4.22l4.24 4.24m5.66 5.66l4.24 4.24"></path>
+          <path d="M1 12h6m6 0h6"></path>
+          <path d="M4.22 19.78l4.24-4.24m5.66-5.66l4.24-4.24"></path>
+          <path d="M19.78 4.22l-4.24 4.24m-5.66 5.66l-4.24-4.24"></path>
+          <path d="M23 12h-6m-6 0H1"></path>
+          <path d="M20.78 19.78l-4.24-4.24m-5.66-5.66l-4.24-4.24"></path>
+        </svg>
+        <span className="text-offwhite text-[10px] font-semibold">Settings</span>
+      </button>
+
       <div className="flex items-center justify-center p-4">
-        {/* Tutorial Button - Top Left */}
-        <button
-          onClick={onOpenTutorial}
-          aria-label="How to Play Tutorial"
-          className="fixed top-6 left-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2EC4B6" strokeWidth="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <span className="text-teal text-[10px] font-semibold">Tutorial</span>
-        </button>
-
-        {/* Settings Button - Top Right */}
-        <button
-          onClick={onOpenSettings}
-          aria-label="Settings"
-          className="fixed top-6 right-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F4F4F4" strokeWidth="2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M12 1v6m0 6v6"></path>
-            <path d="M4.22 4.22l4.24 4.24m5.66 5.66l4.24 4.24"></path>
-            <path d="M1 12h6m6 0h6"></path>
-            <path d="M4.22 19.78l4.24-4.24m5.66-5.66l4.24-4.24"></path>
-            <path d="M19.78 4.22l-4.24 4.24m-5.66 5.66l-4.24-4.24"></path>
-            <path d="M23 12h-6m-6 0H1"></path>
-            <path d="M20.78 19.78l-4.24-4.24m-5.66-5.66l-4.24-4.24"></path>
-          </svg>
-          <span className="text-offwhite text-[10px] font-semibold">Settings</span>
-        </button>
-
         <div className="max-w-md w-full py-8">
           {/* Logo and Title */}
           <div className="text-center mb-8">

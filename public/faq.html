@@ -3,412 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Find answers to frequently asked questions about TileSwappy gameplay, features, scoring, technical issues, and more.">
-    <title>TileSwappy FAQ - Frequently Asked Questions</title>
+    <meta name="description" content="Frequently asked questions about TileSwappy - the visual puzzle game. Get answers about gameplay, features, and troubleshooting.">
+    <title>FAQ - TileSwappy</title>
     <!-- Google AdSense Meta Tag -->
-<meta name="google-adsense-account" content="ca-pub-3568015124939970">
-
-<!-- Google AdSense Script -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3568015124939970"
-     crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-3568015124939970">
+    <!-- Google AdSense Script -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3568015124939970" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             color: #333;
             background: linear-gradient(135deg, #0D1B2A 0%, #0D1B2A 100%);
+            min-height: 100vh;
         }
         .content {
+            max-width: 800px;
+            margin: 2rem auto;
             background: white;
             padding: 40px;
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
         h1 {
-            color: #1FA39A;
+            color: #E63946;
             font-size: 2.5em;
             margin-bottom: 10px;
         }
         h2 {
-            color: #E63946;
-            margin-top: 40px;
-            font-size: 1.6em;
-            border-bottom: 2px solid #1FA39A;
+            color: #1FA39A;
+            margin-top: 30px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #0D1B2A;
             padding-bottom: 10px;
         }
         .faq-item {
-            margin: 25px 0;
+            background: #f8f9fa;
             padding: 20px;
-            background: #f9f9f9;
-            border-radius: 8px;
+            margin-bottom: 20px;
+            border-radius: 10px;
             border-left: 4px solid #1FA39A;
         }
         .faq-question {
-            color: #1FA39A;
             font-weight: 600;
-            font-size: 1.15em;
+            color: #1FA39A;
             margin-bottom: 10px;
+            font-size: 1.1em;
         }
         .faq-answer {
-            color: #333;
+            color: #555;
             line-height: 1.7;
         }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
+        a {
             color: #1FA39A;
-            text-decoration: none;
-            font-weight: 600;
         }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        .highlight {
-            background: #fff9f0;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-        }
-        .toc {
-            background: #f0f4ff;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 30px 0;
-        }
-        .toc h3 {
+        a:hover {
             color: #E63946;
-            margin-top: 0;
-        }
-        .toc ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .toc a {
-            color: #1FA39A;
-            text-decoration: none;
-        }
-        .toc a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="content">
-        <a href="/" class="back-link">← Back to Game</a>
-        
-        <h1>Frequently Asked Questions</h1>
-        <p><em>Everything you need to know about playing TileSwappy</em></p>
 
-        <div class="toc">
-            <h3>Quick Navigation</h3>
-            <ul>
-                <li><a href="#gameplay">Gameplay Basics</a></li>
-                <li><a href="#scoring">Scoring & Statistics</a></li>
-                <li><a href="#technical">Technical Questions</a></li>
-                <li><a href="#features">Features & Settings</a></li>
-                <li><a href="#account">Account & Privacy</a></li>
-                <li><a href="#troubleshooting">Troubleshooting</a></li>
-            </ul>
-        </div>
+<!-- SITE HEADER -->
+<header style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-bottom: 2px solid rgba(31, 163, 154, 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <a href="/index.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
+            <img 
+                src="/icon.png" 
+                alt="TileSwappy Logo" 
+                style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain;"
+            />
+            <span style="font-size: 1.75rem; font-weight: bold; color: #F4F4F4;">
+                TileSwappy
+            </span>
+        </a>
 
-        <h2 id="gameplay">Gameplay Basics</h2>
-
-        <div class="faq-item">
-            <div class="faq-question">How do I play TileSwappy?</div>
-            <div class="faq-answer">
-                TileSwappy is a puzzle game where you arrange 9 tiles to create complete images—gradients, photos, or artwork. Click or tap a tile to select it, then click another tile to swap their positions. Swipe or drag any tile to turn it clockwise or counterclockwise. The goal is to arrange all tiles so adjacent edges match perfectly, revealing the complete image across the entire 3x3 grid. For detailed strategies, check out our <a href="/how-to-play.html">comprehensive How to Play guide</a>.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Is there a time limit?</div>
-            <div class="faq-answer">
-                No! You can take as much time as you need to solve each puzzle. While your completion time is tracked and affects your score, there's no strict deadline. The puzzles remain available forever from its release, giving you the freedom to solve it whenever convenient. We believe puzzle games should be relaxing, not stressful.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">How difficult are the puzzles?</div>
-            <div class="faq-answer">
-                TileSwappy puzzles are designed to be challenging but solvable within 5-10 minutes for most players. Beginners might take 15-20 minutes initially, but solve times naturally decrease with practice. Puzzles feature both smooth color gradients and vibrant photographs/artwork, each with their own unique challenges. All puzzles have a single correct solution and are tested for solvability before release. The difficulty varies day-to-day, ensuring fair competition on leaderboards. Every puzzle receives the same careful design attention.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Can I play previous days' puzzles?</div>
-            <div class="faq-answer">
-                Yes! All puzzles remain accessible in the archive for easy gradient puzzles or the daily calendar that has customized puzzle pictures. This feature is perfect for practice, exploring different puzzle types, or playing at your own pace. You can play any puzzle at any time—there's no time limit or daily restriction. Your statistics track overall progress regardless of which puzzle you solve or when you solve it.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Can I play puzzles in any order?</div>
-            <div class="faq-answer">
-                Absolutely! All puzzles are always available. There's no requirement to play them in order or on specific days. Your overall statistics (total puzzles solved, best scores, average times) track your progress. Play at your own pace—whether that's one puzzle a day, several in a row, or whenever you have time. No pressure, no deadlines!
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Can I replay today's puzzle?</div>
-            <div class="faq-answer">
-                Yes! You can always replay any puzzle as many times as you'd like. It will only help improve your overall score. Additional attempts are great for practice, trying different strategies, or improving your personal time. Note the reset button in the settings menu is to start completely fresh.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Do all puzzles use the same style?</div>
-            <div class="faq-answer">
-                No! We feature various puzzle types to keep challenges interesting: smooth gradient transitions, vibrant photographs, artistic imagery, and creative visual designs. Some puzzles flow with color (warm to cool), others feature recognizable scenes or subjects, and some combine multiple visual elements. This variety ensures each day brings a unique challenge. Over time, you'll develop pattern recognition skills that help you quickly identify puzzle types and adapt your solving strategy.
-            </div>
-        </div>
-
-        <h2 id="scoring">Scoring & Statistics</h2>
-
-        <div class="faq-item">
-            <div class="faq-question">How is my score calculated?</div>
-            <div class="faq-answer">
-                Your score is based on multiple factors:
-                <ul style="margin-top: 10px;">
-                    <li><strong>Completion:</strong> Base points for solving the puzzle</li>
-                    <li><strong>Move efficiency:</strong> Fewer swaps and rotations increase your score</li>
-                    <li><strong>Time bonus:</strong> Faster completion times award bonus points</li>
-                    <li><strong>Perfect game bonus:</strong> Solving without any incorrect placements provides a significant multiplier</li>
-                </ul>
-                The scoring algorithm rewards both speed and accuracy, so rushing through with many mistakes won't beat a methodical, efficient solve.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">What counts as a "move"?</div>
-            <div class="faq-answer">
-                Each action that changes the puzzle state counts as a move:
-                <ul style="margin-top: 10px;">
-                    <li>Swapping two tiles = 1 move</li>
-                    <li>Rotating a tile = 1 move</li>
-                    <li>Selecting/deselecting tiles = 0 moves (doesn't count)</li>
-                </ul>
-                The most efficient solves minimize total moves by planning ahead. Expert players often complete puzzles in 30-40 moves, while beginners might use 60-80 moves. Practice improves efficiency!
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Is there any time pressure to play?</div>
-            <div class="faq-answer">
-                None at all! TileSwappy is designed for flexible, pressure-free play. All puzzles remain available indefinitely. Play them in any order, at any time. There are no daily requirements, no deadlines, and no penalties for taking breaks. Whether you play daily or once a week, your progress is saved and all puzzles are waiting for you.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Where can I see my statistics?</div>
-            <div class="faq-answer">
-                Click the statistics icon (usually a bar chart or trophy icon) to view your comprehensive stats:
-                <ul style="margin-top: 10px;">
-                    <li>Total puzzles solved</li>
-                    <li>Average completion time</li>
-                    <li>Average completion time</li>
-                    <li>Average moves per puzzle</li>
-                    <li>Best score and fastest time</li>
-                    <li>Success rate (percentage of attempted puzzles completed)</li>
-                    <li>Daily performance graph</li>
-                </ul>
-                Stats update in real-time as you play and persist across devices when logged in.
-            </div>
-        </div>
-
-        <h2 id="technical">Technical Questions</h2>
-
-        <div class="faq-item">
-            <div class="faq-question">What devices and browsers does TileSwappy support?</div>
-            <div class="faq-answer">
-                TileSwappy is built as a responsive web application that works on:
-                <ul style="margin-top: 10px;">
-                    <li><strong>Desktop browsers:</strong> Chrome, Firefox, Safari, Edge (latest versions)</li>
-                    <li><strong>Mobile browsers:</strong> iOS Safari, Chrome on Android (latest versions)</li>
-                    <li><strong>Tablets:</strong> iPad, Android tablets</li>
-                </ul>
-                We recommend keeping your browser updated for the best experience. The game automatically adapts its interface to your screen size, providing optimal layouts for phones, tablets, and desktops. Native iOS and Android apps are currently in development.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">How do I install TileSwappy as an app?</div>
-            <div class="faq-answer">
-                <strong>On iOS (iPhone/iPad):</strong>
-                <ol style="margin-top: 10px;">
-                    <li>Open TileSwappy in Safari</li>
-                    <li>Tap the Share button (box with arrow)</li>
-                    <li>Scroll and tap "Add to Home Screen"</li>
-                    <li>Name it "TileSwappy" and tap "Add"</li>
-                </ol>
-                <strong>On Android:</strong>
-                <ol style="margin-top: 10px;">
-                    <li>Open TileSwappy in Chrome</li>
-                    <li>Tap the three-dot menu</li>
-                    <li>Select "Add to Home screen" or "Install app"</li>
-                    <li>Confirm installation</li>
-                </ol>
-                <strong>On Desktop:</strong>
-                <ol style="margin-top: 10px;">
-                    <li>Visit TileSwappy in Chrome or Edge</li>
-                    <li>Look for the install icon in the address bar</li>
-                    <li>Click "Install" when prompted</li>
-                </ol>
-                Once installed, TileSwappy will open in its own window like a native app!
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">My puzzle isn't loading. What should I do?</div>
-            <div class="faq-answer">
-                Try these troubleshooting steps in order:
-                <ol style="margin-top: 10px;">
-                    <li>If in a web browser, refresh the page (Ctrl+R or Cmd+R)</li>
-                    <li>Clear your browser cache and reload</li>
-                    <li>Check your internet connection</li>
-                    <li>Try a different browser</li>
-                    <li>Disable browser extensions temporarily (ad blockers sometimes interfere)</li>
-                    <li>Check if your browser is up to date</li>
-                </ol>
-                If problems persist after trying these steps, please contact us through our <a href="/support.html">support page</a> with details about your device, browser, and the issue you're experiencing.
-            </div>
-            <ol>
-                If on a mobile device, try closing and reopening the app or browser. Restarting your device can also resolve temporary glitches.
-                </ol>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Does TileSwappy drain my battery?</div>
-            <div class="faq-answer">
-                TileSwappy is optimized for minimal battery usage. We use efficient rendering techniques and avoid unnecessary animations when they're not visible. A typical 5-minute puzzle session should use less than 1% battery on most modern smartphones. However, keeping your screen brightness very high or playing for extended periods will naturally consume more power. We continuously optimize performance to ensure TileSwappy remains a lightweight, battery-friendly experience.
-            </div>
-        </div>
-
-        <h2 id="features">Features & Settings</h2>
-
-        <div class="faq-item">
-            <div class="faq-question">Is there a dark mode?</div>
-            <div class="faq-answer">
-                Currently, TileSwappy uses a gradient-themed design optimized for puzzle visibility. However, we're actively developing a dark mode option that will be available in Settings. Dark mode will adjust the interface while maintaining the vibrant colors necessary for gradient puzzles. We expect to release this feature in an upcoming update. Follow us on TikTok <a href="https://www.tiktok.com/@tileswappy">TileSwappy</a> or check back regularly for announcements!
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Can I share my results?</div>
-            <div class="faq-answer">
-                Absolutely! After completing a puzzle share your results on our TikTok page <a href="https://www.tiktok.com/@tileswappy">TileSwappy</a>.You can take a screenshot of your completed puzzle along with your score and time to share with friends. We encourage players to share their scores and challenge others to beat their scores. Just make sure not to spoil the puzzle solution for others if you're sharing before everyone has had a chance to play!
-            </div>
-            </div>
-
-        <div class="faq-item">
-            <div class="faq-question">Will there be more puzzle sizes?</div>
-            <div class="faq-answer">
-                We're experimenting with alternative puzzle sizes! Currently, all puzzles use the 3x3 grid (9 tiles), which provides the ideal balance of challenge and playability. However, we're testing 4x4 (16 tiles) and even 5x5 (25 tiles) variations for special themed events and optional challenge modes. These larger puzzles will be significantly harder but offer deeper satisfaction for advanced players. We're also considering 2x2 puzzles as "quick play" options. Stay tuned for announcements!
-            </div>
-        </div>
-
-        <h2 id="account">Account & Privacy</h2>
-
-        <div class="faq-item">
-            <div class="faq-question">Do I need to create an account?</div>
-            <div class="faq-answer">
-                No! You can play TileSwappy without creating an account. Your progress and stats are saved locally in your browser.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">What data does TileSwappy collect?</div>
-            <div class="faq-answer">
-                We believe in transparency and minimal data collection:
-                <ul style="margin-top: 10px;">
-                    <li><strong>Essential data:</strong> Puzzle completion stats, scores, and times (needed for game functionality)</li>
-                    <li><strong>Anonymous analytics:</strong> Page views, browser type, general location (for performance optimization)</li>
-                </ul>
-                <strong>We never collect:</strong> Personal identifying information beyond email, browsing history outside TileSwappy, or tracking data across other websites. Full details are available in our <a href="/privacy.html">Privacy Policy</a>. You can request data deletion at any time through our <a href="/support.html">support page</a>.
-            </div>
-        </div>
-
-        <h2 id="troubleshooting">Troubleshooting</h2>
-
-        <div class="faq-item">
-            <div class="faq-question">Why are colors appearing wrong?</div>
-            <div class="faq-answer">
-                Color display issues can stem from several sources:
-                <ul style="margin-top: 10px;">
-                    <li><strong>Monitor calibration:</strong> Your display might need color calibration</li>
-                    <li><strong>Browser color management:</strong> Some browsers modify colors; try a different browser</li>
-                    <li><strong>Night shift/blue light filters:</strong> These can distort puzzle colors; disable temporarily</li>
-                    <li><strong>Accessibility settings:</strong> High contrast or color inversion settings may affect display</li>
-                    <li><strong>Graphics drivers:</strong> Outdated drivers can cause rendering issues; update them</li>
-                </ul>
-                TileSwappy uses standard web colors (sRGB), so if colors look correct on other websites, they should display properly here. If problems persist, try viewing on a different device to determine if it's device-specific.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">The game feels laggy or slow. How can I fix this?</div>
-            <div class="faq-answer">
-                Performance issues are usually solvable:
-                <ol style="margin-top: 10px;">
-                    <li>Close other browser tabs (each tab uses memory)</li>
-                    <li>Close resource-intensive applications</li>
-                    <li>Try a different browser (Chrome is usually fastest)</li>
-                    <li>Disable animations in Settings → Reduce animations</li>
-                    <li>Clear browser cache and cookies</li>
-                    <li>Update your browser to the latest version</li>
-                    <li>Restart your device</li>
-                </ol>
-                TileSwappy is lightweight and should run smoothly on devices from the last 5-7 years. If you're on a very old device, consider the "Performance mode" option in Settings which disables non-essential features.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">My progress disappeared after clearing browser data!</div>
-            <div class="faq-answer">
-                This can happen for a few reasons:
-                <ul style="margin-top: 10px;">
-                    <li><strong>Browser data cleared:</strong> Clearing cookies/cache removes local data if not logged in</li>
-                    <li><strong>Different device:</strong> Progress doesn't sync across devices without an account</li>
-                    <li><strong>Incognito/private mode:</strong> Progress isn't saved in private browsing</li>
-                </ul>
-                To prevent data loss, create an account so progress syncs to our servers. This protects against local data loss and ensures your statistics persist across devices.
-            </div>
-        </div>
-
-        <div class="faq-item">
-            <div class="faq-question">I found a bug. How do I report it?</div>
-            <div class="faq-answer">
-                We appreciate bug reports! Please submit them through our <a href="/support.html">support page</a> with as much detail as possible:
-                <ul style="margin-top: 10px;">
-                    <li>What happened (the bug)</li>
-                    <li>What you expected to happen</li>
-                    <li>Steps to reproduce the issue</li>
-                    <li>Device and browser information</li>
-                    <li>Screenshots or screen recordings (if applicable)</li>
-                    <li>Date and time the bug occurred</li>
-                </ul>
-                We review all bug reports and prioritize fixes based on severity and frequency. Critical bugs affecting gameplay get immediate attention. You'll typically receive a response within 24-48 hours.
-            </div>
-        </div>
-
-        <div class="highlight" style="margin-top: 50px;">
-            <h3 style="color: #E63946; margin-top: 0;">Still Have Questions?</h3>
-            <p>Can't find the answer you're looking for? We're here to help! Contact us through our <a href="/support.html" style="color: #1FA39A;">support page</a> or email us at <a href="mailto:support@tileswappy.com">support@tileswappy.com</a> We typically respond within 1-2 business days.</p>
-            <p>For the latest updates, follow us on TikTok<a href="https://www.tiktok.com/@tileswappy" <strong>@TileSwappy</strong>.</p>
-        </div>
-
-        <p style="margin-top: 40px; text-align: center;">
-            <a href="/" style="background: linear-gradient(135deg, #E63946 0%, #FF4C4C 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Play Today's Puzzle</a>
-        </p>
-
-        <p style="text-align: center; margin-top: 20px; color: #666; font-size: 0.9em;">
-            <a href="/how-to-play.html" style="color: #1FA39A; margin: 0 10px;">How to Play</a> |
-            <a href="/about.html" style="color: #1FA39A; margin: 0 10px;">About</a> |
-            <a href="/privacy.html" style="color: #1FA39A; margin: 0 10px;">Privacy</a> |
-            <a href="/terms.html" style="color: #1FA39A; margin: 0 10px;">Terms</a>
-        </p>
+        <nav style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <a href="/index.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Play</a>
+            <a href="/how-to-play.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">How to Play</a>
+            <a href="/faq.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">FAQ</a>
+            <a href="/blog/5-strategies.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Blog</a>
+            <a href="/about.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">About</a>
+            <a href="/support.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Support</a>
+        </nav>
     </div>
+</header>
+
+<div class="content">
+    <h1>Frequently Asked Questions</h1>
+    <p><em>Quick answers to common questions about TileSwappy</em></p>
+
+    <h2>🎮 Gameplay Questions</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How do I play TileSwappy?</div>
+        <div class="faq-answer">TileSwappy is a visual puzzle game where you arrange 9 tiles to recreate a complete image. Click two tiles to swap their positions, and click and drag tiles left or right to rotate them. The goal is to match all adjacent edges so the image flows seamlessly. Check out our <a href="/how-to-play.html">How to Play guide</a> for detailed instructions.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: What types of puzzles are available?</div>
+        <div class="faq-answer">TileSwappy features multiple puzzle types including smooth color gradients, photographs, and artistic images. Each puzzle type challenges your pattern recognition and visual perception in different ways, keeping the game fresh and engaging.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Is there a time limit?</div>
+        <div class="faq-answer">No! Take as much time as you need to solve each puzzle. While your completion time is tracked for scoring purposes, there's no pressure or countdown timer forcing you to rush. Play at your own pace and enjoy the puzzle-solving experience.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Can I play previous puzzles?</div>
+        <div class="faq-answer">Yes! All puzzles remain accessible in our archive. Unlike daily puzzle games that lock you into a schedule, TileSwappy lets you play any puzzle at any time. Browse past puzzles, replay favorites, or catch up on ones you missed.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How do I know if tiles are correctly placed?</div>
+        <div class="faq-answer">When adjacent tiles are correctly positioned and rotated, their edges will match perfectly creating a seamless visual transition. You'll see the gradient or image flow naturally from one tile to the next. When all 9 tiles are correct, the complete image will be revealed.</div>
+    </div>
+
+    <h2>💾 Account & Progress</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Do I need to create an account?</div>
+        <div class="faq-answer">No account required! TileSwappy works immediately without any registration or login. Your progress and statistics are saved locally on your device, so you can start playing right away.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Why did I lose my progress?</div>
+        <div class="faq-answer">Your game data is stored in your browser's local storage. Progress can be lost if you clear your browser data/cache, use incognito/private browsing mode, switch browsers or devices, or uninstall and reinstall the app. To prevent this, avoid clearing browser data for TileSwappy.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Can I sync progress across devices?</div>
+        <div class="faq-answer">Currently, each device maintains its own separate progress since data is stored locally. There's no cloud sync feature at this time. We're exploring account-based syncing for future updates.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How are statistics calculated?</div>
+        <div class="faq-answer">Your stats track total puzzles completed, average solve times, best times, and other performance metrics. All calculations are done locally on your device and are never shared or uploaded to our servers.</div>
+    </div>
+
+    <h2>🎯 Features & Settings</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Are there different difficulty levels?</div>
+        <div class="faq-answer">Puzzles vary naturally in difficulty based on the image complexity and gradient patterns. Some puzzles with distinct features are easier to solve, while subtle gradients provide more challenge. All puzzles use the same 3x3 grid format.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Can I get hints?</div>
+        <div class="faq-answer">Currently, TileSwappy doesn't include a hint system. The challenge is part of the experience! If you're stuck, try our <a href="/blog/5-strategies.html">strategy guide</a> which offers techniques like the corner-first method and pattern recognition tips.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Does TileSwappy work offline?</div>
+        <div class="faq-answer">Once a puzzle loads, you can complete it offline. However, you'll need an internet connection to load new puzzles and to display advertisements that support the free service.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Is TileSwappy really free?</div>
+        <div class="faq-answer">Yes! TileSwappy is completely free to play with all features unlocked. We show tasteful advertisements to support development and keep the game free for everyone. There are no premium tiers, paywalls, or in-app purchases.</div>
+    </div>
+
+    <h2>🔧 Technical Questions</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: What browsers are supported?</div>
+        <div class="faq-answer">TileSwappy works best on modern browsers: Chrome 90+, Edge 90+, Firefox 88+, Safari 14+ on desktop, and iOS Safari 14+, Chrome Mobile 90+ on mobile devices. Make sure JavaScript and LocalStorage are enabled.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Why isn't the game loading?</div>
+        <div class="faq-answer">Try these troubleshooting steps: check your internet connection, refresh the page (F5 or Cmd+R), clear your browser cache, try a different browser, or disable browser extensions that might interfere. If issues persist, visit our <a href="/support.html">support page</a>.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: The tiles won't move or rotate. What's wrong?</div>
+        <div class="faq-answer">Make sure you're clicking directly on tiles (not between them). For swapping, click one tile then click another. For rotating, click and drag left or right on the tile. If controls become unresponsive, try refreshing the page.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Can I play on mobile?</div>
+        <div class="faq-answer">Absolutely! TileSwappy is fully responsive and works great on phones and tablets. Use tap to select/swap tiles and swipe left/right to rotate them. The interface adapts to your screen size for the best experience.</div>
+    </div>
+
+    <h2>🔒 Privacy & Data</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: What data does TileSwappy collect?</div>
+        <div class="faq-answer">TileSwappy doesn't collect personal information since there are no accounts or logins. Your game data is stored locally on your device only. We may use anonymous analytics to understand general usage patterns. See our <a href="/privacy.html">Privacy Policy</a> for complete details.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Are my puzzle solutions private?</div>
+        <div class="faq-answer">Yes! All your gameplay data, including solutions, times, and statistics, stays on your device. We never see or store your individual puzzle solutions on our servers.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Why do I see advertisements?</div>
+        <div class="faq-answer">Advertisements through Google AdSense help support TileSwappy and keep it free for everyone. Ads are served by third-party providers who may use cookies for ad personalization. You can learn more in our <a href="/privacy.html">Privacy Policy</a>.</div>
+    </div>
+
+    <h2>💡 Tips & Strategies</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How can I improve my solve times?</div>
+        <div class="faq-answer">Practice is key! Start by mastering the corner-first method, learn to recognize gradient patterns quickly, and develop efficient rotation habits. Our <a href="/blog/5-strategies.html">5 Strategies guide</a> offers detailed techniques used by top players.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: What's the best strategy for beginners?</div>
+        <div class="faq-answer">Start with corner pieces—they're easiest to identify. Look for tiles with the most extreme colors (lightest/darkest). Once corners are placed, work on edge pieces, then fill in the center. Check out our <a href="/how-to-play.html">complete strategy guide</a>.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Are there leaderboards?</div>
+        <div class="faq-answer">Currently, TileSwappy tracks personal statistics only. Since there are no user accounts, we don't have global leaderboards yet. This feature is being considered for future updates with account-based functionality.</div>
+    </div>
+
+    <h2>📱 Future Updates</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Will there be more puzzle types?</div>
+        <div class="faq-answer">Yes! We're continuously expanding our puzzle library with new gradients, photographs, and artistic images. We're also exploring different grid sizes (4x4, 5x5) and themed puzzle collections.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Are native mobile apps coming?</div>
+        <div class="faq-answer">Native iOS and Android apps are in development! They'll offer an even better mobile experience with app-specific features. Follow us on <a href="https://www.tiktok.com/@tileswappy">TikTok</a> for updates.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Can I create custom puzzles?</div>
+        <div class="faq-answer">Custom puzzle creation is a highly requested feature! We're exploring ways to let players create and share their own puzzles. This would include uploading your own images and sharing puzzle codes with friends.</div>
+    </div>
+
+    <h2>🤝 Support & Feedback</h2>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How do I report a bug?</div>
+        <div class="faq-answer">Visit our <a href="/support.html">support page</a> to report bugs or technical issues. Please include your device type, browser, and steps to reproduce the problem. Screenshots are helpful too!</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: Can I suggest new features?</div>
+        <div class="faq-answer">Absolutely! We love hearing player ideas. Send feature requests through our <a href="/support.html">support page</a> or reach out on social media. Community feedback shapes TileSwappy's development.</div>
+    </div>
+
+    <div class="faq-item">
+        <div class="faq-question">Q: How can I support TileSwappy?</div>
+        <div class="faq-answer">The best ways to support TileSwappy are: play regularly and share with friends, follow us on <a href="https://www.tiktok.com/@tileswappy">TikTok</a>, allow ads (they keep the game free), provide constructive feedback, and spread the word about the game!</div>
+    </div>
+
+    <p style="margin-top: 40px; text-align: center;">
+        <strong>Still have questions?</strong><br>
+        Visit our <a href="/support.html">Support Page</a> or email <a href="mailto:support@tileswappy.com">support@tileswappy.com</a>
+    </p>
+
+    <p style="margin-top: 40px; text-align: center;">
+        <a href="/index.html" style="background: linear-gradient(135deg, #E63946 0%, #FF4C4C 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Play TileSwappy Now</a>
+    </p>
+</div>
+
+<!-- UNIVERSAL FOOTER - Use this footer on ALL pages (index.html, faq.html, about.html, etc.) -->
+<footer style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-top: 2px solid rgba(31, 163, 154, 0.3);">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+            <!-- Play Section - UPDATED FOR ALL PAGES -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Play</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;">
+                        <a 
+                            href="/index.html#calendar" 
+                            onclick="handleCalendarLink(event);"
+                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
+                            onmouseover="this.style.color='#1FA39A'" 
+                            onmouseout="this.style.color='#999'"
+                        >
+                            🎮 Today's Puzzle
+                        </a>
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">
+                        <a 
+                            href="/index.html#archive" 
+                            onclick="handleArchiveLink(event);"
+                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
+                            onmouseover="this.style.color='#1FA39A'" 
+                            onmouseout="this.style.color='#999'"
+                        >
+                            📚 Puzzle Archive
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Learn Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Learn</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/how-to-play.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📖 How to Play</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/faq.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">❓ FAQ</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">💡 Support</a></li>
+                </ul>
+            </div>
+
+            <!-- Blog Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Blog</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/blog/5-strategies.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🎯 5 Winning Strategies</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/blog/gradient-science.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔬 Science of Gradients</a></li>
+                </ul>
+            </div>
+
+            <!-- About Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">About</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/about.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">ℹ️ About TileSwappy</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔒 Privacy Policy</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📋 Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(31, 163, 154, 0.2); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <p style="color: #666; font-size: 0.875rem; margin: 0;">© 2025 Mad_Den Gaming Co. All rights reserved.</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Privacy</a>
+                <a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Terms</a>
+                <a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Support</a>
+                <a href="https://www.tiktok.com/@tileswappy" target="_blank" style="color: #999; text-decoration: none; font-size: 0.875rem;">TikTok</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+// Smart link handling for calendar and archive links
+function handleCalendarLink(event) {
+    // Check if we're on the index page and React app is loaded
+    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
+        if (window.openCalendarModal) {
+            event.preventDefault();
+            window.openCalendarModal();
+        } else {
+            // React not loaded yet, wait a bit and try again
+            console.log('⏳ Waiting for React to load...');
+            event.preventDefault();
+            
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (window.openCalendarModal) {
+                    clearInterval(checkInterval);
+                    window.openCalendarModal();
+                } else if (attempts > 20) {
+                    // After 2 seconds, fall back to hash navigation
+                    clearInterval(checkInterval);
+                    window.location.hash = '#calendar';
+                }
+            }, 100);
+        }
+    }
+    // If on other pages, let the link navigate to index.html#calendar
+}
+
+function handleArchiveLink(event) {
+    // Check if we're on the index page and React app is loaded
+    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
+        if (window.openArchiveModal) {
+            event.preventDefault();
+            window.openArchiveModal();
+        } else {
+            // React not loaded yet, wait a bit and try again
+            console.log('⏳ Waiting for React to load...');
+            event.preventDefault();
+            
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (window.openArchiveModal) {
+                    clearInterval(checkInterval);
+                    window.openArchiveModal();
+                } else if (attempts > 20) {
+                    // After 2 seconds, fall back to hash navigation
+                    clearInterval(checkInterval);
+                    window.location.hash = '#archive';
+                }
+            }, 100);
+        }
+    }
+    // If on other pages, let the link navigate to index.html#archive
+}
+</script>
+
 </body>
 </html>

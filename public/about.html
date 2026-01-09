@@ -6,22 +6,22 @@
     <meta name="description" content="Learn about TileSwappy's creation, the inspiration behind the daily puzzle game, and meet the developer behind Mad_Den Gaming Co.">
     <title>About TileSwappy - The Story Behind the Puzzle</title>
     <!-- Google AdSense Meta Tag -->
-<meta name="google-adsense-account" content="ca-pub-3568015124939970">
-
-<!-- Google AdSense Script -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3568015124939970"
-     crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-3568015124939970">
+    <!-- Google AdSense Script -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3568015124939970" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             color: #333;
             background: linear-gradient(135deg, #0D1B2A 0%, #0D1B2A 100%);
+            min-height: 100vh;
         }
         .content {
+            max-width: 800px;
+            margin: 2rem auto;
             background: white;
             padding: 40px;
             border-radius: 12px;
@@ -45,16 +45,6 @@
             padding: 25px;
             margin: 30px 0;
             border-radius: 8px;
-        }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #1FA39A;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .back-link:hover {
-            text-decoration: underline;
         }
         .feature-list {
             display: grid;
@@ -88,126 +78,279 @@
     </style>
 </head>
 <body>
-    <div class="content">
-        <a href="/" class="back-link">← Back to Game</a>
-        
-        <h1>About TileSwappy</h1>
-        <p><em>A puzzle game that celebrates visual beauty through patterns, gradients, and photography</em></p>
 
-        <h2>The Vision</h2>
-        <p>TileSwappy was born from a simple idea: what if there was a puzzle game that combined the meditative quality of arranging patterns with the accessible format of casual puzzle games? The result is a unique puzzle experience that challenges your visual perception and pattern recognition skills while providing a moment of calm whenever you play—whether you're reconstructing a vibrant gradient, a stunning photograph, or artistic imagery.</p>
+<!-- SITE HEADER -->
+<header style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-bottom: 2px solid rgba(31, 163, 154, 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <a href="/index.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
+            <img 
+                src="/icon.png" 
+                alt="TileSwappy Logo" 
+                style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain;"
+            />
+            <span style="font-size: 1.75rem; font-weight: bold; color: #F4F4F4;">
+                TileSwappy
+            </span>
+        </a>
 
-        <p>Unlike word games or number puzzles, TileSwappy taps into a different part of your brain; the visual cortex that processes colors, patterns, and spatial relationships. Each puzzle is a small work of art that you reconstruct through careful observation and logical thinking.</p>
-
-        <div class="highlight-box">
-            <h3 style="margin-top: 0;">Our Mission</h3>
-            <p>To create a puzzle experience that's accessible, beautiful, and genuinely satisfying to solve. Every puzzle should feel like both a challenge and a reward, with that perfect "aha!" moment when the image finally comes together.</p>
-        </div>
-
-        <h2>What Makes TileSwappy Different</h2>
-        
-        <div class="feature-list">
-            <div class="feature-item">
-                <h3>🎨 Visual First</h3>
-                <p>Instead of words or numbers, you work with images, colors, and patterns, engaging a different kind of problem-solving.</p>
-            </div>
-            <div class="feature-item">
-                <h3>⚡ Always Available</h3>
-                <p>All puzzles accessible anytime. Play at your own pace without daily pressure or time limits.</p>
-            </div>
-            <div class="feature-item">
-                <h3>🧠 Accessible Depth</h3>
-                <p>Easy to understand but challenging to master. No special knowledge required—just observation and logic.</p>
-            </div>
-            </div>
-            
-        <h2>The Development Journey</h2>
-
-        <p>TileSwappy was developed by <strong>Mad_Den Gaming Co.</strong> , a solo development studio focused on creating thoughtful digital experiences. The game is built with modern web technologies—React and TypeScript on the frontend, with Supabase powering the backend infrastructure.</p>
-
-        <p>The development process involved numerous iterations on the puzzle generation algorithm. Early versions used random color selection for gradients, but these puzzles often felt arbitrary. The breakthrough came when we expanded to include not just mathematical gradients, but also beautiful photographs and artwork. This diversity ensures that every puzzle has an inherent logic and visual appeal, whether it's a smooth color transition or a stunning image waiting to be reconstructed.</p>
-
-        <blockquote>
-            "I wanted to create something that felt as good to solve as it looked. TileSwappy is my attempt to blend the joy of puzzle-solving with the appreciation of visual aesthetics."
-            <br><em>— Mr._Madden, Creator</em>
-        </blockquote>
-
-        <h2>The Technology</h2>
-        <p>Behind TileSwappy's simple interface lies sophisticated technology designed to ensure a smooth, reliable experience:</p>
-
-        <ul>
-            <li><strong>React & TypeScript:</strong> Modern frontend framework ensuring type-safe, maintainable code</li>
-            <li><strong>Supabase Backend:</strong> Real-time database handling puzzle delivery, stats tracking, and leaderboards</li>
-            <li><strong>Cloudflare Pages:</strong> Lightning-fast global deployment with edge caching</li>
-            <li><strong>Progressive Web App:</strong> Install TileSwappy on any device for an app-like experience</li>
-            <li><strong>Responsive Design:</strong> Seamless experience across desktop, tablet, and mobile devices</li>
-        </ul>
-
-        <h2>Design Philosophy</h2>
-        <p>Every aspect of TileSwappy's design serves the core puzzle experience:</p>
-
-        <p><strong>Minimalist Interface:</strong> No distractions, no clutter. The puzzle takes center stage, with controls that fade into the background until needed. This isn't about flashy graphics—it's about creating space for focused problem-solving.</p>
-
-        <p><strong>Smooth Interactions:</strong> Every tap, swipe, and rotation feels responsive and natural. Animations provide feedback without slowing you down. The interface disappears, leaving just you and the puzzle.</p>
-
-        <p><strong>Celebration of Visual Beauty:</strong> Each puzzle showcases visual artistry—whether it's the mathematical elegance of color gradients or the captured moment of a photograph. We carefully curate puzzles that are both challenging to solve and visually appealing once complete. Solving a TileSwappy puzzle should feel like revealing a hidden work of art.</p>
-
-        <p><strong>Accessibility Matters:</strong> We've worked to ensure TileSwappy is playable by as many people as possible, with considerations for different visual abilities and input methods. Puzzles are designed to be solvable through pattern recognition, not just color perception.</p>
-
-        <h2>The Community</h2>
-        <p>TileSwappy players come from all walks of life—students solving puzzles between classes, professionals taking brain breaks at work, retirees making it part of their morning routine, and puzzle enthusiasts chasing leaderboard positions.</p>
-
-        <p>What unites the community is an appreciation for the meditative quality of the game. In our fast-paced, attention-fragmented world, TileSwappy offers a few minutes of focused, satisfying problem-solving.</p>
-
-        <div class="highlight-box">
-            <h3 style="margin-top: 0;">Join the Community</h3>
-            <p>Share your scores, discuss strategies, and connect with other puzzle enthusiasts. Follow us on TikTok at <a href="https://www.tiktok.com/@tileswappy">TileSwappy</a> for puzzle highlights, tips, and behind the scenes development updates.</p>
-        </div>
-
-        <h2>What's Next</h2>
-        <p>TileSwappy is constantly evolving based on player feedback. Here's what we're working on:</p>
-
-        <ul>
-            <li><strong>Mobile Apps:</strong> Native iOS and Android apps for an even better mobile experience</li>
-            <li><strong>Custom Puzzle Sizes:</strong> Experimenting with larger 4x4 and 5x5 grids for added challenge</li>
-            <li><strong>Themed Collections:</strong> Curated puzzle packs around holidays, nature, art movements, and more</li>
-            <li><strong>Community Features:</strong> Share your solutions, create custom puzzles, challenge friends</li>
-            <li><strong>Puzzle Variety:</strong> Expanding our library with more photographs, artwork, and creative visuals</li>
-            <li><strong>Accessibility Enhancements:</strong> Continued improvements to make TileSwappy playable for everyone</li>
-        </ul>
-
-        <h2>Our Commitment</h2>
-        <p>TileSwappy will always remain:</p>
-        <ul>
-            <li><strong>Free to Play:</strong> Core gameplay will never be paywalled</li>
-            <li><strong>Privacy-Respecting:</strong> We collect minimal data and never sell user information</li>
-            <li><strong>Ad-Conscious:</strong> Any advertising will be tasteful and non-intrusive</li>
-            <li><strong>Community-Driven:</strong> Player feedback shapes the game's evolution</li>
-        </ul>
-
-        <h2>Get in Touch</h2>
-        <p>We love hearing from players! Whether you have feedback, found a bug, or just want to share your thoughts about the game, reach out through our <a href="/support.html" style="color: #667eea;">support page</a>.</p>
-
-        <p>For business inquiries, partnership opportunities, or press requests, contact us at: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dab9b5b4aebbb9ae9aaeb3b6bfa9adbbaaaaa3f4b9b5b7">[email&#160;protected]</a></strong></p>
-
-        <h2>Credits & Acknowledgments</h2>
-        <p>TileSwappy was created by <strong>Mr._Madden</strong> under the <strong>Mad_Den Gaming Co.</strong> banner. Special thanks to the React community, the amazing teams behind Supabase and Cloudflare, and to all the early players who provided invaluable feedback during development.</p>
-
-        <div class="highlight-box" style="margin-top: 40px;">
-            <h3 style="margin-top: 0;">Thank You for Playing</h3>
-            <p>Every time you solve a TileSwappy puzzle, you're participating in a shared experience with players around the world. Whether you've solved hundreds of puzzles or just tried your first one, we're grateful you've made TileSwappy part of your routine.</p>
-            <p>Here's to many more TileSwappy filled mornings!</p>
-        </div>
-
-        <p style="margin-top: 40px; text-align: center;">
-            <a href="/" style="background: linear-gradient(135deg, #E63946 0%, #FF4C4C 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Play Today's Puzzle</a>
-        </p>
-
-        <p style="text-align: center; margin-top: 20px; color: #666; font-size: 0.9em;">
-            <a href="/privacy.html" style="color: #1FA39A; margin: 0 10px;">Privacy Policy</a> |
-            <a href="/terms.html" style="color: #1FA39A; margin: 0 10px;">Terms of Service</a> |
-            <a href="/support.html" style="color: #1FA39A; margin: 0 10px;">Support</a>
-        </p>
+        <nav style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <a href="/index.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Play</a>
+            <a href="/how-to-play.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">How to Play</a>
+            <a href="/faq.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">FAQ</a>
+            <a href="/blog/5-strategies.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Blog</a>
+            <a href="/about.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">About</a>
+            <a href="/support.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Support</a>
+        </nav>
     </div>
+</header>
+
+<div class="content">
+    <h1>About TileSwappy</h1>
+    <p><em>A puzzle game that celebrates visual beauty through patterns, gradients, and photography</em></p>
+
+    <h2>The Vision</h2>
+    <p>TileSwappy was born from a simple idea: what if there was a puzzle game that combined the meditative quality of arranging patterns with the accessible format of casual puzzle games? The result is a unique puzzle experience that challenges your visual perception and pattern recognition skills while providing a moment of calm whenever you play—whether you're reconstructing a vibrant gradient, a stunning photograph, or artistic imagery.</p>
+
+    <p>Unlike word games or number puzzles, TileSwappy taps into a different part of your brain; the visual cortex that processes colors, patterns, and spatial relationships. Each puzzle is a small work of art that you reconstruct through careful observation and logical thinking.</p>
+
+    <div class="highlight-box">
+        <h3 style="margin-top: 0;">Our Mission</h3>
+        <p>To create a puzzle experience that's accessible, beautiful, and genuinely satisfying to solve. Every puzzle should feel like both a challenge and a reward, with that perfect "aha!" moment when the image finally comes together.</p>
+    </div>
+
+    <h2>What Makes TileSwappy Different</h2>
+    
+    <div class="feature-list">
+        <div class="feature-item">
+            <h3>🎨 Visual First</h3>
+            <p>Instead of words or numbers, you work with images, colors, and patterns, engaging a different kind of problem-solving.</p>
+        </div>
+        <div class="feature-item">
+            <h3>⚡ Always Available</h3>
+            <p>All puzzles accessible anytime. Play at your own pace without daily pressure or time limits.</p>
+        </div>
+        <div class="feature-item">
+            <h3>🧠 Accessible Depth</h3>
+            <p>Easy to understand but challenging to master. No special knowledge required—just observation and logic.</p>
+        </div>
+    </div>
+        
+    <h2>The Development Journey</h2>
+
+    <p>TileSwappy was developed by <strong>Mad_Den Gaming Co.</strong>, a solo development studio focused on creating thoughtful digital experiences. The game is built with modern web technologies—React and TypeScript on the frontend, with Supabase powering the backend infrastructure.</p>
+
+    <p>The development process involved numerous iterations on the puzzle generation algorithm. Early versions used random color selection for gradients, but these puzzles often felt arbitrary. The breakthrough came when we expanded to include not just mathematical gradients, but also beautiful photographs and artwork. This diversity ensures that every puzzle has an inherent logic and visual appeal, whether it's a smooth color transition or a stunning image waiting to be reconstructed.</p>
+
+    <blockquote>
+        "I wanted to create something that felt as good to solve as it looked. TileSwappy is my attempt to blend the joy of puzzle-solving with the appreciation of visual aesthetics."
+        <br><em>— Mr._Madden, Creator</em>
+    </blockquote>
+
+    <h2>The Technology</h2>
+    <p>Behind TileSwappy's simple interface lies sophisticated technology designed to ensure a smooth, reliable experience:</p>
+
+    <ul>
+        <li><strong>React & TypeScript:</strong> Modern frontend framework ensuring type-safe, maintainable code</li>
+        <li><strong>Supabase Backend:</strong> Real-time database handling puzzle delivery, stats tracking, and leaderboards</li>
+        <li><strong>Cloudflare Pages:</strong> Lightning-fast global deployment with edge caching</li>
+        <li><strong>Progressive Web App:</strong> Install TileSwappy on any device for an app-like experience</li>
+        <li><strong>Responsive Design:</strong> Seamless experience across desktop, tablet, and mobile devices</li>
+    </ul>
+
+    <h2>Design Philosophy</h2>
+    <p>Every aspect of TileSwappy's design serves the core puzzle experience:</p>
+
+    <p><strong>Minimalist Interface:</strong> No distractions, no clutter. The puzzle takes center stage, with controls that fade into the background until needed. This isn't about flashy graphics—it's about creating space for focused problem-solving.</p>
+
+    <p><strong>Smooth Interactions:</strong> Every tap, swipe, and rotation feels responsive and natural. Animations provide feedback without slowing you down. The interface disappears, leaving just you and the puzzle.</p>
+
+    <p><strong>Celebration of Visual Beauty:</strong> Each puzzle showcases visual artistry—whether it's the mathematical elegance of color gradients or the captured moment of a photograph. We carefully curate puzzles that are both challenging to solve and visually appealing once complete. Solving a TileSwappy puzzle should feel like revealing a hidden work of art.</p>
+
+    <p><strong>Accessibility Matters:</strong> We've worked to ensure TileSwappy is playable by as many people as possible, with considerations for different visual abilities and input methods. Puzzles are designed to be solvable through pattern recognition, not just color perception.</p>
+
+    <h2>The Community</h2>
+    <p>TileSwappy players come from all walks of life—students solving puzzles between classes, professionals taking brain breaks at work, retirees making it part of their morning routine, and puzzle enthusiasts chasing leaderboard positions.</p>
+
+    <p>What unites the community is an appreciation for the meditative quality of the game. In our fast-paced, attention-fragmented world, TileSwappy offers a few minutes of focused, satisfying problem-solving.</p>
+
+    <div class="highlight-box">
+        <h3 style="margin-top: 0;">Join the Community</h3>
+        <p>Share your scores, discuss strategies, and connect with other puzzle enthusiasts. Follow us on TikTok at <a href="https://www.tiktok.com/@tileswappy">@tileswappy</a> for puzzle highlights, tips, and behind the scenes development updates.</p>
+    </div>
+
+    <h2>What's Next</h2>
+    <p>TileSwappy is constantly evolving based on player feedback. Here's what we're working on:</p>
+
+    <ul>
+        <li><strong>Mobile Apps:</strong> Native iOS and Android apps for an even better mobile experience</li>
+        <li><strong>Custom Puzzle Sizes:</strong> Experimenting with larger 4x4 and 5x5 grids for added challenge</li>
+        <li><strong>Themed Collections:</strong> Curated puzzle packs around holidays, nature, art movements, and more</li>
+        <li><strong>Community Features:</strong> Share your solutions, create custom puzzles, challenge friends</li>
+        <li><strong>Puzzle Variety:</strong> Expanding our library with more photographs, artwork, and creative visuals</li>
+        <li><strong>Accessibility Enhancements:</strong> Continued improvements to make TileSwappy playable for everyone</li>
+    </ul>
+
+    <h2>Our Commitment</h2>
+    <p>TileSwappy will always remain:</p>
+    <ul>
+        <li><strong>Free to Play:</strong> Core gameplay will never be paywalled</li>
+        <li><strong>Privacy-Respecting:</strong> We collect minimal data and never sell user information</li>
+        <li><strong>Ad-Conscious:</strong> Any advertising will be tasteful and non-intrusive</li>
+        <li><strong>Community-Driven:</strong> Player feedback shapes the game's evolution</li>
+    </ul>
+
+    <h2>Get in Touch</h2>
+    <p>We love hearing from players! Whether you have feedback, found a bug, or just want to share your thoughts about the game, reach out through our <a href="/support.html">support page</a>.</p>
+
+    <p>For business inquiries, partnership opportunities, or press requests, contact us at: <strong>support@tileswappy.com</strong></p>
+
+    <h2>Credits & Acknowledgments</h2>
+    <p>TileSwappy was created by <strong>Mr._Madden</strong> under the <strong>Mad_Den Gaming Co.</strong> banner. Special thanks to the React community, the amazing teams behind Supabase and Cloudflare, and to all the early players who provided invaluable feedback during development.</p>
+
+    <div class="highlight-box" style="margin-top: 40px;">
+        <h3 style="margin-top: 0;">Thank You for Playing</h3>
+        <p>Every time you solve a TileSwappy puzzle, you're participating in a shared experience with players around the world. Whether you've solved hundreds of puzzles or just tried your first one, we're grateful you've made TileSwappy part of your routine.</p>
+        <p>Here's to many more TileSwappy filled mornings!</p>
+    </div>
+
+    <p style="margin-top: 40px; text-align: center;">
+        <a href="/index.html" style="background: linear-gradient(135deg, #E63946 0%, #FF4C4C 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Play Today's Puzzle</a>
+    </p>
+</div>
+
+<!-- UNIVERSAL FOOTER - Use this footer on ALL pages (index.html, faq.html, about.html, etc.) -->
+<footer style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-top: 2px solid rgba(31, 163, 154, 0.3);">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+            <!-- Play Section - UPDATED FOR ALL PAGES -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Play</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;">
+                        <a 
+                            href="/index.html#calendar" 
+                            onclick="handleCalendarLink(event);"
+                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
+                            onmouseover="this.style.color='#1FA39A'" 
+                            onmouseout="this.style.color='#999'"
+                        >
+                            🎮 Today's Puzzle
+                        </a>
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">
+                        <a 
+                            href="/index.html#archive" 
+                            onclick="handleArchiveLink(event);"
+                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
+                            onmouseover="this.style.color='#1FA39A'" 
+                            onmouseout="this.style.color='#999'"
+                        >
+                            📚 Puzzle Archive
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Learn Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Learn</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/how-to-play.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📖 How to Play</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/faq.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">❓ FAQ</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">💡 Support</a></li>
+                </ul>
+            </div>
+
+            <!-- Blog Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Blog</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/blog/5-strategies.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🎯 5 Winning Strategies</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/blog/gradient-science.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔬 Science of Gradients</a></li>
+                </ul>
+            </div>
+
+            <!-- About Section -->
+            <div>
+                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">About</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 0.5rem;"><a href="/about.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">ℹ️ About TileSwappy</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔒 Privacy Policy</a></li>
+                    <li style="margin-bottom: 0.5rem;"><a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📋 Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(31, 163, 154, 0.2); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <p style="color: #666; font-size: 0.875rem; margin: 0;">© 2025 Mad_Den Gaming Co. All rights reserved.</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Privacy</a>
+                <a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Terms</a>
+                <a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Support</a>
+                <a href="https://www.tiktok.com/@tileswappy" target="_blank" style="color: #999; text-decoration: none; font-size: 0.875rem;">TikTok</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+// Smart link handling for calendar and archive links
+function handleCalendarLink(event) {
+    // Check if we're on the index page and React app is loaded
+    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
+        if (window.openCalendarModal) {
+            event.preventDefault();
+            window.openCalendarModal();
+        } else {
+            // React not loaded yet, wait a bit and try again
+            console.log('⏳ Waiting for React to load...');
+            event.preventDefault();
+            
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (window.openCalendarModal) {
+                    clearInterval(checkInterval);
+                    window.openCalendarModal();
+                } else if (attempts > 20) {
+                    // After 2 seconds, fall back to hash navigation
+                    clearInterval(checkInterval);
+                    window.location.hash = '#calendar';
+                }
+            }, 100);
+        }
+    }
+    // If on other pages, let the link navigate to index.html#calendar
+}
+
+function handleArchiveLink(event) {
+    // Check if we're on the index page and React app is loaded
+    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
+        if (window.openArchiveModal) {
+            event.preventDefault();
+            window.openArchiveModal();
+        } else {
+            // React not loaded yet, wait a bit and try again
+            console.log('⏳ Waiting for React to load...');
+            event.preventDefault();
+            
+            let attempts = 0;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                if (window.openArchiveModal) {
+                    clearInterval(checkInterval);
+                    window.openArchiveModal();
+                } else if (attempts > 20) {
+                    // After 2 seconds, fall back to hash navigation
+                    clearInterval(checkInterval);
+                    window.location.hash = '#archive';
+                }
+            }, 100);
+        }
+    }
+    // If on other pages, let the link navigate to index.html#archive
+}
+</script>
+
 </body>
 </html>
