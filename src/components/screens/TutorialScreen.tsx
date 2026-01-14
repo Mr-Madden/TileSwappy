@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface Tile {
   id: string;
@@ -18,7 +18,6 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [selectedTile, setSelectedTile] = useState<string | null>(null);
   const [swipeStart, setSwipeStart] = useState({ x: 0, y: 0, tileId: '' });
-  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   // Initialize tutorial tiles with numbered gradient tiles
@@ -146,7 +145,6 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
   };
 
   const markStepComplete = (stepNum: number) => {
-    setCompletedSteps(prev => new Set([...prev, stepNum]));
     setTimeout(() => {
       setStep(stepNum + 1);
     }, 800);

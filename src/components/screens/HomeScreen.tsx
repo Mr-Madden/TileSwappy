@@ -24,7 +24,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [carouselSwipeStart, setCarouselSwipeStart] = useState({ x: 0, y: 0, touching: false, startTime: 0 });
   const [realPuzzles, setRealPuzzles] = useState<any[]>([]);
   const [isLoadingPuzzles, setIsLoadingPuzzles] = useState(true);
-  const [showIdleHints, setShowIdleHints] = useState(true);
+  const [showIdleHints] = useState(true);
 
   // Auto-load puzzles on mount - no authentication needed
   useEffect(() => {

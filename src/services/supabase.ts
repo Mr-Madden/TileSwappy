@@ -18,7 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 // Upload image to storage
 export const uploadPuzzleImage = async (file: File, fileName: string) => {
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from('puzzle-images')
     .upload(fileName, file, {
       cacheControl: '3600',

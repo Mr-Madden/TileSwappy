@@ -70,7 +70,6 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
   };
 
   // Calculate overview stats
-  const totalAttempts = Object.values(puzzleStats).reduce((sum: number, stats: any) => sum + stats.attempts, 0);
   const completedPuzzles = Object.keys(puzzleStats).length;
   const averageMoves = completedPuzzles > 0
     ? Math.round(Object.values(puzzleStats).reduce((sum: number, stats: any) => sum + (stats.bestMoves || 0), 0) / completedPuzzles)
