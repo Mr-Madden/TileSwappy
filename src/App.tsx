@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { RotateCw, Calendar, Settings, BarChart3 } from 'lucide-react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { Calendar, Settings, BarChart3 } from 'lucide-react';
 import { useGameState } from './hooks/useGameState';
 import { StartScreen } from './components/screens/StartScreen';
-import { TutorialScreen } from './components/screens/TutorialScreen';
 import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
-import { ArchiveModal } from './components/modals/ArchiveModal';
-import { SettingsModal } from './components/modals/SettingModal';
-import { PlayerStatsModal } from './components/modals/PlayerStatsModal';
-import { StreakModal } from './components/modals/StreakModal';
 import { BouncingTileSwappyLogo } from './components/BouncingTileSwappyLogo';
+import { GameMonetizeService } from './services/GameMonetizeService';
+import { AudioService } from './services/AudioService';
+
+// Lazy load modals - they're not needed on initial load
+const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
+const ArchiveModal = lazy(() => import('./components/modals/ArchiveModal').then(module => ({ default: module.ArchiveModal })));
+const SettingsModal = lazy(() => import('./components/modals/SettingModal').then(module => ({ default: module.SettingsModal })));
+const PlayerStatsModal = lazy(() => import('./components/modals/PlayerStatsModal').then(module => ({ default: module.PlayerStatsModal })));
+const StreakModal = lazy(() => import('./components/modals/StreakModal').then(module => ({ default: module.StreakModal })));
 
 declare global {
   interface Window {
@@ -21,7 +25,8 @@ declare global {
   }
 }
 
-// Local Storage Keys
+const GAMEMONETIZE_GAME_ID = 'tqxuxkyk96xztq67lsxlycbftlc6j307';
+
 const STORAGE_KEYS = {
   COMPLETED_PUZZLES: 'tileswappy_completed_puzzles',
   FAVORITE_PUZZLES: 'tileswappy_favorite_puzzles',
@@ -33,7 +38,6 @@ const STORAGE_KEYS = {
   DAILY_PUZZLES: 'tileswappy_daily_puzzles'
 };
 
-// Load from localStorage with default value
 const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   try {
     const item = localStorage.getItem(key);
@@ -46,7 +50,6 @@ const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   }
 };
 
-// Save to localStorage
 const saveToStorage = (key: string, value: any): void => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -56,6 +59,13 @@ const saveToStorage = (key: string, value: any): void => {
     }
   }
 };
+
+// Loading fallback component
+const ModalLoader = () => (
+  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="text-teal text-xl">Loading...</div>
+  </div>
+);
 
 const App: React.FC = () => {
   const [currentPuzzle, setCurrentPuzzle] = useState<any>(null);
@@ -71,7 +81,6 @@ const App: React.FC = () => {
   const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
   const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
   
-  // Load state from localStorage on mount
   const [completedPuzzleIds, setCompletedPuzzleIds] = useState<Set<string>>(() => 
     new Set(loadFromStorage<string[]>(STORAGE_KEYS.COMPLETED_PUZZLES, []))
   );
@@ -101,8 +110,30 @@ const App: React.FC = () => {
   );
   
   const gameState = useGameState();
+
+  useEffect(() => {
+    const handlePause = () => {
+      if (gameState.gameState.status === 'playing' && !gameState.gameState.isPaused) {
+        gameState.pauseGame();
+      }
+      AudioService.mute();
+    };
+
+    const handleResume = () => {
+      if (gameState.gameState.status === 'playing' && gameState.gameState.isPaused) {
+        gameState.resumeGame();
+      }
+      AudioService.unmute();
+    };
+
+    GameMonetizeService.initialize(
+      GAMEMONETIZE_GAME_ID,
+      handlePause,
+      handleResume
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
-  // Save to localStorage whenever state changes
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.COMPLETED_PUZZLES, Array.from(completedPuzzleIds));
   }, [completedPuzzleIds]);
@@ -131,113 +162,79 @@ const App: React.FC = () => {
     saveToStorage(STORAGE_KEYS.DAILY_PUZZLES, dailyPuzzles);
   }, [dailyPuzzles]);
 
-  // Capture hash on initial load and store in sessionStorage
   useEffect(() => {
     const hash = window.location.hash;
-    console.log('🔍 Initial load - hash:', hash, 'status:', gameState.gameState.status);
     
     if (hash === '#calendar' || hash === '#archive') {
-      console.log('🔗 Detected hash on page load:', hash);
       sessionStorage.setItem('pendingModalAction', hash);
-      // Clear the hash immediately
       window.history.replaceState(null, '', window.location.pathname);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Check and execute pending action whenever status changes
   useEffect(() => {
     const pendingAction = sessionStorage.getItem('pendingModalAction');
-    console.log('🔍 Status:', gameState.gameState.status, '| Pending:', pendingAction, '| ShowStreak:', showStreak, '| ShowArchive:', showArchive);
+    const currentStatus = gameState.gameState.status;
     
-    // Execute on both 'start' and 'idle' states to catch all cases
-    if (gameState.gameState.status === 'idle' || gameState.gameState.status === 'start') {
+    if (currentStatus === 'idle' || currentStatus === 'start') {
       if (pendingAction) {
-        console.log('✅ Executing pending action:', pendingAction);
-        
-        // Execute immediately
         if (pendingAction === '#calendar') {
-          console.log('📅 Setting showStreak to true');
           setShowStreak(true);
         } else if (pendingAction === '#archive') {
-          console.log('📚 Setting showArchive to true');
           setShowArchive(true);
         }
-        
-        // Clear the pending action
         sessionStorage.removeItem('pendingModalAction');
       }
     }
-  }, [gameState.gameState.status]);
+  }, [gameState.gameState.status, showStreak, showArchive]);
 
-  // Expose modal functions to HTML footer
   useEffect(() => {
-    // Function to open calendar modal (StreakModal)
-    window.openCalendarModal = () => {
-      console.log('📅 Opening calendar modal from footer link');
-      setShowStreak(true);
-    };
+    window.openCalendarModal = () => setShowStreak(true);
+    window.openArchiveModal = () => setShowArchive(true);
     
-    // Function to open archive modal
-    window.openArchiveModal = () => {
-      console.log('📚 Opening archive modal from footer link');
-      setShowArchive(true);
-    };
-    
-    // Cleanup on unmount
     return () => {
       delete window.openCalendarModal;
       delete window.openArchiveModal;
     };
   }, []);
 
-  // Show tutorial overlay when game starts (if not completed before)
   useEffect(() => {
-    if (gameState.gameState.status === 'playing' && !hasShownTutorialForCurrentPuzzle) {
+    const currentStatus = gameState.gameState.status;
+    
+    if (currentStatus === 'playing' && !hasShownTutorialForCurrentPuzzle) {
       const tutorialCompleted = localStorage.getItem('tutorialCompleted');
       
       if (!tutorialCompleted) {
-        // Pause the game and show tutorial
         gameState.pauseGame();
         setShowTutorialOverlay(true);
       }
       
       setHasShownTutorialForCurrentPuzzle(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.gameState.status, hasShownTutorialForCurrentPuzzle]);
 
   const handleTutorialComplete = () => {
     setShowTutorialOverlay(false);
-    // Resume the game
     gameState.resumeGame();
   };
 
   const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎮 App.tsx: Starting puzzle with:', puzzle);
-    }
-    
-    // Normalize the puzzle data - convert image_url to imageUrl if needed
     let normalizedPuzzle = puzzle;
     if (puzzle?.image_url && !puzzle?.imageUrl) {
       normalizedPuzzle = {
         ...puzzle,
         imageUrl: puzzle.image_url
       };
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Normalized puzzle data:', normalizedPuzzle);
-      }
     }
     
-    // Reset completion flags and tutorial flag
     setHasProcessedCompletion(false);
     setShowCompletionAnimation(false);
     setHasShownTutorialForCurrentPuzzle(false);
     
-    // Use provided date or default to today
     const dateToUse = puzzleDate || new Date().toISOString().split('T')[0];
     setCurrentPuzzleDate(dateToUse);
     
-    // Store this puzzle with the date
     if (normalizedPuzzle) {
       setDailyPuzzles(prev => ({
         ...prev,
@@ -247,11 +244,12 @@ const App: React.FC = () => {
     
     setCurrentPuzzle(normalizedPuzzle);
     gameState.startGame(normalizedPuzzle);
+    
+    GameMonetizeService.showAd();
   };
 
   const handleTileInteraction = (tileId: string, deltaX: number, deltaY: number) => {
     if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
-      // REVERSED LOGIC: swipe right = counter-clockwise, swipe left = clockwise
       const direction = deltaX > 0 ? -1 : 1;
       gameState.rotateTile(tileId, direction);
     } else if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
@@ -278,30 +276,14 @@ const App: React.FC = () => {
   };
 
   const handleDateSelect = (dateStr: string, puzzleData?: any) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🗓️ Selected date:', dateStr);
-      console.log('📦 Puzzle data received:', puzzleData);
-    }
-    
-    // If we have puzzle data from the calendar, use it directly
     if (puzzleData) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Using puzzle data from calendar');
-      }
       handleStartPuzzle(puzzleData, dateStr);
     } else {
-      // Fallback: check if we have a puzzle stored locally for this date
       const puzzleForDate = dailyPuzzles[dateStr];
       
       if (puzzleForDate) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📦 Found puzzle in local storage for date:', puzzleForDate);
-        }
         handleStartPuzzle(puzzleForDate, dateStr);
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('⚠️ No puzzle found for date, using default');
-        }
         handleStartPuzzle(undefined, dateStr);
       }
     }
@@ -321,18 +303,8 @@ const App: React.FC = () => {
     return `${seconds}.${centiseconds.toString().padStart(2, '0')}s`;
   };
 
-  // Handle puzzle completion
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 Completion Check - Status:', gameState.gameState.status, 'HasProcessed:', hasProcessedCompletion);
-    }
-    
     if (gameState.gameState.status === 'solved' && !hasProcessedCompletion) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🎉 CELEBRATION TRIGGERED! Showing animation');
-        console.log('📊 Stats - Moves:', gameState.gameState.moves, 'Swaps:', gameState.gameState.swaps, 'Time:', gameState.gameState.solveTime);
-      }
-      
       setHasProcessedCompletion(true);
       setShowCompletionAnimation(true);
       setTotalGamesPlayed(prev => prev + 1);
@@ -340,23 +312,11 @@ const App: React.FC = () => {
       const puzzleKey = currentPuzzle?.date || currentPuzzleDate || 'today';
       const puzzleTitle = currentPuzzle?.title || null;
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔑 Using puzzle key:', puzzleKey);
-        console.log('📝 Puzzle title:', puzzleTitle);
-      }
-      
       setCompletedPuzzleIds(prev => new Set([...prev, puzzleKey]));
       
       const isAdminPuzzle = currentPuzzle?.imageUrl || currentPuzzle?.image_url || currentPuzzle?.fromDatabase;
       if (isAdminPuzzle) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📅 Adding admin puzzle to streak calendar:', currentPuzzleDate);
-        }
         setCompletedDates(prev => new Set([...prev, currentPuzzleDate]));
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('⏭️ Skipping randomly generated puzzle for streak calendar');
-        }
       }
       
       setPuzzleStats(prev => {
@@ -388,17 +348,15 @@ const App: React.FC = () => {
         };
       });
       
+      GameMonetizeService.showAd();
+      
       setTimeout(() => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('⏰ Celebration timeout complete, transitioning to streak modal');
-        }
         setShowCompletionAnimation(false);
         setShowStreak(true);
       }, 4000);
     }
   }, [gameState.gameState.status, gameState.gameState.solveTime, gameState.gameState.moves, gameState.gameState.swaps, hasProcessedCompletion, currentPuzzle, currentPuzzleDate]);
 
-  // Cleanup old UUID-based stats
   useEffect(() => {
     const cleanupOldStats = () => {
       const stats = loadFromStorage(STORAGE_KEYS.PUZZLE_STATS, {});
@@ -409,9 +367,6 @@ const App: React.FC = () => {
         const isUUID = key.length > 30 && key.includes('-');
         
         if (isUUID) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('🧹 Found old UUID-based stat:', key);
-          }
           needsCleanup = true;
         } else {
           cleanedStats[key] = value;
@@ -419,16 +374,8 @@ const App: React.FC = () => {
       });
       
       if (needsCleanup) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🧹 Cleaning up old stats...');
-          console.log('📊 Old stats count:', Object.keys(stats).length);
-          console.log('📊 New stats count:', Object.keys(cleanedStats).length);
-        }
         setPuzzleStats(cleanedStats);
         saveToStorage(STORAGE_KEYS.PUZZLE_STATS, cleanedStats);
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Cleanup complete!');
-        }
       }
     };
     
@@ -437,15 +384,12 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-navy">
-      {/* Bouncing background logo */}
       <BouncingTileSwappyLogo size={150} />
       
-      {/* Start Screen */}
       {gameState.gameState.status === 'start' && (
         <StartScreen onStart={gameState.dismissStartScreen} />
       )}
 
-      {/* Home Screen */}
       {gameState.gameState.status === 'idle' && (
         <HomeScreen
           onStartPuzzle={(puzzle) => handleStartPuzzle(puzzle)}
@@ -457,47 +401,54 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Modals */}
       {showArchive && (
-        <ArchiveModal
-          onClose={() => setShowArchive(false)}
-          completedPuzzleIds={completedPuzzleIds}
-          favoritePuzzleIds={favoritePuzzleIds}
-          onToggleFavorite={handleToggleFavorite}
-          onStartPuzzle={(puzzle) => handleStartPuzzle(puzzle)}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <ArchiveModal
+            onClose={() => setShowArchive(false)}
+            completedPuzzleIds={completedPuzzleIds}
+            favoritePuzzleIds={favoritePuzzleIds}
+            onToggleFavorite={handleToggleFavorite}
+            onStartPuzzle={(puzzle) => handleStartPuzzle(puzzle)}
+          />
+        </Suspense>
       )}
 
       {showPlayerStats && (
-        <PlayerStatsModal
-          onClose={() => setShowPlayerStats(false)}
-          puzzleStats={puzzleStats}
-          totalGamesPlayed={totalGamesPlayed}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <PlayerStatsModal
+            onClose={() => setShowPlayerStats(false)}
+            puzzleStats={puzzleStats}
+            totalGamesPlayed={totalGamesPlayed}
+          />
+        </Suspense>
       )}
 
       {showStreak && (
-        <StreakModal
-          onClose={() => setShowStreak(false)}
-          completedDates={completedDates}
-          onDateSelect={(dateStr, puzzleData) => handleDateSelect(dateStr, puzzleData)}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <StreakModal
+            onClose={() => setShowStreak(false)}
+            completedDates={completedDates}
+            onDateSelect={(dateStr, puzzleData) => handleDateSelect(dateStr, puzzleData)}
+          />
+        </Suspense>
       )}
 
       {showSettings && (
-        <SettingsModal
-          onClose={() => setShowSettings(false)}
-          settings={settings}
-          onUpdateSettings={(newSettings) => setSettings(prev => ({ ...prev, ...newSettings }))}
-        />
+        <Suspense fallback={<ModalLoader />}>
+          <SettingsModal
+            onClose={() => setShowSettings(false)}
+            settings={settings}
+            onUpdateSettings={(newSettings) => setSettings(prev => ({ ...prev, ...newSettings }))}
+          />
+        </Suspense>
       )}
 
-      {/* Tutorial Overlay - Shows over game board */}
       {showTutorialOverlay && (
-        <TutorialScreen onComplete={handleTutorialComplete} />
+        <Suspense fallback={<ModalLoader />}>
+          <TutorialScreen onComplete={handleTutorialComplete} />
+        </Suspense>
       )}
 
-      {/* Completion Animation */}
       {showCompletionAnimation && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
@@ -645,10 +596,8 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Game View */}
       {(gameState.gameState.status === 'playing' || gameState.gameState.status === 'solved') && (
         <div className="min-h-screen bg-navy flex flex-col">
-          {/* Header - Fixed at top */}
           <div className="flex-shrink-0 p-3 bg-navy">
             <div className="max-w-2xl mx-auto">
               <div className="flex items-center justify-between mb-2">
@@ -660,7 +609,6 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              {/* Help Button - Opens Tutorial */}
               <div className="flex justify-center mb-2">
                 <button
                   onClick={() => setShowTutorialOverlay(true)}
@@ -673,7 +621,6 @@ const App: React.FC = () => {
                 </button>
               </div>
 
-              {/* Stats Grid */}
               <div className="grid grid-cols-4 gap-2">
                 <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
                   <div className="text-base font-bold text-coral">{gameState.gameState.moves}</div>
@@ -695,7 +642,6 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Game Board - Centered with proper spacing */}
           <div className="flex-1 flex items-center justify-center py-2">
             <GameBoard
               tiles={gameState.gameState.tiles}
@@ -718,7 +664,6 @@ const App: React.FC = () => {
             />
           </div>
 
-          {/* Pause Modal */}
           {gameState.gameState.isPaused && !showTutorialOverlay && (
             <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
               <div className="bg-navy-light rounded-2xl p-8 max-w-sm w-full border-2 border-navy-dark">
@@ -776,12 +721,9 @@ const App: React.FC = () => {
             </div>
           )}
           
-          {/* Bottom Navigation - Fixed at bottom */}
           <div className="flex-shrink-0 bg-navy-light/90 backdrop-blur-md px-3 py-2 border-t border-navy-dark">
             <div className="max-w-4xl mx-auto">
-              {/* Action Buttons - One Row */}
               <div className="space-y-2 mb-2">
-                {/* First Row: Undo, Pause, Zoom In */}
                 <div className="flex justify-center gap-2">
                   <button
                     onClick={gameState.undoLastMove}
@@ -832,7 +774,6 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Navigation Icons Row */}
               <div className="flex justify-center gap-6 pt-2 border-t border-navy-dark/50">
                 <button
                   onClick={() => setShowArchive(true)}

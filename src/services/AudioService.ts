@@ -1,5 +1,22 @@
 export class AudioService {
+  private static isMuted = false;
+
+  static mute(): void {
+    this.isMuted = true;
+    console.log('🔇 Audio muted for ad');
+  }
+
+  static unmute(): void {
+    this.isMuted = false;
+    console.log('🔊 Audio unmuted after ad');
+  }
+
   static playCelebrationSound(): void {
+    if (this.isMuted) {
+      console.log('🔇 Sound blocked - ad is playing');
+      return;
+    }
+
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       

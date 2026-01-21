@@ -58,10 +58,17 @@
   }
   </script>
 
+  <!-- Preconnect to external domains for faster loading -->
+  <link rel="preconnect" href="https://api.gamemonetize.com" />
+  <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+
+  <!-- GameMonetize SDK - async loading for better performance -->
+  <script src="https://api.gamemonetize.com/sdk.js" async></script>
+
   <!-- Google AdSense Meta Tag -->
   <meta name="google-adsense-account" content="ca-pub-3568015124939970">
     
-  <!-- Google AdSense Script -->
+  <!-- Google AdSense Script - async loading -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3568015124939970"
      crossorigin="anonymous"></script>
 
@@ -69,13 +76,49 @@
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
   
   <style>
-    /* Ensure body has no default margin/padding */
+    /* Critical CSS - inline for faster first paint */
     body {
       margin: 0;
       padding: 0;
+      background-color: #0D1B2A;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     
-    /* Make header non-sticky */
+    #root {
+      min-height: 100vh;
+    }
+
+    /* Loading spinner for initial load */
+    #app-loader {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #1FA39A;
+      font-size: 1.5rem;
+      z-index: 9999;
+    }
+
+    #app-loader::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 40px;
+      margin: 20px auto;
+      border: 4px solid #1FA39A;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
     #site-header {
       position: relative;
       background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%);
@@ -84,12 +127,10 @@
       z-index: 10;
     }
     
-    /* Hide puzzle banner by default */
     #puzzle-banner {
       display: none;
     }
     
-    /* Show banner when enabled */
     body.show-banner #puzzle-banner {
       display: block;
     }
@@ -98,6 +139,9 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     
+    <!-- Loading indicator -->
+    <div id="app-loader">Loading TileSwappy...</div>
+    
     <!-- SITE HEADER -->
 <header style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-bottom: 2px solid rgba(31, 163, 154, 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
     <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -105,6 +149,9 @@
             <img 
                 src="/icon.png" 
                 alt="TileSwappy Logo" 
+                width="40"
+                height="40"
+                loading="eager"
                 style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain;"
             />
             <span style="font-size: 1.75rem; font-weight: bold; color: #F4F4F4;">
@@ -142,11 +189,10 @@
     <!-- YOUR REACT APP RENDERS HERE -->
     <div id="root"></div>
 
-    <!-- UNIVERSAL FOOTER - Use this footer on ALL pages (index.html, faq.html, about.html, etc.) -->
+    <!-- UNIVERSAL FOOTER -->
 <footer style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-top: 2px solid rgba(31, 163, 154, 0.3);">
     <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
-            <!-- Play Section - UPDATED FOR ALL PAGES -->
             <div>
                 <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Play</h4>
                 <ul style="list-style: none; padding: 0; margin: 0;">
@@ -175,7 +221,6 @@
                 </ul>
             </div>
 
-            <!-- Learn Section -->
             <div>
                 <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Learn</h4>
                 <ul style="list-style: none; padding: 0; margin: 0;">
@@ -185,7 +230,6 @@
                 </ul>
             </div>
 
-            <!-- Blog Section -->
             <div>
                 <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Blog</h4>
                 <ul style="list-style: none; padding: 0; margin: 0;">
@@ -194,7 +238,6 @@
                 </ul>
             </div>
 
-            <!-- About Section -->
             <div>
                 <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">About</h4>
                 <ul style="list-style: none; padding: 0; margin: 0;">
@@ -211,23 +254,29 @@
                 <a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Privacy</a>
                 <a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Terms</a>
                 <a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Support</a>
-                <a href="https://www.tiktok.com/@tileswappy" target="_blank" style="color: #999; text-decoration: none; font-size: 0.875rem;">TikTok</a>
+                <a href="https://www.tiktok.com/@tileswappy" target="_blank" rel="noopener" style="color: #999; text-decoration: none; font-size: 0.875rem;">TikTok</a>
             </div>
         </div>
     </div>
 </footer>
 
 <script>
-// Smart link handling for calendar and archive links
+// Remove loader once React app mounts
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    var loader = document.getElementById('app-loader');
+    if (loader) {
+      loader.style.display = 'none';
+    }
+  }, 100);
+});
+
 function handleCalendarLink(event) {
-    // Check if we're on the index page and React app is loaded
     if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
         if (window.openCalendarModal) {
             event.preventDefault();
             window.openCalendarModal();
         } else {
-            // React not loaded yet, wait a bit and try again
-            console.log('⏳ Waiting for React to load...');
             event.preventDefault();
             
             let attempts = 0;
@@ -237,25 +286,20 @@ function handleCalendarLink(event) {
                     clearInterval(checkInterval);
                     window.openCalendarModal();
                 } else if (attempts > 20) {
-                    // After 2 seconds, fall back to hash navigation
                     clearInterval(checkInterval);
                     window.location.hash = '#calendar';
                 }
             }, 100);
         }
     }
-    // If on other pages, let the link navigate to index.html#calendar
 }
 
 function handleArchiveLink(event) {
-    // Check if we're on the index page and React app is loaded
     if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
         if (window.openArchiveModal) {
             event.preventDefault();
             window.openArchiveModal();
         } else {
-            // React not loaded yet, wait a bit and try again
-            console.log('⏳ Waiting for React to load...');
             event.preventDefault();
             
             let attempts = 0;
@@ -265,14 +309,12 @@ function handleArchiveLink(event) {
                     clearInterval(checkInterval);
                     window.openArchiveModal();
                 } else if (attempts > 20) {
-                    // After 2 seconds, fall back to hash navigation
                     clearInterval(checkInterval);
                     window.location.hash = '#archive';
                 }
             }, 100);
         }
     }
-    // If on other pages, let the link navigate to index.html#archive
 }
 </script>
   </body>
