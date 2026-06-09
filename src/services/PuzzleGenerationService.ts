@@ -1,4 +1,5 @@
 import { Tile } from '../models/types';
+import { EdgeExtractionService } from './EdgeExtractionService';
 
 export class PuzzleGenerationService {
   static createPuzzleFromGradient(gradient: string[], difficulty: string): HTMLCanvasElement {
@@ -72,12 +73,9 @@ export class PuzzleGenerationService {
           imageData: tileCanvas.toDataURL(),
           rotation: Math.floor(Math.random() * 4),
           tileSize,
-          edgeHashes: {
-            top: `${row}-${col}-top`,
-            right: `${row}-${col}-right`,
-            bottom: `${row}-${col}-bottom`,
-            left: `${row}-${col}-left`
-          }
+          edgeHashes: EdgeExtractionService.extractEdgeHashes(
+            tileCanvas
+          )
         });
       }
     }
