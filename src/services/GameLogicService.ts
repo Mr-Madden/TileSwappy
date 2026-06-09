@@ -8,24 +8,12 @@ export class GameLogicService {
     return tile.edgeHashes[directions[originalIndex] as keyof typeof tile.edgeHashes];
   }
 
-  static shouldEdgesMatch(tile1Edge: string, tile2Edge: string): boolean {
-    const [row1, col1, side1] = tile1Edge.split('-');
-    const [row2, col2, side2] = tile2Edge.split('-');
-    
-    if (row1 === row2 && Math.abs(parseInt(col1) - parseInt(col2)) === 1) {
-      if ((col1 < col2 && side1 === 'right' && side2 === 'left') ||
-          (col1 > col2 && side1 === 'left' && side2 === 'right')) {
-        return true;
-      }
-    }
-    if (col1 === col2 && Math.abs(parseInt(row1) - parseInt(row2)) === 1) {
-      if ((row1 < row2 && side1 === 'bottom' && side2 === 'top') ||
-          (row1 > row2 && side1 === 'top' && side2 === 'bottom')) {
-        return true;
-      }
-    }
-    return false;
-  }
+  static doEdgesMatch(
+  edge1: EdgeData,
+  edge2: EdgeData
+  ): boolean {
+  return edge1.matchId === edge2.matchId;
+}
 
   static isEdgeMatch(tile1: Tile, tile2: Tile, direction: string): boolean {
     const oppositeDir: Record<string, string> = {
@@ -35,8 +23,8 @@ export class GameLogicService {
       'top': 'bottom'
     };
     
-    const edge1 = this.getRotatedEdgeHash(tile1, direction);
-    const edge2 = this.getRotatedEdgeHash(tile2, oppositeDir[direction]);
+    const edge1 = this.getRotatedEdge(tile1, direction);
+    const edge1 = this.getRotatedEdge(tile2, oppositeDir[direction]);
     return this.shouldEdgesMatch(edge1, edge2);
   }
 
