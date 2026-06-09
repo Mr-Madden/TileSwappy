@@ -1,9 +1,9 @@
 // Core domain models
 export interface EdgeData {
   hash: string;
-  featureScore?: number;
+  matchId: string;
   variance?: number;
-  dominantColor?: string;
+  featureScore?: number;
 }
 
 export interface Tile {
