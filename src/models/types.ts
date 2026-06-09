@@ -1,40 +1,28 @@
 // Core domain models
 export interface EdgeData {
   hash: string;
-
   featureScore?: number;
-
   variance?: number;
-
   dominantColor?: string;
 }
 
 export interface Tile {
   id: string;
-
   row: number;
   col: number;
-
   originalRow: number;
   originalCol: number;
-
   imageData: string;
-
   rotation: number;
-
   tileSize: number;
-
   edgeHashes: {
     top: EdgeData;
     right: EdgeData;
     bottom: EdgeData;
     left: EdgeData;
   };
-
   visualComplexity?: number;
-
   uniquenessScore?: number;
-}
 }
 
 export interface Puzzle {
@@ -98,24 +86,16 @@ export interface PuzzleValidationResult {
 
 export interface DifficultyAnalysis {
   score: number;
-
   edgeStrength: number;
-
   tileUniqueness: number;
-
   rotationAmbiguity: number;
-
   visualComplexity: number;
-
   difficulty: 'Easy' | 'Medium' | 'Hard';
 }
 
 export interface PuzzleQualityReport {
   validation: PuzzleValidationResult;
-
   analysis: DifficultyAnalysis;
-
   publishable: boolean;
-
   warnings: string[];
 }
