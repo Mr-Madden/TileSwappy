@@ -2,105 +2,236 @@ import { Tile } from '../models/types';
 import { EdgeExtractionService } from './EdgeExtractionService';
 
 export class PuzzleGenerationService {
-  static createPuzzleFromGradient(gradient: string[], difficulty: string): HTMLCanvasElement {
-    const canvas = document.createElement('canvas');
+  static createPuzzleFromGradient(
+    gradient: string[],
+    difficulty: string
+  ): HTMLCanvasElement {
+    const canvas =
+      document.createElement('canvas');
+
     canvas.width = 300;
     canvas.height = 300;
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) throw new Error('Could not get canvas context');
-    
-    const grad = ctx.createLinearGradient(0, 0, 300, 300);
-    gradient.forEach((color, index) => {
-      grad.addColorStop(index / (gradient.length - 1), color);
-    });
-    
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 300, 300);
-    
-    // Add some visual elements based on difficulty
-    ctx.fillStyle = '#ffffff20';
-    if (difficulty === 'Easy') {
-      ctx.fillRect(100, 100, 100, 100);
-    } else if (difficulty === 'Medium') {
-      ctx.fillRect(50, 50, 200, 200);
-      ctx.beginPath();
-      ctx.arc(150, 150, 60, 0, Math.PI * 2);
-      ctx.fill();
-    } else {
-      for (let i = 0; i < 5; i++) {
-        ctx.fillRect(i * 60, i * 60, 50, 50);
-        ctx.beginPath();
-        ctx.arc(150 + i * 20, 150 - i * 20, 30, 0, Math.PI * 2);
-        ctx.fill();
-      }
+
+    const ctx =
+      canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error(
+        'Canvas unavailable'
+      );
     }
-    
+
+    const grad =
+      ctx.createLinearGradient(
+        0,
+        0,
+        300,
+        300
+      );
+
+    gradient.forEach(
+      (color, index) => {
+        grad.addColorStop(
+          index /
+            (gradient.length - 1),
+          color
+        );
+      }
+    );
+
+    ctx.fillStyle = grad;
+
+    ctx.fillRect(
+      0,
+      0,
+      300,
+      300
+    );
+
     return canvas;
   }
 
-  static createTilesFromCanvas(canvas: HTMLCanvasElement): Tile[] {
-    const tileSize = canvas.width / 3;
+  static createTilesFromCanvas(
+    canvas: HTMLCanvasElement
+  ): Tile[] {
+    const size =
+      canvas.width / 3;
+
     const tiles: Tile[] = [];
-    
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        const tileCanvas = document.createElement('canvas');
-        tileCanvas.width = tileSize;
-        tileCanvas.height = tileSize;
-        const tileCtx = tileCanvas.getContext('2d');
-        
-        if (!tileCtx) continue;
-        
-        tileCtx.drawImage(
-          canvas, 
-          col * tileSize, 
-          row * tileSize, 
-          tileSize, 
-          tileSize, 
-          0, 
-          0, 
-          tileSize, 
-          tileSize
+
+    for (
+      let row = 0;
+      row < 3;
+      row++
+    ) {
+      for (
+        let col = 0;
+        col < 3;
+        col++
+      ) {
+        const tileCanvas =
+          document.createElement(
+            'canvas'
+          );
+
+        tileCanvas.width =
+          size;
+
+        tileCanvas.height =
+          size;
+
+        const ctx =
+          tileCanvas.getContext(
+            '2d'
+          );
+
+        if (!ctx) {
+          continue;
+        }
+
+        ctx.drawImage(
+          canvas,
+
+          col * size,
+
+          row * size,
+
+          size,
+
+          size,
+
+          0,
+
+          0,
+
+          size,
+
+          size
         );
-        
+
+        const edgeData =
+          EdgeExtractionService.extractEdges(
+            tileCanvas,
+
+            row,
+
+            col
+          );
+
         tiles.push({
           id: `${row}-${col}`,
+
           row,
+
           col,
+
           originalRow: row,
+
           originalCol: col,
-          imageData: tileCanvas.toDataURL(),
-          rotation: Math.floor(Math.random() * 4),
-          tileSize,
-          edgeHashes: EdgeExtractionService.extractEdgeHashes(
-            tileCanvas
-          )
+
+          imageData:
+            tileCanvas.toDataURL(),
+
+          rotation:
+            Math.floor(
+              Math.random() * 4
+            ),
+
+          tileSize: size,
+
+          edgeHashes:
+            edgeData,
+
+          visualComplexity:
+            (
+              edgeData.top
+                .featureScore || 0
+            ) +
+            (
+              edgeData.right
+                .featureScore || 0
+            ) +
+            (
+              edgeData.bottom
+                .featureScore || 0
+            ) +
+            (
+              edgeData.left
+                .featureScore || 0
+            )
         });
       }
     }
-    
-    return this.shuffleTiles(tiles);
+
+    return this.shuffle(
+      tiles
+    );
   }
 
-  private static shuffleTiles(tiles: Tile[]): Tile[] {
-    const positions: { row: number; col: number }[] = [];
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        positions.push({ row, col });
+  private static shuffle(
+    tiles: Tile[]
+  ): Tile[] {
+    const positions =
+      [];
+
+    for (
+      let row = 0;
+      row < 3;
+      row++
+    ) {
+      for (
+        let col = 0;
+        col < 3;
+        col++
+      ) {
+        positions.push({
+          row,
+
+          col
+        });
       }
     }
-    
-    // Fisher-Yates shuffle
-    for (let i = positions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [positions[i], positions[j]] = [positions[j], positions[i]];
+
+    for (
+      let i =
+        positions.length -
+        1;
+      i > 0;
+      i--
+    ) {
+      const j =
+        Math.floor(
+          Math.random() *
+            (i + 1)
+        );
+
+      [
+        positions[i],
+
+        positions[j]
+      ] = [
+        positions[j],
+
+        positions[i]
+      ];
     }
-    
-    return tiles.map((tile, index) => ({
-      ...tile,
-      row: positions[index].row,
-      col: positions[index].col
-    }));
+
+    return tiles.map(
+      (
+        tile,
+
+        index
+      ) => ({
+        ...tile,
+
+        row:
+          positions[index]
+            .row,
+
+        col:
+          positions[index]
+            .col
+      })
+    );
   }
 }
