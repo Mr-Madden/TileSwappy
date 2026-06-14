@@ -59,41 +59,6 @@ export const useGameState = () => {
     setZoomLevel(1.0);
   }, []);
 
-  // Create tiles from canvas - INTERNAL HELPER FUNCTION
-  const createTilesFromCanvas = useCallback((canvas: HTMLCanvasElement) => {
-    const tileSize = canvas.width / 3;
-    const newTiles: Tile[] = [];
-    
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        const tileCanvas = document.createElement('canvas');
-        tileCanvas.width = tileSize;
-        tileCanvas.height = tileSize;
-        const tileCtx = tileCanvas.getContext('2d');
-        
-        if (tileCtx) {
-          tileCtx.drawImage(canvas, col * tileSize, row * tileSize, tileSize, tileSize, 0, 0, tileSize, tileSize);
-          
-          newTiles.push({
-            id: `${row}-${col}`,
-            row,
-            col,
-            originalRow: row,
-            originalCol: col,
-            imageData: tileCanvas.toDataURL(),
-            rotation: Math.floor(Math.random() * 4),
-            tileSize,
-            edgeHashes: {
-              top: `${row}-${col}-top`,
-              right: `${row}-${col}-right`,
-              bottom: `${row}-${col}-bottom`,
-              left: `${row}-${col}-left`
-            }
-          });
-        }
-      }
-    }
-    
     // Shuffle positions
     const positions: { row: number; col: number }[] = [];
     for (let row = 0; row < 3; row++) {
@@ -217,128 +182,6 @@ export const useGameState = () => {
       }
     }, 500);
   }, [createTilesFromCanvas, resetZoom]);
-
-  // Helper functions for edge matching
-  const getRotatedEdge = (tile: Tile, direction: 'top' | 'right' | 'bottom' | 'left'): string => {
-    const directions = ['top', 'right', 'bottom', 'left'];
-    const currentIndex = directions.indexOf(direction);
-    const originalIndex = (currentIndex - tile.rotation + 4) % 4;
-    return tile.edgeHashes[directions[originalIndex] as keyof typeof tile.edgeHashes];
-  };
-
-  const shouldEdgesMatch = (edge1: string, edge2: string): boolean => {
-    const [row1, col1, side1] = edge1.split('-');
-    const [row2, col2, side2] = edge2.split('-');
-    
-    if (row1 === row2 && Math.abs(parseInt(col1) - parseInt(col2)) === 1) {
-      if ((col1 < col2 && side1 === 'right' && side2 === 'left') ||
-          (col1 > col2 && side1 === 'left' && side2 === 'right')) {
-        return true;
-      }
-    }
-    if (col1 === col2 && Math.abs(parseInt(row1) - parseInt(row2)) === 1) {
-      if ((row1 < row2 && side1 === 'bottom' && side2 === 'top') ||
-          (row1 > row2 && side1 === 'top' && side2 === 'bottom')) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  // Helper function to check solution with a specific global rotation
-  const checkSolutionWithGlobalRotation = useCallback((globalRotation: number): boolean => {
-    // Create virtually rotated tiles
-    const rotatedTiles = gameState.tiles.map(tile => ({
-      ...tile,
-      rotation: (tile.rotation + globalRotation) % 4
-    }));
-    
-    // Check if all edges match with this global rotation
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        const currentTile = rotatedTiles.find(t => t.row === row && t.col === col);
-        if (!currentTile) return false;
-        
-        // Check right edge
-        if (col < 2) {
-          const rightTile = rotatedTiles.find(t => t.row === row && t.col === col + 1);
-          if (!rightTile) return false;
-          
-          const currentRightEdge = getRotatedEdge(currentTile, 'right');
-          const rightLeftEdge = getRotatedEdge(rightTile, 'left');
-          if (!shouldEdgesMatch(currentRightEdge, rightLeftEdge)) {
-            return false;
-          }
-        }
-        
-        // Check bottom edge
-        if (row < 2) {
-          const bottomTile = rotatedTiles.find(t => t.row === row + 1 && t.col === col);
-          if (!bottomTile) return false;
-          
-          const currentBottomEdge = getRotatedEdge(currentTile, 'bottom');
-          const bottomTopEdge = getRotatedEdge(bottomTile, 'top');
-          if (!shouldEdgesMatch(currentBottomEdge, bottomTopEdge)) {
-            return false;
-          }
-        }
-      }
-    }
-    
-    return true;
-  }, [gameState.tiles]);
-
-  // Check if puzzle is solved
-  const checkIfSolved = useCallback(() => {
-    if (gameState.tiles.length !== 9) return false;
-    
-    // Check all 4 possible global rotations
-    for (let globalRotation = 0; globalRotation < 4; globalRotation++) {
-      if (checkSolutionWithGlobalRotation(globalRotation)) {
-        return true;
-      }
-    }
-    
-    return false;
-  }, [gameState.tiles, checkSolutionWithGlobalRotation]);
-
-  // Check edge matches - FIXED VERSION
-  const checkEdgeMatches = useCallback(() => {
-    const matches = new Set<string>();
-    
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        const currentTile = gameState.tiles.find(t => t.row === row && t.col === col);
-        if (!currentTile) continue;
-        
-        // Check right edge
-        if (col < 2) {
-          const rightTile = gameState.tiles.find(t => t.row === row && t.col === col + 1);
-          if (rightTile) {
-            const currentRightEdge = getRotatedEdge(currentTile, 'right');
-            const rightLeftEdge = getRotatedEdge(rightTile, 'left');
-            if (shouldEdgesMatch(currentRightEdge, rightLeftEdge)) {
-              matches.add(`${row}-${col}-right`);
-            }
-          }
-        }
-        
-        // Check bottom edge
-        if (row < 2) {
-          const bottomTile = gameState.tiles.find(t => t.row === row + 1 && t.col === col);
-          if (bottomTile) {
-            const currentBottomEdge = getRotatedEdge(currentTile, 'bottom');
-            const bottomTopEdge = getRotatedEdge(bottomTile, 'top');
-            if (shouldEdgesMatch(currentBottomEdge, bottomTopEdge)) {
-              matches.add(`${row}-${col}-bottom`);
-            }
-          }
-        }
-      }
-    }
-    
-    // Check if solved - Use setGameState with prev to get fresh state
-    const isSolved = checkIfSolved();
     
     setGameState(prev => {
       // Only update to solved if we were playing and puzzle is actually solved
@@ -430,60 +273,6 @@ export const useGameState = () => {
     setGameState(prev => ({ ...prev, selectedTile: tileId }));
   }, []);
 
-  // Undo last move
-  const undoLastMove = useCallback(() => {
-    if (gameState.moveHistory.length === 0 || gameState.status !== 'playing') return;
-    
-    const lastMove = gameState.moveHistory[gameState.moveHistory.length - 1];
-    
-    setGameState(prev => {
-      if (lastMove.type === 'rotate') {
-        return {
-          ...prev,
-          tiles: prev.tiles.map(t =>
-            t.id === lastMove.tileId ? { ...t, rotation: lastMove.previousRotation || 0 } : t
-          ),
-          moves: Math.max(0, prev.moves - 1),
-          undos: prev.undos + 1,
-          moveHistory: prev.moveHistory.slice(0, -1)
-        };
-      } else if (lastMove.type === 'swap' && lastMove.tile1PrevPos && lastMove.tile2PrevPos) {
-        return {
-          ...prev,
-          tiles: prev.tiles.map(t => {
-            if (t.id === lastMove.tile1Id) {
-              return { ...t, row: lastMove.tile1PrevPos!.row, col: lastMove.tile1PrevPos!.col };
-            }
-            if (t.id === lastMove.tile2Id) {
-              return { ...t, row: lastMove.tile2PrevPos!.row, col: lastMove.tile2PrevPos!.col };
-            }
-            return t;
-          }),
-          swaps: Math.max(0, prev.swaps - 1),
-          undos: prev.undos + 1,
-          moveHistory: prev.moveHistory.slice(0, -1)
-        };
-      }
-      return prev;
-    });
-  }, [gameState.moveHistory, gameState.status]);
-
-  // Shuffle all tiles
-  const shuffleAll = useCallback(() => {
-    if (gameState.status !== 'playing') return;
-    
-    const positions: { row: number; col: number }[] = [];
-    for (let row = 0; row < 3; row++) {
-      for (let col = 0; col < 3; col++) {
-        positions.push({ row, col });
-      }
-    }
-    
-    for (let i = positions.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [positions[i], positions[j]] = [positions[j], positions[i]];
-    }
-    
     setGameState(prev => ({
       ...prev,
       tiles: prev.tiles.map((tile, index) => ({
@@ -495,7 +284,7 @@ export const useGameState = () => {
       moveHistory: [],
       selectedTile: null
     }));
-  }, [gameState.status]);
+[gameState.status]);
 
   // Pause game
   const pauseGame = useCallback(() => {
@@ -544,8 +333,6 @@ export const useGameState = () => {
     rotateTile,
     swapTiles,
     selectTile,
-    undoLastMove,
-    shuffleAll,
     pauseGame,
     resumeGame,
     resetGame,
