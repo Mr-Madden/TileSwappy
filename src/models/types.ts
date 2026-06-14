@@ -4,6 +4,7 @@ export interface EdgeData {
   matchId: string;
   variance?: number;
   featureScore?: number;
+  dominantColor?: string;
 }
 
 export interface Tile {
@@ -28,9 +29,19 @@ export interface Tile {
 export interface Puzzle {
   id: string;
   title: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  difficulty:
+    | 'Easy'
+    | 'Medium'
+    | 'Hard';
   gradient: string[];
   imageUrl?: string;
+  difficultyScore?: number;
+  uniquenessScore?: number;
+  solutionCount?: number;
+  validated?: boolean;
+  generatedAt?: string;
+  averageEdgeStrength?: number;
+  averageTileComplexity?: number;
 }
 
 export interface Move {
