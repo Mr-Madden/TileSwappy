@@ -1,6 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Tile, GameState as GameStateType } from '../models/types';
-import { PuzzleGenerationService } from '../services/PuzzleGenerationService';
+
+import {
+  Tile,
+  GameState as GameStateType
+} from '../models/types';
+
+import {
+  PuzzleGenerationService
+} from '../services/PuzzleGenerationService';
+
+import {
+  GameLogicService
+} from '../services/GameLogicService';
 
 export const useGameState = () => {
   const [gameState, setGameState] = useState<GameStateType>({
