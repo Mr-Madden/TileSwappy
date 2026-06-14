@@ -31,6 +31,41 @@ export const useGameState = () => {
   });
 
   const [zoomLevel, setZoomLevel] = useState(1.0);
+  const loadPuzzleCanvas =
+useCallback(
+(
+canvas: HTMLCanvasElement
+) => {
+
+const tiles =
+PuzzleGenerationService
+.createTilesFromCanvas(
+canvas
+);
+
+setGameState(
+prev => ({
+...prev,
+
+tiles,
+
+status:
+'playing',
+
+startTime:
+Date.now(),
+
+matchingEdges:
+GameLogicService
+.checkEdgeMatches(
+tiles
+)
+})
+);
+
+},
+[]
+);
 
   // Timer effect
   useEffect(() => {
@@ -139,7 +174,9 @@ export const useGameState = () => {
               const offsetX = (img.width - size) / 2;
               const offsetY = (img.height - size) / 2;
               ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
-              createTilesFromCanvas(canvas);
+             loadPuzzleCanvas(
+canvas
+);
             }
           };
           
@@ -150,7 +187,9 @@ export const useGameState = () => {
               puzzle.gradient || ['#ff6b6b', '#4ecdc4', '#45b7d1'],
               puzzle.difficulty || 'Medium'
             );
-            createTilesFromCanvas(canvas);
+           loadPuzzleCanvas(
+canvas
+);
           };
           
           img.src = puzzle.imageUrl;
@@ -171,14 +210,18 @@ export const useGameState = () => {
           );
         }
         
-        createTilesFromCanvas(canvas);
+        loadPuzzleCanvas(
+canvas
+);
       } catch (error) {
         console.error('💥 Failed to start game:', error);
         const canvas = PuzzleGenerationService.createPuzzleFromGradient(
           ['#ff6b6b', '#4ecdc4', '#45b7d1'],
           'Medium'
         );
-        createTilesFromCanvas(canvas);
+        loadPuzzleCanvas(
+canvas
+);
       }
     }, 500);
   }, [createTilesFromCanvas, resetZoom]);
@@ -213,8 +256,51 @@ export const useGameState = () => {
   }, [gameState.tiles, checkEdgeMatches]);
 
   // Rotate tile
-  const rotateTile = useCallback((tileId: string, direction: number) => {
-    if (gameState.status !== 'playing' || gameState.isPaused) return;
+  const rotateTile =
+useCallback(
+
+(
+tileId: string,
+
+direction:
+number
+) => {
+
+if (
+gameState.status !==
+'playing'
+) {
+return;
+}
+
+setGameState(
+prev => ({
+
+...prev,
+
+tiles:
+GameLogicService
+.rotateTile(
+
+prev.tiles,
+
+tileId,
+
+direction
+),
+
+moves:
+prev.moves + 1
+}))
+);
+
+},
+
+[
+gameState.status
+]
+
+);
     
     setGameState(prev => {
       const tile = prev.tiles.find(t => t.id === tileId);
@@ -322,6 +408,34 @@ export const useGameState = () => {
       pausedTime: 0
     });
   }, [resetZoom]);
+
+useEffect(() => {
+
+if (
+gameState.tiles
+.length === 0
+) {
+return;
+}
+
+const matches =
+GameLogicService
+.checkEdgeMatches(
+gameState.tiles
+);
+
+setGameState(
+prev => ({
+...prev,
+
+matchingEdges:
+matches
+})
+);
+
+}, [
+gameState.tiles
+]);
 
   return {
     gameState,
