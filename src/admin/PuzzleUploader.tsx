@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
+import React, { useState } from 'react';
+import { generatePuzzleBatch } from '../services/BatchPuzzleGenerationService';
+import { validateBatch } from '../services/PuzzleValidationService';
 
 interface PuzzleUpload {
   date: string;
@@ -9,7 +11,8 @@ interface PuzzleUpload {
 }
 
 export const PuzzleUploader: React.FC = () => {
-  const [puzzles, setPuzzles] = useState<PuzzleUpload[]>([]);
+  const [generatedPuzzles, setGeneratedPuzzles] = useState<any[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [currentPuzzle, setCurrentPuzzle] = useState<PuzzleUpload>({
     date: '',
     title: '',
@@ -34,6 +37,38 @@ export const PuzzleUploader: React.FC = () => {
       });
     }
   };
+
+  const generateBatch = async () => {
+  if (!currentPuzzle.image) {
+    alert('Select an image first');
+    return;
+  }
+
+  setIsGenerating(true);
+
+  try {
+    const generated =
+      await generatePuzzleBatch(
+        URL.createObjectURL(currentPuzzle.image),
+        50
+      );
+
+    const valid =
+      validateBatch(generated);
+
+    setGeneratedPuzzles(valid);
+
+    alert(
+      `${valid.length} valid puzzles generated`
+    );
+  } catch (err) {
+    console.error(err);
+
+    alert('Generation failed');
+  }
+
+  setIsGenerating(false);
+};
 
   const uploadPuzzles = async () => {
     // This will upload to your backend
@@ -102,8 +137,7 @@ export const PuzzleUploader: React.FC = () => {
             <select
               value={currentPuzzle.difficulty}
               onChange={(e) => setCurrentPuzzle({ ...currentPuzzle, difficulty: e.target.value as any })}
-              className="w-full border rounded px-3 py-2"
-            >
+              className="w-full border rounded px-3 py-2">
               <option>Easy</option>
               <option>Medium</option>
               <option>Hard</option>
@@ -122,15 +156,81 @@ export const PuzzleUploader: React.FC = () => {
               <p className="text-sm text-green-600 mt-2">âœ“ {currentPuzzle.image.name}</p>
             )}
           </div>
-          
-          <button
-            onClick={addPuzzle}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-          >
-            Add to List
-          </button>
-        </div>
-        
+          <div className="flex gap-4">
+            
+            <button
+              onClick={addPuzzle}
+              className="bg-blue-600 text-white px-6 py-2 rounded">
+              Add to List
+            </button>
+            
+            <button
+              onClick={generateBatch}
+              disabled={isGenerating}
+              className="bg-teal text-white px-6 py-2 rounded">
+              {isGenerating?'Generating...': 'Generate 50 Variants'}
+            </button>
+          </div>
+
+          {
+generatedPuzzles.length > 0 && (
+
+<div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+
+<h2 className="text-xl font-semibold mb-4">
+
+Generated Preview
+({generatedPuzzles.length})
+
+</h2>
+
+<div className="grid grid-cols-4 gap-4">
+
+{
+generatedPuzzles.map(
+(p,index)=>(
+
+<div
+key={index}
+className="border rounded p-3"
+>
+
+<div className="font-semibold">
+
+Puzzle
+{index+1}
+
+</div>
+
+<div>
+
+Difficulty:
+{
+p.difficulty
+}
+
+</div>
+
+<div>
+
+Tiles:
+{
+p.tiles?.length
+}
+
+</div>
+
+</div>
+
+))
+}
+
+</div>
+
+</div>
+
+)
+}
         {/* Puzzle List */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Puzzles to Upload ({puzzles.length})</h2>
