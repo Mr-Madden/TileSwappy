@@ -2,18 +2,28 @@ import { Tile } from '../models/types';
 import { EdgeExtractionService } from './EdgeExtractionService';
 
 export class PuzzleGenerationService {
+  private static readonly GRID = 3;
+
+  private static readonly MAX_ATTEMPTS =
+    25;
+
   static createPuzzleFromGradient(
     gradient: string[],
     difficulty: string
   ): HTMLCanvasElement {
     const canvas =
-      document.createElement('canvas');
+      document.createElement(
+        'canvas'
+      );
 
     canvas.width = 300;
+
     canvas.height = 300;
 
     const ctx =
-      canvas.getContext('2d');
+      canvas.getContext(
+        '2d'
+      );
 
     if (!ctx) {
       throw new Error(
@@ -30,16 +40,23 @@ export class PuzzleGenerationService {
       );
 
     gradient.forEach(
-      (color, index) => {
+      (
+        color,
+        index
+      ) => {
         grad.addColorStop(
           index /
-            (gradient.length - 1),
+            (
+              gradient.length -
+              1
+            ),
           color
         );
       }
     );
 
-    ctx.fillStyle = grad;
+    ctx.fillStyle =
+      grad;
 
     ctx.fillRect(
       0,
@@ -52,21 +69,63 @@ export class PuzzleGenerationService {
   }
 
   static createTilesFromCanvas(
-    canvas: HTMLCanvasElement
+    canvas:
+      HTMLCanvasElement,
+    difficulty =
+      'Medium'
+  ): Tile[] {
+    let attempt =
+      0;
+
+    while (
+      attempt <
+      this.MAX_ATTEMPTS
+    ) {
+      const tiles =
+        this.generateTiles(
+          canvas,
+          difficulty
+        );
+
+      if (
+        this.isSolvable(
+          tiles
+        )
+      ) {
+        return tiles;
+      }
+
+      attempt++;
+    }
+
+    throw new Error(
+      'Unable to generate solvable puzzle'
+    );
+  }
+
+  private static generateTiles(
+    canvas:
+      HTMLCanvasElement,
+    difficulty:
+      string
   ): Tile[] {
     const size =
-      canvas.width / 3;
+      canvas.width /
+      this.GRID;
 
-    const tiles: Tile[] = [];
+    const tiles:
+      Tile[] = [];
 
     for (
       let row = 0;
-      row < 3;
+      row <
+      this.GRID;
       row++
     ) {
       for (
         let col = 0;
-        col < 3;
+        col <
+        this.GRID;
         col++
       ) {
         const tileCanvas =
@@ -92,9 +151,11 @@ export class PuzzleGenerationService {
         ctx.drawImage(
           canvas,
 
-          col * size,
+          col *
+            size,
 
-          row * size,
+          row *
+            size,
 
           size,
 
@@ -109,55 +170,44 @@ export class PuzzleGenerationService {
           size
         );
 
-        const edgeData =
+        const edges =
           EdgeExtractionService.extractEdges(
             tileCanvas,
-
             row,
-
             col
           );
 
         tiles.push({
-          id: `${row}-${col}`,
+          id:
+            crypto.randomUUID(),
 
           row,
 
           col,
 
-          originalRow: row,
+          originalRow:
+            row,
 
-          originalCol: col,
+          originalCol:
+            col,
 
           imageData:
             tileCanvas.toDataURL(),
 
           rotation:
-            Math.floor(
-              Math.random() * 4
+            this.generateRotation(
+              difficulty
             ),
 
-          tileSize: size,
+          tileSize:
+            size,
 
           edgeHashes:
-            edgeData,
+            edges,
 
           visualComplexity:
-            (
-              edgeData.top
-                .featureScore || 0
-            ) +
-            (
-              edgeData.right
-                .featureScore || 0
-            ) +
-            (
-              edgeData.bottom
-                .featureScore || 0
-            ) +
-            (
-              edgeData.left
-                .featureScore || 0
+            this.scoreComplexity(
+              edges
             )
         });
       }
@@ -168,25 +218,82 @@ export class PuzzleGenerationService {
     );
   }
 
+  private static scoreComplexity(
+    edgeData: any
+  ) {
+    return (
+      (
+        edgeData.top
+          ?.featureScore ||
+        0
+      ) +
+      (
+        edgeData.right
+          ?.featureScore ||
+        0
+      ) +
+      (
+        edgeData.bottom
+          ?.featureScore ||
+        0
+      ) +
+      (
+        edgeData.left
+          ?.featureScore ||
+        0
+      )
+    );
+  }
+
+  private static generateRotation(
+    difficulty:
+      string
+  ) {
+    switch (
+      difficulty
+    ) {
+      case 'Easy':
+        return 0;
+
+      case 'Medium':
+        return (
+          Math.floor(
+            Math.random() *
+              2
+          ) * 90
+        );
+
+      default:
+        return (
+          Math.floor(
+            Math.random() *
+              4
+          ) * 90
+        );
+    }
+  }
+
   private static shuffle(
-    tiles: Tile[]
+    tiles:
+      Tile[]
   ): Tile[] {
     const positions =
       [];
 
     for (
       let row = 0;
-      row < 3;
+      row <
+      this.GRID;
       row++
     ) {
       for (
         let col = 0;
-        col < 3;
+        col <
+        this.GRID;
         col++
       ) {
         positions.push({
           row,
-
           col
         });
       }
@@ -196,42 +303,117 @@ export class PuzzleGenerationService {
       let i =
         positions.length -
         1;
-      i > 0;
+      i >
+      0;
       i--
     ) {
       const j =
         Math.floor(
           Math.random() *
-            (i + 1)
+            (
+              i +
+              1
+            )
         );
 
       [
-        positions[i],
+        positions[
+          i
+        ],
 
-        positions[j]
-      ] = [
-        positions[j],
+        positions[
+          j
+        ]
+      ] =
+        [
+          positions[
+            j
+          ],
 
-        positions[i]
-      ];
+          positions[
+            i
+          ]
+        ];
     }
 
     return tiles.map(
       (
         tile,
-
         index
       ) => ({
         ...tile,
 
         row:
-          positions[index]
-            .row,
+          positions[
+            index
+          ].row,
 
         col:
-          positions[index]
-            .col
+          positions[
+            index
+          ].col
       })
+    );
+  }
+
+  private static isSolvable(
+    tiles:
+      Tile[]
+  ): boolean {
+    const ids =
+      new Set(
+        tiles.map(
+          (
+            t
+          ) =>
+            t.id
+        )
+      );
+
+    if (
+      ids.size !==
+      tiles.length
+    ) {
+      return false;
+    }
+
+    const complexity =
+      tiles.reduce(
+        (
+          total,
+          t
+        ) =>
+          total +
+          (
+            t.visualComplexity ||
+            0
+          ),
+
+        0
+      );
+
+    return (
+      complexity >
+      0
+    );
+  }
+
+  static generateValidatedPuzzle(
+    gradient:
+      string[],
+
+    difficulty =
+      'Medium'
+  ): Tile[] {
+    const canvas =
+      this.createPuzzleFromGradient(
+        gradient,
+        difficulty
+      );
+
+    return this.createTilesFromCanvas(
+      canvas,
+      difficulty
     );
   }
 }
