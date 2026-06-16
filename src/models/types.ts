@@ -7,6 +7,15 @@ export interface EdgeData {
   dominantColor?: string;
 }
 
+export interface PuzzleBatch {
+  id: string;
+  sourceImage: string;
+  puzzles: Puzzle[];
+  createdAt: number;
+  completed: boolean;
+  totalGenerated: number;
+  totalValid: number;
+}
 export interface Tile {
   id: string;
   row: number;
