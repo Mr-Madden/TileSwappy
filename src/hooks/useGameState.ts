@@ -1,12 +1,15 @@
 import {
   useState,
   useCallback,
-  useEffect
+  useEffect,
+  useRef
 } from 'react';
 
 import {
   GameState,
-  Puzzle
+  Puzzle,
+  Tile,
+  Difficulty
 } from '../models/types';
 
 import {
@@ -18,605 +21,466 @@ import {
 } from '../services/GameLogicService';
 
 export const useGameState = () => {
-  const [zoomLevel, setZoomLevel] =
-    useState(1);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const [gameState, setGameState] =
     useState<GameState>({
       status: 'start',
-
       tiles: [],
-
       moves: 0,
-
       swaps: 0,
-
       undos: 0,
-
-      startTime:
-        Date.now(),
-
-      currentTime:
-        0,
-
-      solveTime:
-        null,
-
-      selectedTile:
-        null,
-
-      moveHistory:
-        [],
-
-      matchingEdges:
-        new Set(),
-
-      isPaused:
-        false,
-
-      pausedTime:
-        0
+      startTime: Date.now(),
+      currentTime: 0,
+      solveTime: null,
+      selectedTile: null,
+      moveHistory: [],
+      matchingEdges: new Set(),
+      isPaused: false,
+      pausedTime: 0
     });
 
-  const updateMatches =
-    useCallback(
-      (
-        tiles
-      ) => {
-        const matches =
-          GameLogicService.checkEdgeMatches(
-            tiles
-          );
+  const pauseStartRef = useRef<number | null>(null);
 
-        const solved =
-          GameLogicService.isSolved(
-            tiles
-          );
+  const updateMatches = useCallback(
+    (tiles: Tile[]) => {
+      const matches =
+        GameLogicService.checkEdgeMatches(tiles);
 
-        setGameState(
-          prev => ({
-            ...prev,
+      const solved =
+        GameLogicService.isSolved(tiles);
 
-            matchingEdges:
-              matches,
+      setGameState(prev => ({
+        ...prev,
+        matchingEdges: matches,
+        status: solved ? 'solved' : prev.status,
+        solveTime: solved
+          ? Date.now() - prev.startTime - prev.pausedTime
+          : prev.solveTime
+      }));
+    },
+    []
+  );
 
-            status:
-              solved
-                ? 'solved'
-                : prev.status,
-
-            solveTime:
-              solved
-                ? Date.now() -
-                  prev.startTime -
-                  prev.pausedTime
-                : prev.solveTime
-          })
-        );
-      },
-
-      []
-    );
-
-  const loadPuzzleCanvas =
-    useCallback(
-      (
-        canvas,
-        difficulty =
-          'Medium'
-      ) => {
-        const tiles =
-          PuzzleGenerationService.createTilesFromCanvas(
-            canvas,
-
-            difficulty
-          );
-
-        setGameState(
-          prev => ({
-            ...prev,
-
-            tiles,
-
-            status:
-              'playing',
-
-            startTime:
-              Date.now(),
-
-            currentTime:
-              0,
-
-            solveTime:
-              null,
-
-            moves:
-              0,
-
-            swaps:
-              0,
-
-            undos:
-              0,
-
-            moveHistory:
-              [],
-
-            selectedTile:
-              null
-          })
+  const loadPuzzleCanvas = useCallback(
+    (canvas: HTMLCanvasElement, difficulty: Difficulty = 'Medium') => {
+      const tiles =
+        PuzzleGenerationService.createTilesFromCanvas(
+          canvas,
+          difficulty
         );
 
-        updateMatches(
-          tiles
-        );
-      },
+      setGameState(prev => ({
+        ...prev,
+        tiles,
+        status: 'playing',
+        startTime: Date.now(),
+        currentTime: 0,
+        solveTime: null,
+        moves: 0,
+        swaps: 0,
+        undos: 0,
+        moveHistory: [],
+        selectedTile: null,
+        matchingEdges: new Set(),
+        isPaused: false,
+        pausedTime: 0
+      }));
 
-      [
-        updateMatches
-      ]
-    );
+      updateMatches(tiles);
+    },
+    [updateMatches]
+  );
 
   useEffect(() => {
     if (
-      gameState.status !==
-        'playing' ||
+      gameState.status !== 'playing' ||
       gameState.isPaused
     ) {
       return;
     }
 
-    const timer =
-      setInterval(
-        () => {
-          setGameState(
-            prev => ({
-              ...prev,
+    const timer = setInterval(() => {
+      setGameState(prev => ({
+        ...prev,
+        currentTime:
+          Date.now() - prev.startTime - prev.pausedTime
+      }));
+    }, 100);
 
-              currentTime:
-                Date.now() -
-                prev.startTime -
-                prev.pausedTime
-            })
-          );
-        },
+    return () => clearInterval(timer);
+  }, [gameState.status, gameState.isPaused]);
 
-        100
-      );
+  const resetZoom = useCallback(
+    () => setZoomLevel(1),
+    []
+  );
 
-    return () =>
-      clearInterval(
-        timer
-      );
-  }, [
-    gameState.status,
-    gameState.isPaused
-  ]);
+  const startGame = useCallback(
+    (puzzle?: Puzzle) => {
+      resetZoom();
 
-  const startGame =
-    useCallback(
-      (
-        puzzle?: Puzzle
-      ) => {
-        resetZoom();
+      setGameState(prev => ({
+        ...prev,
+        status: 'loading'
+      }));
 
-        setGameState(
-          prev => ({
-            ...prev,
+      setTimeout(() => {
+        try {
+          if (puzzle?.imageUrl) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
 
-            status:
-              'loading'
-          })
-        );
-
-        setTimeout(
-          () => {
-            try {
-              if (
-                puzzle?.imageUrl
-              ) {
-                const img =
-                  new Image();
-
-                img.crossOrigin =
-                  'anonymous';
-
-                img.onload =
-                  () => {
-                    const canvas =
-                      document.createElement(
-                        'canvas'
-                      );
-
-                    const size =
-                      Math.min(
-                        img.width,
-                        img.height
-                      );
-
-                    canvas.width =
-                      size;
-
-                    canvas.height =
-                      size;
-
-                    const ctx =
-                      canvas.getContext(
-                        '2d'
-                      );
-
-                    if (
-                      ctx
-                    ) {
-                      ctx.drawImage(
-                        img,
-
-                        0,
-
-                        0,
-
-                        size,
-
-                        size
-                      );
-
-                      loadPuzzleCanvas(
-                        canvas,
-
-                        puzzle.difficulty
-                      );
-                    }
-                  };
-
-                img.src =
-                  puzzle.imageUrl;
-
-                return;
-              }
-
+            img.onload = () => {
               const canvas =
-                PuzzleGenerationService.createPuzzleFromGradient(
-                  puzzle
-                    ?.gradient ??
-                    [
-                      '#ff6b6b',
-                      '#4ecdc4',
-                      '#45b7d1'
-                    ],
+                document.createElement('canvas');
 
-                  puzzle
-                    ?.difficulty ??
-                    'Medium'
+              const size =
+                Math.min(img.width, img.height);
+
+              canvas.width = size;
+              canvas.height = size;
+
+              const ctx =
+                canvas.getContext('2d');
+
+              if (ctx) {
+                ctx.drawImage(
+                  img,
+                  0,
+                  0,
+                  size,
+                  size,
+                  0,
+                  0,
+                  size,
+                  size
                 );
 
-              loadPuzzleCanvas(
-                canvas,
+                loadPuzzleCanvas(
+                  canvas,
+                  puzzle.difficulty
+                );
+              }
+            };
 
-                puzzle
-                  ?.difficulty
-              );
-            } catch {
-              setGameState(
-                prev => ({
-                  ...prev,
+            img.src = puzzle.imageUrl;
+            return;
+          }
 
-                  status:
-                    'idle'
-                })
-              );
-            }
-          },
+          const canvas =
+            PuzzleGenerationService.createPuzzleFromGradient(
+              puzzle?.gradient ?? [
+                '#ff6b6b',
+                '#4ecdc4',
+                '#45b7d1'
+              ],
+              puzzle?.difficulty ?? 'Medium'
+            );
 
-          300
-        );
-      },
+          loadPuzzleCanvas(
+            canvas,
+            puzzle?.difficulty
+          );
+        } catch {
+          setGameState(prev => ({
+            ...prev,
+            status: 'idle'
+          }));
+        }
+      }, 300);
+    },
+    [loadPuzzleCanvas, resetZoom]
+  );
 
-      [
-        loadPuzzleCanvas
-      ]
-    );
+  const rotateTile = useCallback(
+    (tileId: string, amount: 0 | 90 | 180 | 270 = 90) => {
+      if (
+        gameState.status !== 'playing' ||
+        gameState.isPaused
+      ) {
+        return;
+      }
 
-  const rotateTile =
-    useCallback(
-      (
-        tileId,
-        amount = 90
-      ) => {
-        if (
-          gameState.status !==
-            'playing' ||
-          gameState.isPaused
-        ) {
-          return;
+      setGameState(prev => {
+        const tile =
+          prev.tiles.find(t => t.id === tileId);
+
+        if (!tile) {
+          return prev;
         }
 
-        setGameState(
-          prev => {
-            const tile =
-              prev.tiles.find(
-                t =>
-                  t.id ===
-                  tileId
-              );
+        const tiles =
+          GameLogicService.rotateTile(
+            prev.tiles,
+            tileId,
+            amount
+          );
 
-            if (
-              !tile
-            ) {
-              return prev;
+        updateMatches(tiles);
+
+        return {
+          ...prev,
+          tiles,
+          moves: prev.moves + 1,
+          moveHistory: [
+            ...prev.moveHistory,
+            {
+              type: 'rotate',
+              tileId,
+              previousRotation: tile.rotation
             }
+          ]
+        };
+      });
+    },
+    [gameState.status, gameState.isPaused, updateMatches]
+  );
 
-            const tiles =
-              GameLogicService.rotateTile(
-                prev.tiles,
+  const swapTiles = useCallback(
+    (tile1: string, tile2: string) => {
+      setGameState(prev => {
+        const first =
+          prev.tiles.find(t => t.id === tile1);
+        const second =
+          prev.tiles.find(t => t.id === tile2);
 
-                tileId,
+        if (!first || !second) {
+          return prev;
+        }
 
-                amount
-              );
+        const tiles =
+          GameLogicService.swapTiles(
+            prev.tiles,
+            tile1,
+            tile2
+          );
 
-            updateMatches(
-              tiles
-            );
+        updateMatches(tiles);
 
-            return {
-              ...prev,
+        return {
+          ...prev,
+          tiles,
+          swaps: prev.swaps + 1,
+          selectedTile: null,
+          moveHistory: [
+            ...prev.moveHistory,
+            {
+              type: 'swap',
+              tile1Id: tile1,
+              tile2Id: tile2,
+              tile1PrevPos: {
+                row: first.row,
+                col: first.col
+              },
+              tile2PrevPos: {
+                row: second.row,
+                col: second.col
+              }
+            }
+          ]
+        };
+      });
+    },
+    [updateMatches]
+  );
 
-              tiles,
+  const selectTile = useCallback(
+    (id: string | null) => {
+      setGameState(prev => ({
+        ...prev,
+        selectedTile: id
+      }));
+    },
+    []
+  );
 
-              moves:
-                prev.moves +
-                1,
+  const pauseGame = useCallback(
+    () => {
+      setGameState(prev => {
+        if (
+          prev.isPaused ||
+          prev.status !== 'playing'
+        ) {
+          return prev;
+        }
 
-              moveHistory:
-                [
-                  ...prev.moveHistory,
+        pauseStartRef.current = Date.now();
 
-                  {
-                    type:
-                      'rotate',
+        return {
+          ...prev,
+          isPaused: true
+        };
+      });
+    },
+    []
+  );
 
-                    tileId,
+  const resumeGame = useCallback(
+    () => {
+      setGameState(prev => {
+        if (!prev.isPaused) {
+          return prev;
+        }
 
-                    previousRotation:
-                      tile.rotation
-                  }
-                ]
-            };
-          }
-        );
-      },
+        const now = Date.now();
+        const extra =
+          pauseStartRef.current
+            ? now - pauseStartRef.current
+            : 0;
 
-      [
-        gameState.status,
-        gameState.isPaused,
-        updateMatches
-      ]
-    );
+        pauseStartRef.current = null;
 
-  const swapTiles =
-    useCallback(
-      (
-        tile1,
-        tile2
-      ) => {
-        setGameState(
-          prev => {
-            const tiles =
-              GameLogicService.swapTiles(
-                prev.tiles,
+        return {
+          ...prev,
+          isPaused: false,
+          pausedTime: prev.pausedTime + extra
+        };
+      });
+    },
+    []
+  );
 
-                tile1,
+  const zoomIn = useCallback(
+    () =>
+      setZoomLevel(z =>
+        Math.min(z + 0.1, 1.5)
+      ),
+    []
+  );
 
-                tile2
-              );
+  const zoomOut = useCallback(
+    () =>
+      setZoomLevel(z =>
+        Math.max(z - 0.1, 0.7)
+      ),
+    []
+  );
 
-            updateMatches(
-              tiles
-            );
+  const resetGame = useCallback(
+    () => {
+      resetZoom();
 
-            return {
-              ...prev,
+      setGameState({
+        status: 'idle',
+        tiles: [],
+        moves: 0,
+        swaps: 0,
+        undos: 0,
+        startTime: Date.now(),
+        currentTime: 0,
+        solveTime: null,
+        selectedTile: null,
+        moveHistory: [],
+        matchingEdges: new Set(),
+        isPaused: false,
+        pausedTime: 0
+      });
+    },
+    [resetZoom]
+  );
 
-              tiles,
+  const dismissStartScreen = useCallback(
+    () =>
+      setGameState(prev => ({
+        ...prev,
+        status: 'idle'
+      })),
+    []
+  );
 
-              swaps:
-                prev.swaps +
-                1,
+  const undoLastMove = useCallback(
+    () => {
+      setGameState(prev => {
+        if (prev.moveHistory.length === 0) {
+          return prev;
+        }
 
-              selectedTile:
-                null
-            };
-          }
-        );
-      },
+        const last =
+          prev.moveHistory[prev.moveHistory.length - 1];
 
-      [
-        updateMatches
-      ]
-    );
+        const tiles =
+          GameLogicService.undoMove(
+            prev.tiles,
+            last
+          );
 
-  const selectTile =
-    useCallback(
-      id => {
-        setGameState(
-          prev => ({
-            ...prev,
+        updateMatches(tiles);
 
-            selectedTile:
-              id
-          })
-        );
-      },
-
-      []
-    );
-
-  const pauseGame =
-    useCallback(
-      () => {
-        setGameState(
-          prev => ({
-            ...prev,
-
-            isPaused:
-              true
-          })
-        );
-      },
-
-      []
-    );
-
-  const resumeGame =
-    useCallback(
-      () => {
-        setGameState(
-          prev => ({
-            ...prev,
-
-            isPaused:
-              false
-          })
-        );
-      },
-
-      []
-    );
-
-  const resetZoom =
-    useCallback(
-      () =>
-        setZoomLevel(
-          1
-        ),
-
-      []
-    );
-
-  const zoomIn =
-    useCallback(
-      () =>
-        setZoomLevel(
-          z =>
-            Math.min(
-              z +
-                0.1,
-
-              1.5
-            )
-        ),
-
-      []
-    );
-
-  const zoomOut =
-    useCallback(
-      () =>
-        setZoomLevel(
-          z =>
-            Math.max(
-              z -
-                0.1,
-
-              0.7
-            )
-        ),
-
-      []
-    );
-
-  const resetGame =
-    useCallback(
-      () => {
-        resetZoom();
-
-        setGameState({
-          status:
-            'idle',
-
-          tiles:
-            [],
-
-          moves:
-            0,
-
-          swaps:
-            0,
-
-          undos:
-            0,
-
-          startTime:
-            Date.now(),
-
-          currentTime:
-            0,
-
-          solveTime:
-            null,
-
-          selectedTile:
-            null,
-
+        return {
+          ...prev,
+          tiles,
+          undos: prev.undos + 1,
           moveHistory:
-            [],
+            prev.moveHistory.slice(
+              0,
+              prev.moveHistory.length - 1
+            )
+        };
+      });
+    },
+    [updateMatches]
+  );
 
-          matchingEdges:
-            new Set(),
+  const shuffleAll = useCallback(
+    () => {
+      setGameState(prev => {
+        if (prev.tiles.length === 0) {
+          return prev;
+        }
 
-          isPaused:
-            false,
+        const positions: { row: number; col: number }[] =
+          prev.tiles.map(t => ({
+            row: t.row,
+            col: t.col
+          }));
 
-          pausedTime:
-            0
-        });
-      },
+        const shuffled = [...positions];
 
-      [
-        resetZoom
-      ]
-    );
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j =
+            Math.floor(
+              Math.random() * (i + 1)
+            );
 
-  const dismissStartScreen =
-    useCallback(
-      () =>
-        setGameState(
-          prev => ({
-            ...prev,
+          [shuffled[i], shuffled[j]] =
+            [shuffled[j], shuffled[i]];
+        }
 
-            status:
-              'idle'
-          })
-        ),
+        const tiles =
+          prev.tiles.map((tile, index) => ({
+            ...tile,
+            row: shuffled[index].row,
+            col: shuffled[index].col
+          }));
 
-      []
-    );
+        updateMatches(tiles);
+
+        return {
+          ...prev,
+          tiles,
+          selectedTile: null
+        };
+      });
+    },
+    [updateMatches]
+  );
 
   return {
     gameState,
-
     zoomLevel,
-
     zoomIn,
-
     zoomOut,
-
     resetZoom,
-
     startGame,
-
     rotateTile,
-
     swapTiles,
-
     selectTile,
-
     pauseGame,
-
     resumeGame,
-
     resetGame,
-
-    dismissStartScreen
+    dismissStartScreen,
+    undoLastMove,
+    shuffleAll
   };
 };

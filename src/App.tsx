@@ -219,39 +219,70 @@ const App: React.FC = () => {
     gameState.resumeGame();
   };
 
-  const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
-    let normalizedPuzzle = puzzle;
-    if (puzzle?.image_url && !puzzle?.imageUrl) {
-      normalizedPuzzle = {
-        ...puzzle,
-        imageUrl: puzzle.image_url
-      };
-    }
-    
-    setHasProcessedCompletion(false);
-    setShowCompletionAnimation(false);
-    setHasShownTutorialForCurrentPuzzle(false);
-    
-    const dateToUse = puzzleDate || new Date().toISOString().split('T')[0];
-    setCurrentPuzzleDate(dateToUse);
-    
-    if (normalizedPuzzle) {
-      setDailyPuzzles(prev => ({
-        ...prev,
-        [dateToUse]: normalizedPuzzle
-      }));
-    }
-    
-    setCurrentPuzzle(normalizedPuzzle);
-    gameState.startGame(normalizedPuzzle);
-    
-    GameMonetizeService.showAd();
+const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
+  // Always normalize the date
+  const dateToUse = puzzleDate || new Date().toISOString().split('T')[0];
+
+  // Normalize puzzle object OR generate fallback puzzle
+  let normalizedPuzzle = puzzle;
+
+  // If puzzle came from API but uses snake_case
+  if (normalizedPuzzle?.image_url && !normalizedPuzzle?.imageUrl) {
+    normalizedPuzzle = {
+      ...normalizedPuzzle,
+      imageUrl: normalizedPuzzle.image_url
+    };
+  }
+
+  // If no puzzle exists for this date, generate a fallback puzzle
+  if (!normalizedPuzzle) {
+    normalizedPuzzle = {
+      title: `Puzzle for ${dateToUse}`,
+      date: dateToUse,
+      difficulty: 'Medium',
+      gradient: ['#ff6b6b', '#4ecdc4', '#45b7d1'],
+      fromDatabase: false
+    };
+  }
+
+  // Ensure required metadata always exists
+  normalizedPuzzle = {
+    ...normalizedPuzzle,
+    date: normalizedPuzzle.date || dateToUse,
+    title: normalizedPuzzle.title || `Puzzle for ${dateToUse}`,
+    difficulty: normalizedPuzzle.difficulty || 'Medium',
+    imageUrl: normalizedPuzzle.imageUrl || null,
+    gradient: normalizedPuzzle.gradient || ['#ff6b6b', '#4ecdc4', '#45b7d1']
   };
+
+  // Save puzzle to dailyPuzzles
+  setDailyPuzzles(prev => ({
+    ...prev,
+    [dateToUse]: normalizedPuzzle
+  }));
+
+  // Reset UI state
+  setHasProcessedCompletion(false);
+  setShowCompletionAnimation(false);
+  setHasShownTutorialForCurrentPuzzle(false);
+
+  // Set current puzzle
+  setCurrentPuzzleDate(dateToUse);
+  setCurrentPuzzle(normalizedPuzzle);
+
+  // Start the game
+  gameState.startGame(normalizedPuzzle);
+
+  // Show ad
+  GameMonetizeService.showAd();
+};
+
+
 
   const handleTileInteraction = (tileId: string, deltaX: number, deltaY: number) => {
     if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
       const direction = deltaX > 0 ? -1 : 1;
-      gameState.rotateTile(tileId, direction);
+      gameState.rotateTile(tileId, direction > 0 ? 270 : 90);
     } else if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
       if (gameState.gameState.selectedTile === null) {
         gameState.selectTile(tileId);
@@ -284,7 +315,15 @@ const App: React.FC = () => {
       if (puzzleForDate) {
         handleStartPuzzle(puzzleForDate, dateStr);
       } else {
-        handleStartPuzzle(undefined, dateStr);
+        handleStartPuzzle(
+          {
+            title: `Puzzle for ${dateStr}`,
+            date: dateStr,
+            difficulty: 'Medium',
+            gradient: ['#ff6b6b', '#4ecdc4', '#45b7d1']
+          },
+          dateStr
+        );
       }
     }
     
@@ -654,10 +693,6 @@ const App: React.FC = () => {
               onRestart={gameState.resetGame}
               canUndo={gameState.gameState.moveHistory.length > 0}
               isPaused={gameState.gameState.isPaused}
-              showControlsModal={false}
-              showHowToSolveModal={false}
-              onCloseControlsModal={() => {}}
-              onCloseHowToSolveModal={() => {}}
               zoomLevel={gameState.zoomLevel}
               onZoomIn={gameState.zoomIn}
               onZoomOut={gameState.zoomOut}

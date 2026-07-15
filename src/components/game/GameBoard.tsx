@@ -1,404 +1,195 @@
-import React from 'react';
-import { Tile } from '../../models/types';
+// src/components/game/GameBoard.tsx
+import React, { useState, useRef } from 'react';
+
+export type Rotation = 0 | 90 | 180 | 270;
+
+export interface Tile {
+  id: string;
+  row: number;
+  col: number;
+  originalRow?: number;
+  originalCol?: number;
+  imageData?: string;
+  rotation?: Rotation;
+  // other fields are allowed but optional for this component
+  [key: string]: any;
+}
 
 interface GameBoardProps {
   tiles: Tile[];
-
   selectedTile: string | null;
-
   matchingEdges: Set<string>;
-
-  onTileInteraction: (
-    tileId: string,
-    deltaX: number,
-    deltaY: number
-  ) => void;
-
+  onTileInteraction: (tileId: string, deltaX: number, deltaY: number) => void;
   onUndo: () => void;
-
   onShuffle: () => void;
-
   onPause: () => void;
-
   onRestart: () => void;
-
   canUndo: boolean;
-
   isPaused: boolean;
-
-  zoomLevel: number;
-
-  onZoomIn: () => void;
-
-  onZoomOut: () => void;
+  zoomLevel?: number;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
 }
+
+type Point = {
+  x: number;
+  y: number;
+};
 
 export const GameBoard: React.FC<GameBoardProps> = ({
   tiles,
-
   selectedTile,
-
   matchingEdges,
-
   onTileInteraction,
-
-  zoomLevel
+  onUndo,
+  onShuffle,
+  onPause,
+  onRestart,
+  canUndo,
+  isPaused,
+  zoomLevel = 1,
+  onZoomIn,
+  onZoomOut
 }) => {
-  const [
-    swipeStart,
-    setSwipeStart
-  ] = React.useState({
-    x: 0,
-    y: 0,
-    tileId: ''
-  });
+  const [swipeStart, setSwipeStart] = useState<{ x: number; y: number; tileId: string } | null>(null);
+  const boardRef = useRef<HTMLDivElement | null>(null);
 
-  const [
-    panOffset,
-    setPanOffset
-  ] = React.useState({
-    x: 0,
-    y: 0
-  });
-
-  const [
-    isPanning,
-    setIsPanning
-  ] = React.useState(
-    false
-  );
-
-  const [
-    panStart,
-    setPanStart
-  ] = React.useState({
-    x: 0,
-    y: 0
-  });
-
-  React.useEffect(
-    () => {
-      if (
-        zoomLevel ===
-        1
-      ) {
-        setPanOffset({
-          x: 0,
-          y: 0
-        });
-      }
-    },
-
-    [
-      zoomLevel
-    ]
-  );
-
-  const getPoint =
-    (
-      e:
-        | React.MouseEvent
-        | React.TouchEvent
-    ) => {
-      if (
-        'touches' in
-        e
-      ) {
-        return {
-          x:
-            e
-              .touches[0]
-              .clientX,
-
-          y:
-            e
-              .touches[0]
-              .clientY
-        };
-      }
-
+  const getPoint = (e: React.MouseEvent | React.TouchEvent): Point => {
+    if ('changedTouches' in e && e.changedTouches && e.changedTouches.length > 0) {
       return {
-        x:
-          e.clientX,
-
-        y:
-          e.clientY
+        x: e.changedTouches[0].clientX,
+        y: e.changedTouches[0].clientY
       };
+    }
+    // MouseEvent
+    const me = e as React.MouseEvent;
+    return {
+      x: me.clientX,
+      y: me.clientY
     };
+  };
 
-  const handleDown =
-    (
-      e,
+  // --- copy start: handleDown ---
+  const handleDown = (
+    e: React.MouseEvent | React.TouchEvent,
+    tileId: string
+  ) => {
+    // Prevent default to avoid page scrolling on touch devices
+    e.preventDefault();
+
+    const p = getPoint(e);
+
+    setSwipeStart({
+      x: p.x,
+      y: p.y,
       tileId
-    ) => {
+    });
+  };
+  // --- copy end: handleDown ---
+
+  // --- copy start: handleUp ---
+  const handleUp = (
+    e: React.MouseEvent | React.TouchEvent,
+    tileId: string
+  ) => {
+    e.preventDefault();
+
+    const p = getPoint(e);
+
+    if (!swipeStart) {
+      // No start point recorded; treat as a tap (zero delta)
+      onTileInteraction(tileId, 0, 0);
+      return;
+    }
+
+    // Only proceed if the tileId matches the one that started the swipe.
+    // If not, still compute delta relative to the start point.
+    const deltaX = p.x - swipeStart.x;
+    const deltaY = p.y - swipeStart.y;
+
+    // Clear swipe start
+    setSwipeStart(null);
+
+    // Delegate to parent handler
+    onTileInteraction(tileId, deltaX, deltaY);
+  };
+  // --- copy end: handleUp ---
+
+  const handleMove = (e: React.TouchEvent | React.MouseEvent) => {
+    // Prevent default while dragging on touch devices to avoid scrolling
+    if ('changedTouches' in e) {
       e.preventDefault();
+    }
+  };
 
-      const p =
-        getPoint(
-          e
-        );
-
-      setSwipeStart({
-        ...p,
-
-        tileId
-      });
-    };
-
-  const handleUp =
-    (
-      e,
-      tileId
-    ) => {
-      e.preventDefault();
-
-      const p =
-        'changedTouches'
-          in e
-          ? {
-              x:
-                e
-                  .changedTouches[0]
-                  .clientX,
-
-              y:
-                e
-                  .changedTouches[0]
-                  .clientY
-            }
-          : {
-              x:
-                e.clientX,
-
-              y:
-                e.clientY
-            };
-
-      if (
-        swipeStart.tileId ===
-        tileId
-      ) {
-        onTileInteraction(
-          tileId,
-
-          p.x -
-            swipeStart.x,
-
-          p.y -
-            swipeStart.y
-        );
-      }
-
-      setSwipeStart({
-        x: 0,
-        y: 0,
-        tileId: ''
-      });
-    };
-
-  const beginPan =
-    e => {
-      if (
-        zoomLevel <=
-        1
-      ) {
-        return;
-      }
-
-      const p =
-        getPoint(
-          e
-        );
-
-      setIsPanning(
-        true
-      );
-
-      setPanStart({
-        x:
-          p.x -
-          panOffset.x,
-
-        y:
-          p.y -
-          panOffset.y
-      });
-    };
-
-  const movePan =
-    e => {
-      if (
-        !isPanning
-      ) {
-        return;
-      }
-
-      e.preventDefault();
-
-      const p =
-        getPoint(
-          e
-        );
-
-      setPanOffset({
-        x:
-          p.x -
-          panStart.x,
-
-        y:
-          p.y -
-          panStart.y
-      });
-    };
-
+  // Render a simple grid of tiles. Keep markup minimal so this file is easy to drop in.
+  // The visual styling is expected to be provided by the app's CSS/Tailwind.
   return (
     <div
-      className="flex justify-center overflow-hidden"
-      onMouseDown={
-        beginPan
-      }
-      onMouseMove={
-        movePan
-      }
-      onMouseUp={() =>
-        setIsPanning(
-          false
-        )
-      }
-      onTouchStart={
-        beginPan
-      }
-      onTouchMove={
-        movePan
-      }
-      onTouchEnd={() =>
-        setIsPanning(
-          false
-        )
-      }
+      ref={boardRef}
+      className="game-board w-full h-full flex items-center justify-center"
+      style={{ transform: `scale(${zoomLevel})` }}
     >
-      <div
-        className="grid grid-cols-3 gap-1 p-2 rounded-xl bg-navy-light"
+      <div className="tiles-grid grid gap-1" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(64px, 1fr))`, width: 'min(900px, 95%)' }}>
+        {tiles.map((tile) => {
+          const isSelected = selectedTile === tile.id;
+          const isMatched = matchingEdges.has(tile.id);
 
-        style={{
-          width:
-            'min(90vw,65vh)',
+          return (
+            <div
+              key={tile.id}
+              role="button"
+              tabIndex={0}
+              onMouseDown={(e) => handleDown(e, tile.id)}
+              onMouseUp={(e) => handleUp(e, tile.id)}
+              onTouchStart={(e) => handleDown(e, tile.id)}
+              onTouchEnd={(e) => handleUp(e, tile.id)}
+              onTouchMove={handleMove}
+              onMouseMove={handleMove}
+              className={`tile relative select-none bg-navy-dark border border-navy rounded-md overflow-hidden flex items-center justify-center cursor-pointer`}
+              style={{
+                width: 80,
+                height: 80,
+                transform: `rotate(${tile.rotation ?? 0}deg)`,
+                outline: isSelected ? '3px solid rgba(78,205,196,0.25)' : undefined,
+                opacity: isMatched ? 0.9 : 1
+              }}
+              aria-pressed={isSelected}
+            >
+              {tile.imageData ? (
+                <img src={tile.imageData} alt={`tile-${tile.id}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ) : (
+                <div className="text-xs text-offwhite font-mono">{tile.id}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-          height:
-            'min(90vw,65vh)',
-
-          transform:
-            `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px,${panOffset.y / zoomLevel}px)`,
-
-          transition:
-            'transform .25s'
-        }}
-      >
-        {[
-          ...tiles
-        ]
-          .sort(
-            (
-              a,
-              b
-            ) =>
-              a.row -
-                b.row ||
-              a.col -
-                b.col
-          )
-
-          .map(
-            tile => (
-              <div
-                key={
-                  tile.id
-                }
-
-                className="relative"
-              >
-                <button
-                  onMouseDown={e =>
-                    handleDown(
-                      e,
-
-                      tile.id
-                    )
-                  }
-
-                  onMouseUp={e =>
-                    handleUp(
-                      e,
-
-                      tile.id
-                    )
-                  }
-
-                  onTouchStart={e =>
-                    handleDown(
-                      e,
-
-                      tile.id
-                    )
-                  }
-
-                  onTouchEnd={e =>
-                    handleUp(
-                      e,
-
-                      tile.id
-                    )
-                  }
-
-                  className={`w-full h-full rounded-lg overflow-hidden border transition-all ${
-                    selectedTile ===
-                    tile.id
-                      ? 'border-coral border-4 scale-95'
-                      : 'border-navy-dark hover:border-teal'
-                  }`}
-                >
-                  <img
-                    src={
-                      tile.imageData
-                    }
-
-                    draggable={
-                      false
-                    }
-
-                    alt="tile"
-
-                    className="w-full h-full"
-
-                    style={{
-                      transform:
-                        `rotate(${tile.rotation}deg)`,
-
-                      transition:
-                        'transform .35s'
-                    }}
-                  />
-                </button>
-
-                {matchingEdges.has(
-                  `${tile.id}-right`
-                ) && (
-                  <div
-                    className="absolute right-0 top-0 w-[4px] h-full bg-green-400 animate-pulse"
-                  />
-                )}
-
-                {matchingEdges.has(
-                  `${tile.id}-bottom`
-                ) && (
-                  <div
-                    className="absolute bottom-0 left-0 w-full h-[4px] bg-green-400 animate-pulse"
-                  />
-                )}
-              </div>
-            )
-          )}
+      {/* Controls fallback for accessibility / quick actions */}
+      <div className="absolute bottom-4 right-4 flex gap-2">
+        <button onClick={onUndo} disabled={!canUndo} className="px-3 py-1 rounded bg-offwhite text-navy text-xs">
+          Undo
+        </button>
+        <button onClick={onShuffle} className="px-3 py-1 rounded bg-teal/20 text-teal text-xs">
+          Shuffle
+        </button>
+        <button onClick={onPause} className="px-3 py-1 rounded bg-offwhite text-navy text-xs">
+          Pause
+        </button>
+        <button onClick={onRestart} className="px-3 py-1 rounded bg-coral/20 text-coral text-xs">
+          Restart
+        </button>
+        {onZoomIn && onZoomOut && (
+          <>
+            <button onClick={onZoomOut} className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">-</button>
+            <div className="px-2 py-1 rounded bg-navy text-offwhite text-xs">{Math.round(zoomLevel * 100)}%</div>
+            <button onClick={onZoomIn} className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">+</button>
+          </>
+        )}
       </div>
     </div>
   );
 };
+
+export default GameBoard;
