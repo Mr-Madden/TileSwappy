@@ -177,12 +177,23 @@ export class GameLogicService {
   static isSolved(
     tiles: Tile[]
   ): boolean {
-    const matches =
-      this.checkEdgeMatches(tiles);
-
-    const expected = 12;
-
-    return matches.size >= expected;
+    // Every tile back at the grid position it was cut from, at its
+    // as-cut rotation, is the one true solved state -- and the only
+    // state that can satisfy this check, since originalRow/originalCol
+    // is a bijection assigned once per tile at generation time.
+    //
+    // A live edge-match count is NOT a safe substitute for this: a
+    // gradient-based surface's edges still all match each other if the
+    // whole assembled board is rotated 90/180/270 as a unit (rotating a
+    // fully-matched picture as a whole never breaks an internal seam),
+    // so an edge-count-only check would register that as a win even
+    // though no tile is actually where it belongs.
+    return tiles.every(
+      tile =>
+        tile.row === tile.originalRow &&
+        tile.col === tile.originalCol &&
+        tile.rotation === 0
+    );
   }
 
   static undoMove(
