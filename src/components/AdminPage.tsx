@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Lock } from 'lucide-react';
+import { getScheduleForDateRange } from '../services/supabase';
 
 // Conditionally import admin functions only in development
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -31,6 +32,38 @@ export const AdminPage: React.FC = () => {
     type: '',
     message: ''
   });
+
+  // Schedule list -- what's already scheduled (legacy daily_puzzles and
+  // Factory puzzle_calendar both), so the admin can see the existing
+  // schedule before uploading something that might clash with it.
+  const [schedule, setSchedule] = useState<Array<{ date: string; difficulty: string; title: string; source: 'legacy' | 'factory' }>>([]);
+  const [isScheduleLoading, setIsScheduleLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      setIsScheduleLoading(true);
+      try {
+        const start = new Date();
+        start.setDate(start.getDate() - 7);
+        const end = new Date();
+        end.setDate(end.getDate() + 30);
+        const rows = await getScheduleForDateRange(
+          start.toISOString().split('T')[0],
+          end.toISOString().split('T')[0]
+        );
+        setSchedule(rows);
+      } catch (error) {
+        console.error('Failed to load schedule:', error);
+      } finally {
+        setIsScheduleLoading(false);
+      }
+    };
+    fetchSchedule();
+  }, []);
+
+  const scheduleConflict = schedule.find(
+    (row) => row.date === puzzleDate && row.difficulty.toLowerCase() === difficulty.toLowerCase()
+  );
 
   // Password check handler
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -247,6 +280,15 @@ export const AdminPage: React.FC = () => {
                 </select>
               </div>
 
+              {scheduleConflict && (
+                <div className="p-3 rounded-xl border-2 bg-coral/20 border-coral text-coral text-sm">
+                  ⚠️ {scheduleConflict.date} / {difficulty} already has{' '}
+                  {scheduleConflict.source === 'factory' ? 'a Factory' : 'a'} puzzle scheduled:{' '}
+                  <strong>{scheduleConflict.title}</strong>. Uploading will not remove it, but the two will
+                  conflict for this date+difficulty slot.
+                </div>
+              )}
+
               <div>
                 <label className="block text-teal text-sm font-semibold mb-2">
                   Puzzle Image *
@@ -341,6 +383,48 @@ export const AdminPage: React.FC = () => {
               )}
             </button>
           </div>
+        </div>
+
+        {/* Schedule Card -- what's already scheduled, legacy + Factory both */}
+        <div className="mt-6 bg-navy-light rounded-2xl p-6 shadow-2xl border-2 border-navy-dark">
+          <h3 className="text-offwhite font-bold text-lg mb-4 flex items-center gap-2">
+            <span className="text-teal">📋</span>
+            Current Schedule (past 7 days - next 30 days)
+          </h3>
+          {isScheduleLoading ? (
+            <p className="text-offwhite/60 text-sm">Loading schedule...</p>
+          ) : schedule.length === 0 ? (
+            <p className="text-offwhite/60 text-sm">Nothing scheduled in this range.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-teal text-left border-b border-navy-dark">
+                    <th className="py-2 pr-4">Date</th>
+                    <th className="py-2 pr-4">Difficulty</th>
+                    <th className="py-2 pr-4">Title</th>
+                    <th className="py-2 pr-4">Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {schedule.map((row, i) => (
+                    <tr key={`${row.date}-${row.difficulty}-${i}`} className="border-b border-navy-dark/50">
+                      <td className="py-2 pr-4 text-offwhite">{row.date}</td>
+                      <td className="py-2 pr-4 text-offwhite">{row.difficulty}</td>
+                      <td className="py-2 pr-4 text-offwhite">{row.title}</td>
+                      <td className="py-2 pr-4">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                          row.source === 'factory' ? 'bg-teal/20 text-teal' : 'bg-offwhite/10 text-offwhite/70'
+                        }`}>
+                          {row.source === 'factory' ? 'Factory' : 'Manual'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Instructions Card */}

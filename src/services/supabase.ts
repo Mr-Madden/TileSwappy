@@ -190,6 +190,62 @@ export const getMonthPuzzles = async (startDate: string, endDate: string) => {
   }
 };
 
+// Admin schedule view -- unlike getWeekPuzzles/getMonthPuzzles (which
+// collapse to one row per date, picking a single "default" difficulty
+// for the player-facing carousel/calendar), this returns every
+// date+difficulty slot separately, from both daily_puzzles and
+// Factory's puzzle_calendar, so AdminPage can show the admin what's
+// already scheduled -- across all 3 difficulty tiers -- before they
+// upload something that might clash with an existing Factory puzzle.
+export const getScheduleForDateRange = async (startDate: string, endDate: string) => {
+  const { data: legacyData, error: legacyError } = await supabase
+    .from('daily_puzzles')
+    .select('date, difficulty, title')
+    .gte('date', startDate)
+    .lte('date', endDate);
+
+  if (legacyError) {
+    console.error('Error fetching legacy schedule:', legacyError);
+  }
+
+  const { data: factoryData, error: factoryError } = await supabase
+    .from('puzzle_calendar')
+    .select(`
+      scheduled_date,
+      difficulty,
+      puzzle:puzzles!inner (
+        status,
+        surface:surfaces (theme:themes (name))
+      )
+    `)
+    .gte('scheduled_date', startDate)
+    .lte('scheduled_date', endDate)
+    .eq('puzzle.status', 'published');
+
+  if (factoryError) {
+    console.error('Error fetching Factory schedule:', factoryError);
+  }
+
+  const legacyRows = (legacyData || []).map((row: any) => ({
+    date: row.date as string,
+    difficulty: (row.difficulty as string) || 'Medium',
+    title: row.title as string,
+    source: 'legacy' as const,
+  }));
+
+  const factoryRows = (factoryData || []).map((row: any) => ({
+    date: row.scheduled_date as string,
+    difficulty: row.difficulty.charAt(0).toUpperCase() + row.difficulty.slice(1),
+    title: (row.puzzle?.surface?.theme?.name as string) || 'Untitled',
+    source: 'factory' as const,
+  }));
+
+  return [...factoryRows, ...legacyRows].sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    return a.difficulty.localeCompare(b.difficulty);
+  });
+};
+
 // Upload puzzle with image and release time
 export const uploadPuzzle = async (puzzle: {
   date: string;
