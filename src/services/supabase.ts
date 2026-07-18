@@ -155,27 +155,35 @@ export const getWeekPuzzles = async (startDate: string, endDate: string) => {
   return merged.sort((a: any, b: any) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 };
 
-// Fetch month of puzzles for calendar
+// Fetch month of puzzles for calendar -- merges Factory puzzles the
+// same way getWeekPuzzles does (Factory takes priority for any date
+// present in both), so StreakModal's calendar view doesn't miss them.
 export const getMonthPuzzles = async (startDate: string, endDate: string) => {
   try {
     console.log('🔍 Querying Supabase for puzzles from:', startDate, 'to:', endDate);
-    
+
     const { data, error } = await supabase
       .from('daily_puzzles')
       .select('*')
       .gte('date', startDate)
       .lte('date', endDate)
       .order('date', { ascending: true });
-    
+
     if (error) {
       console.error('❌ Supabase error:', error);
       throw error;
     }
-    
-    console.log('✅ Supabase returned', data?.length || 0, 'puzzles');
-    console.log('📦 First puzzle:', data?.[0]);
-    
-    return data || [];
+
+    const factoryPuzzles = await getFactoryPuzzlesForDateRange(startDate, endDate);
+    const factoryDates = new Set(factoryPuzzles.map(p => p.date));
+    const merged = [
+      ...factoryPuzzles,
+      ...(data || []).filter((p: any) => !factoryDates.has(p.date))
+    ].sort((a: any, b: any) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+
+    console.log('✅ Supabase returned', data?.length || 0, 'legacy +', factoryPuzzles.length, 'Factory puzzles');
+
+    return merged;
   } catch (error) {
     console.error('❌ Error fetching month puzzles:', error);
     return [];
