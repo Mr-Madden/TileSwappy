@@ -5,8 +5,6 @@ import { StartScreen } from './components/screens/StartScreen';
 import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
 import { BouncingTileSwappyLogo } from './components/BouncingTileSwappyLogo';
-import { GameMonetizeService } from './services/GameMonetizeService';
-import { AudioService } from './services/AudioService';
 
 // Lazy load modals - they're not needed on initial load
 const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
@@ -24,8 +22,6 @@ declare global {
     getHeaderHeight?: () => number;
   }
 }
-
-const GAMEMONETIZE_GAME_ID = 'tqxuxkyk96xztq67lsxlycbftlc6j307';
 
 const STORAGE_KEYS = {
   COMPLETED_PUZZLES: 'tileswappy_completed_puzzles',
@@ -111,29 +107,6 @@ const App: React.FC = () => {
   
   const gameState = useGameState();
 
-  useEffect(() => {
-    const handlePause = () => {
-      if (gameState.gameState.status === 'playing' && !gameState.gameState.isPaused) {
-        gameState.pauseGame();
-      }
-      AudioService.mute();
-    };
-
-    const handleResume = () => {
-      if (gameState.gameState.status === 'playing' && gameState.gameState.isPaused) {
-        gameState.resumeGame();
-      }
-      AudioService.unmute();
-    };
-
-    GameMonetizeService.initialize(
-      GAMEMONETIZE_GAME_ID,
-      handlePause,
-      handleResume
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.COMPLETED_PUZZLES, Array.from(completedPuzzleIds));
   }, [completedPuzzleIds]);
@@ -272,9 +245,6 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
   // Start the game
   gameState.startGame(normalizedPuzzle);
-
-  // Show ad
-  GameMonetizeService.showAd();
 };
 
 
@@ -386,9 +356,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           }
         };
       });
-      
-      GameMonetizeService.showAd();
-      
+
       setTimeout(() => {
         setShowCompletionAnimation(false);
         setShowStreak(true);
@@ -547,11 +515,22 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
             <div className="animate-slide-up" style={{ animationDelay: '0.6s' }}>
               <p className="text-xl text-offwhite font-semibold">
-                {gameState.gameState.moves < 20 ? '🌟 Amazing!' : 
-                 gameState.gameState.moves < 30 ? '✨ Well Done!' : 
+                {gameState.gameState.moves < 20 ? '🌟 Amazing!' :
+                 gameState.gameState.moves < 30 ? '✨ Well Done!' :
                  '🎯 Great Job!'}
               </p>
             </div>
+
+            {currentPuzzle?.themeName && (
+              <div className="animate-slide-up mt-3" style={{ animationDelay: '0.8s' }}>
+                <p className="text-sm text-teal/80">
+                  You solved: <span className="text-offwhite font-bold">{currentPuzzle.themeName}</span>
+                  {currentPuzzle.themeStyleTag && (
+                    <span className="text-teal/60"> ({currentPuzzle.themeStyleTag})</span>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
 
           <style>{`
