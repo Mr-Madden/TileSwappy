@@ -25,6 +25,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [realPuzzles, setRealPuzzles] = useState<any[]>([]);
   const [isLoadingPuzzles, setIsLoadingPuzzles] = useState(true);
   const [showIdleHints] = useState(true);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+
+  // Factory puzzles can publish up to 3 difficulty tiers for the same
+  // date (db/migrations/0006_puzzle_calendar_per_difficulty.sql); a
+  // legacy daily_puzzles row has none, so falls back to itself untouched.
+  const getVariantForDifficulty = (realPuzzleData: any, difficulty: string) => {
+    const variants = realPuzzleData?.difficultyVariants;
+    return variants?.[difficulty.toLowerCase()] ?? realPuzzleData;
+  };
 
   // Auto-load puzzles on mount - no authentication needed
   useEffect(() => {
@@ -261,12 +270,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  const variant = getVariantForDifficulty(day.realPuzzleData, selectedDifficulty);
                                   const puzzleData = {
                                     id: day.id,
                                     title: day.title,
-                                    difficulty: day.difficulty,
+                                    difficulty: day.realPuzzleData?.difficultyVariants ? selectedDifficulty : day.difficulty,
                                     gradient: day.gradient.match(/#[a-fA-F0-9]{6}/g) || ['#FF4C4C', '#2EC4B6'],
-                                    imageUrl: day.imageUrl,
+                                    imageUrl: variant?.image_url ?? day.imageUrl,
+                                    tiles: variant?.tiles,
+                                    themeName: variant?.themeName,
+                                    themeCategory: variant?.themeCategory,
+                                    themeStyleTag: variant?.themeStyleTag,
                                     fromDatabase: !!day.realPuzzleData
                                   };
                                   onStartPuzzle(puzzleData);
@@ -351,6 +365,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </div>
                 )}
               </div>
+
+              {todaysPuzzle?.realPuzzleData?.difficultyVariants &&
+                Object.keys(todaysPuzzle.realPuzzleData.difficultyVariants).length > 1 && (
+                  <div className="flex justify-center gap-2 mb-3">
+                    {(['Easy', 'Medium', 'Hard'] as const).map((tier) => {
+                      const available = tier.toLowerCase() in todaysPuzzle.realPuzzleData.difficultyVariants;
+                      const isSelected = selectedDifficulty === tier;
+                      return (
+                        <button
+                          key={tier}
+                          disabled={!available}
+                          onClick={() => setSelectedDifficulty(tier)}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                            isSelected
+                              ? 'bg-coral text-offwhite'
+                              : available
+                              ? 'bg-navy-light text-teal hover:bg-navy-dark'
+                              : 'bg-navy-light/40 text-teal/30 cursor-not-allowed'
+                          }`}
+                        >
+                          {tier}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
               <p className="text-teal text-[12px] text-center mb-6">
                 Swipe to browse • New puzzles release at midnight

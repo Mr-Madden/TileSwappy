@@ -69,6 +69,37 @@ export type PuzzleStatus =
   | 'failed'
   | 'published';
 
+// Raw, as-stored tile data for a Factory-generated puzzle (Supabase
+// puzzle_tiles rows) -- deliberately NOT the game-runtime Tile shape
+// (no row/col/rotation/edgeHashes yet): useGameState.startGame is what
+// turns these into real, shuffled, playable Tile[] objects.
+export interface FactoryTile {
+  tileIndex: number;
+
+  imageUrl: string;
+
+  correctPosition: number;
+
+  correctRotation: 0 | 90 | 180 | 270;
+}
+
+// One difficulty tier's full puzzle content for a given calendar date
+// (db/migrations/0006_puzzle_calendar_per_difficulty.sql lets up to 3 of
+// these -- Easy/Medium/Hard -- exist for the same date).
+export interface FactoryDifficultyVariant {
+  difficulty: string;
+
+  image_url?: string;
+
+  themeName?: string;
+
+  themeCategory?: string;
+
+  themeStyleTag?: string;
+
+  tiles: FactoryTile[];
+}
+
 export interface Puzzle {
   id: string;
 
@@ -80,7 +111,21 @@ export interface Puzzle {
 
   gradient: string[];
 
-  tiles?: Tile[];
+  tiles?: FactoryTile[];
+
+  // Factory theme metadata (Supabase themes table), used for the
+  // post-solve "You solved: X" reveal -- deliberately not shown
+  // anywhere before a puzzle is solved.
+  themeName?: string;
+
+  themeCategory?: string;
+
+  themeStyleTag?: string;
+
+  // All Easy/Medium/Hard variants published for this puzzle's date, if
+  // this puzzle came from getFactoryPuzzlesForDateRange -- powers the
+  // HomeScreen difficulty picker.
+  difficultyVariants?: Record<string, FactoryDifficultyVariant>;
 
   imageUrl?: string;
 

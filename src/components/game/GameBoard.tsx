@@ -122,6 +122,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
   };
 
+  // Tiles must be explicitly placed by tile.row/tile.col (below) rather
+  // than relying on array order + CSS auto-flow -- swapTiles/rotateTile
+  // only ever update row/col/rotation on the tile objects, never their
+  // position within the tiles array, so auto-flow placement never moved
+  // a swapped tile on screen.
+  const gridSize = Math.round(Math.sqrt(tiles.length)) || 3;
+
   // Render a simple grid of tiles. Keep markup minimal so this file is easy to drop in.
   // The visual styling is expected to be provided by the app's CSS/Tailwind.
   return (
@@ -130,7 +137,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       className="game-board w-full h-full flex items-center justify-center"
       style={{ transform: `scale(${zoomLevel})` }}
     >
-      <div className="tiles-grid grid gap-1" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(64px, 1fr))`, width: 'min(900px, 95%)' }}>
+      <div className="tiles-grid grid gap-1" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: 'min(900px, 95%)' }}>
         {tiles.map((tile) => {
           const isSelected = selectedTile === tile.id;
           const isMatched = matchingEdges.has(tile.id);
@@ -148,8 +155,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               onMouseMove={handleMove}
               className={`tile relative select-none bg-navy-dark border border-navy rounded-md overflow-hidden flex items-center justify-center cursor-pointer`}
               style={{
-                width: 80,
-                height: 80,
+                gridColumn: tile.col + 1,
+                gridRow: tile.row + 1,
+                width: '100%',
+                aspectRatio: '1 / 1',
                 transform: `rotate(${tile.rotation ?? 0}deg)`,
                 outline: isSelected ? '3px solid rgba(78,205,196,0.25)' : undefined,
                 opacity: isMatched ? 0.9 : 1

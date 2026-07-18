@@ -104,7 +104,7 @@ export class PuzzleGenerationService {
     );
   }
 
-  private static generateRotation(difficulty: Difficulty): 0 | 90 | 180 | 270 {
+  static generateRotation(difficulty: Difficulty): 0 | 90 | 180 | 270 {
     switch (difficulty) {
       case 'Easy':
         return 0;
