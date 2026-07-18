@@ -1,5 +1,6 @@
 // src/components/game/GameBoard.tsx
 import React, { useState, useRef } from 'react';
+import { GameLogicService } from '../../services/GameLogicService';
 
 export type Rotation = 0 | 90 | 180 | 270;
 
@@ -129,6 +130,54 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   // a swapped tile on screen.
   const gridSize = Math.round(Math.sqrt(tiles.length)) || 3;
 
+  // Glow bars for seams whose edges genuinely match -- rendered as a
+  // single overlay layer at the whole-grid level, NOT as children of
+  // each tile's own (rotating) div. A per-tile-child bar would inherit
+  // that tile's `transform: rotate(...)`, double-applying a rotation
+  // isEdgeMatch/getRotatedEdge already compensated for internally, and
+  // would get clipped into two mismatched halves by each tile's own
+  // `overflow-hidden` across the grid's gap. A grid-level overlay avoids
+  // both problems. Matches the visual already promised in the tutorial
+  // (TutorialScreen.tsx's mocked-up green glowing seam bars).
+  const seamGlowStyle = {
+    boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'
+  };
+  const seamBars: React.ReactNode[] = [];
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      if (col < gridSize - 1 && matchingEdges.has(GameLogicService.seamKey(row, col, 'right'))) {
+        seamBars.push(
+          <div
+            key={`v-${row}-${col}`}
+            className="absolute w-1 bg-green-500 animate-pulse"
+            style={{
+              left: `${((col + 1) / gridSize) * 100}%`,
+              top: `${(row / gridSize) * 100}%`,
+              height: `${(1 / gridSize) * 100}%`,
+              transform: 'translateX(-50%)',
+              ...seamGlowStyle
+            }}
+          />
+        );
+      }
+      if (row < gridSize - 1 && matchingEdges.has(GameLogicService.seamKey(row, col, 'bottom'))) {
+        seamBars.push(
+          <div
+            key={`h-${row}-${col}`}
+            className="absolute h-1 bg-green-500 animate-pulse"
+            style={{
+              top: `${((row + 1) / gridSize) * 100}%`,
+              left: `${(col / gridSize) * 100}%`,
+              width: `${(1 / gridSize) * 100}%`,
+              transform: 'translateY(-50%)',
+              ...seamGlowStyle
+            }}
+          />
+        );
+      }
+    }
+  }
+
   // Render a simple grid of tiles. Keep markup minimal so this file is easy to drop in.
   // The visual styling is expected to be provided by the app's CSS/Tailwind.
   return (
@@ -137,10 +186,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       className="game-board w-full h-full flex items-center justify-center"
       style={{ transform: `scale(${zoomLevel})` }}
     >
-      <div className="tiles-grid grid gap-1" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: 'min(900px, 95%)' }}>
+      <div className="tiles-grid grid gap-1 relative" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: 'min(900px, 95%)' }}>
         {tiles.map((tile) => {
           const isSelected = selectedTile === tile.id;
-          const isMatched = matchingEdges.has(tile.id);
 
           return (
             <div
@@ -160,8 +208,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 width: '100%',
                 aspectRatio: '1 / 1',
                 transform: `rotate(${tile.rotation ?? 0}deg)`,
-                outline: isSelected ? '3px solid rgba(78,205,196,0.25)' : undefined,
-                opacity: isMatched ? 0.9 : 1
+                outline: isSelected ? '3px solid rgba(78,205,196,0.25)' : undefined
               }}
               aria-pressed={isSelected}
             >
@@ -173,6 +220,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             </div>
           );
         })}
+        <div className="absolute inset-0 pointer-events-none z-20">{seamBars}</div>
       </div>
 
       {/* Controls fallback for accessibility / quick actions */}

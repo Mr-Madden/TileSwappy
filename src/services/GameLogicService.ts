@@ -60,6 +60,18 @@ export class GameLogicService {
     );
   }
 
+  // Shared key format for a physical grid seam -- used by both the
+  // producer (checkEdgeMatches) and the consumer (GameBoard's overlay
+  // render) so they can never drift apart the way tile.id-based keys
+  // and a bare-tile.id lookup once did.
+  static seamKey(
+    row: number,
+    col: number,
+    direction: 'right' | 'bottom'
+  ): string {
+    return `${row}:${col}:${direction}`;
+  }
+
   static isEdgeMatch(
     tile1: Tile,
     tile2: Tile,
@@ -103,14 +115,14 @@ export class GameLogicService {
           tiles.find(t => t.row === row && t.col === col + 1);
 
         if (right && this.isEdgeMatch(current, right, 'right')) {
-          matches.add(`${current.id}-right`);
+          matches.add(this.seamKey(row, col, 'right'));
         }
 
         const bottom =
           tiles.find(t => t.row === row + 1 && t.col === col);
 
         if (bottom && this.isEdgeMatch(current, bottom, 'bottom')) {
-          matches.add(`${current.id}-bottom`);
+          matches.add(this.seamKey(row, col, 'bottom'));
         }
       }
     }

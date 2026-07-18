@@ -151,3 +151,70 @@ describe('GameLogicService.isSolved', () => {
     expect(GameLogicService.isSolved(scrambled)).toBe(false);
   });
 });
+
+// Regression coverage for the id-mismatch bug: checkEdgeMatches used to
+// key its Set by `${tile.id}-right`/`${tile.id}-bottom` (a random
+// per-tile UUID + suffix), while GameBoard.tsx looked up the bare
+// tile.id -- a value that never appeared in the set, so the match
+// indicator silently never fired for ANY puzzle. The fix is a shared
+// `seamKey(row, col, direction)` producer/consumer format; these tests
+// lock in both the format and which specific seams are (and aren't)
+// reported, not just the total count (which is all the pre-existing
+// tests above ever checked).
+describe('GameLogicService.checkEdgeMatches key format', () => {
+  it('keys every match as a deterministic row:col:direction seam id', () => {
+    const tiles = buildSolvedTiles();
+    const matches = GameLogicService.checkEdgeMatches(tiles);
+
+    expect(matches.size).toBe(12);
+    matches.forEach(key => {
+      expect(key).toMatch(/^\d+:\d+:(right|bottom)$/);
+    });
+  });
+
+  it('reports the exact 12 seam keys for the true solved arrangement', () => {
+    const tiles = buildSolvedTiles();
+    const matches = GameLogicService.checkEdgeMatches(tiles);
+
+    const expectedRight = ['0:0:right', '0:1:right', '1:0:right', '1:1:right', '2:0:right', '2:1:right'];
+    const expectedBottom = ['0:0:bottom', '0:1:bottom', '0:2:bottom', '1:0:bottom', '1:1:bottom', '1:2:bottom'];
+
+    [...expectedRight, ...expectedBottom].forEach(key => {
+      expect(matches.has(key)).toBe(true);
+    });
+    expect(matches.size).toBe(expectedRight.length + expectedBottom.length);
+  });
+
+  it('omits exactly the seam whose edge no longer matches, keeping the rest', () => {
+    const tiles = buildSolvedTiles();
+
+    // Break only the seam between (0,1) and (1,1) -- tile index 1's
+    // bottom vs tile index 4's top, originally shared matchId "v-2".
+    // variance/featureScore are set explicitly (not left undefined) so
+    // edgesMatch's fallback comparison genuinely evaluates a mismatch,
+    // rather than both sides defaulting to 0 and trivially "matching".
+    const broken = tiles.map(tile => {
+      if (tile.row === 1 && tile.col === 1) {
+        return {
+          ...tile,
+          edgeHashes: {
+            ...tile.edgeHashes,
+            top: { hash: 'broken', matchId: 'broken', variance: 200, featureScore: 200 }
+          }
+        };
+      }
+      return tile;
+    });
+
+    const matches = GameLogicService.checkEdgeMatches(broken);
+
+    expect(matches.has('0:1:bottom')).toBe(false);
+    expect(matches.size).toBe(11);
+
+    const stillMatched = ['0:0:right', '0:1:right', '1:0:right', '1:1:right', '2:0:right', '2:1:right',
+      '0:0:bottom', '0:2:bottom', '1:0:bottom', '1:1:bottom', '1:2:bottom'];
+    stillMatched.forEach(key => {
+      expect(matches.has(key)).toBe(true);
+    });
+  });
+});
