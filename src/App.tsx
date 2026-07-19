@@ -520,7 +520,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                     {[...Array(12)].map((_, i) => (
                       <div
                         key={i}
-                        className="absolute top-1/2 left-1/2 w-1 h-10 bg-gradient-to-t from-transparent to-yellow-300 rounded-full"
+                        className="absolute top-1/2 left-1/2 w-1 h-10 bg-gradient-to-t from-transparent to-gold-light rounded-full"
                         style={{ transform: `rotate(${i * 30}deg) translateY(-70px)`, transformOrigin: 'center bottom' }}
                       />
                     ))}
@@ -540,7 +540,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
             {(newBests.time || newBests.moves || newBests.swaps) && (
               <div className="animate-badge-pop mb-4" style={{ animationDelay: '0.3s' }}>
-                <span className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-500 text-navy font-extrabold text-sm px-4 py-1.5 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.6)]">
+                <span className="inline-block bg-gradient-to-r from-gold to-gold-dark text-navy font-extrabold text-sm px-4 py-1.5 rounded-full shadow-gold-glow">
                   🎉 New Personal Best!
                 </span>
               </div>
@@ -549,7 +549,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             <div className="flex gap-4 justify-center mb-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
               <div className="relative bg-navy-light/80 backdrop-blur-sm border-2 border-coral rounded-xl px-6 py-3 shadow-coral-glow">
                 {newBests.moves && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-yellow-400 text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-[0_0_10px_rgba(250,204,21,0.7)]">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gold text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-gold-glow">
                     ★ BEST
                   </span>
                 )}
@@ -561,7 +561,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
               <div className="relative bg-navy-light/80 backdrop-blur-sm border-2 border-teal rounded-xl px-6 py-3 shadow-teal-glow">
                 {newBests.swaps && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-yellow-400 text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-[0_0_10px_rgba(250,204,21,0.7)]">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gold text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-gold-glow">
                     ★ BEST
                   </span>
                 )}
@@ -573,7 +573,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
               <div className="relative bg-navy-light/80 backdrop-blur-sm border-2 border-coral rounded-xl px-6 py-3 shadow-coral-glow">
                 {newBests.time && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-yellow-400 text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-[0_0_10px_rgba(250,204,21,0.7)]">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gold text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-gold-glow">
                     ★ BEST
                   </span>
                 )}

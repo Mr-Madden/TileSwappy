@@ -15,10 +15,6 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
 }) => {
   const [selectedTab, setSelectedTab] = useState<'overview' | 'details'>('overview');
 
-  // Add debug logging
-  console.log('📊 PlayerStatsModal - puzzleStats:', puzzleStats);
-  console.log('📊 PlayerStatsModal - stats keys:', Object.keys(puzzleStats));
-
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -33,31 +29,27 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
 
   // Get puzzle title from puzzleId
   const getPuzzleTitle = (puzzleId: string, stats: any): string => {
-    console.log('🎯 getPuzzleTitle called with:', puzzleId, stats);
-    
     // PRIORITY 1: If the stats object has a puzzleTitle field, use it
     if (stats.puzzleTitle) {
-      console.log('✅ Using stored puzzleTitle:', stats.puzzleTitle);
       return stats.puzzleTitle;
     }
-    
+
     // PRIORITY 2: If puzzleId looks like a date (YYYY-MM-DD)
     if (puzzleId.match(/^\d{4}-\d{2}-\d{2}$/)) {
       const date = new Date(puzzleId + 'T00:00:00'); // Add time to avoid timezone issues
-      const formatted = date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
+      const formatted = date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
       });
-      console.log('📅 Formatted date:', formatted);
       return formatted;
     }
-    
+
     // PRIORITY 3: If it's just "today"
     if (puzzleId === 'today') {
       return "Today's Puzzle";
     }
-    
+
     // PRIORITY 4: Make readable from ID
     const readable = puzzleId
       .replace(/_/g, ' ')
@@ -65,8 +57,7 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
-    
-    console.log('📝 Readable title:', readable);
+
     return readable;
   };
 
@@ -197,9 +188,9 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                          index === 0 ? 'bg-yellow-500 text-navy' :
-                          index === 1 ? 'bg-gray-400 text-navy' :
-                          index === 2 ? 'bg-orange-600 text-white' :
+                          index === 0 ? 'bg-gold text-navy' :
+                          index === 1 ? 'bg-silver text-navy' :
+                          index === 2 ? 'bg-bronze text-white' :
                           'bg-navy-light text-white/60'
                         }`}>
                           {index + 1}

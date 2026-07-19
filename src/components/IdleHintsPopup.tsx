@@ -105,9 +105,9 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
               handleArchiveClick();
             }}
             onMouseEnter={() => console.log('Hovering Archive')}
-            className="w-full rounded-xl p-4 cursor-pointer bg-purple-500/20 hover:bg-purple-500/30 border-2 border-purple-500/40 hover:border-purple-500/60 transition-all"
+            className="w-full rounded-xl p-4 cursor-pointer bg-violet/20 hover:bg-violet/30 border-2 border-violet/40 hover:border-violet/60 transition-all"
           >
-            <h4 className="text-lg font-bold text-purple-300 mb-1">🗂️ Practice Puzzles</h4>
+            <h4 className="text-lg font-bold text-violet-light mb-1">🗂️ Practice Puzzles</h4>
             <p className="text-offwhite/70 text-xs">Easy gradient puzzles to practice your skills</p>
           </div>
 
