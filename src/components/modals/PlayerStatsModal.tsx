@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, TrendingUp, Trophy, Target, Clock } from 'lucide-react';
+import { TrendingUp, Trophy, Target, Clock } from 'lucide-react';
+import { ModalShell } from '../common/ModalShell';
 
 interface PlayerStatsModalProps {
   onClose: () => void;
@@ -87,55 +88,55 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
     .filter(([_, stats]) => stats.bestTime)
     .sort((a, b) => a[1].bestTime - b[1].bestTime);
 
+  const tabs = (
+    <div className="flex border-b border-navy px-6 flex-shrink-0">
+      <button
+        onClick={() => setSelectedTab('overview')}
+        className={`px-4 py-3 text-sm font-semibold transition relative ${
+          selectedTab === 'overview'
+            ? 'text-teal'
+            : 'text-offwhite/60 hover:text-offwhite/80'
+        }`}
+      >
+        Overview
+        {selectedTab === 'overview' && (
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal"></div>
+        )}
+      </button>
+      <button
+        onClick={() => setSelectedTab('details')}
+        className={`px-4 py-3 text-sm font-semibold transition relative ${
+          selectedTab === 'details'
+            ? 'text-teal'
+            : 'text-offwhite/60 hover:text-offwhite/80'
+        }`}
+      >
+        Puzzle Details
+        {selectedTab === 'details' && (
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal"></div>
+        )}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-navy-light rounded-2xl max-w-2xl w-full shadow-2xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="bg-black/30 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-          <div>
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Trophy className="text-coral" />
-              Your Stats
-            </h2>
-            <p className="text-sm text-blue-200">Track your puzzle-solving journey</p>
-          </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white">
-            <X size={24} />
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex border-b border-white/10 px-6">
-          <button
-            onClick={() => setSelectedTab('overview')}
-            className={`px-4 py-3 text-sm font-semibold transition relative ${
-              selectedTab === 'overview'
-                ? 'text-teal'
-                : 'text-white/60 hover:text-white/80'
-            }`}
-          >
-            Overview
-            {selectedTab === 'overview' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal"></div>
-            )}
-          </button>
-          <button
-            onClick={() => setSelectedTab('details')}
-            className={`px-4 py-3 text-sm font-semibold transition relative ${
-              selectedTab === 'details'
-                ? 'text-teal'
-                : 'text-white/60 hover:text-white/80'
-            }`}
-          >
-            Puzzle Details
-            {selectedTab === 'details' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal"></div>
-            )}
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 overflow-y-auto flex-1">
+    <ModalShell
+      onClose={onClose}
+      title="Your Stats"
+      titleIcon={Trophy}
+      subtitle="Track your puzzle-solving journey"
+      maxWidth="2xl"
+      headerExtra={tabs}
+      bodyClassName="p-6"
+      footer={
+        <button
+          onClick={onClose}
+          className="w-full bg-gradient-to-r from-coral to-teal hover:from-coral-dark hover:to-teal-dark text-offwhite font-bold py-3 px-6 rounded-xl transition shadow-lg"
+        >
+          Close
+        </button>
+      }
+    >
           {selectedTab === 'overview' ? (
             <div className="space-y-6">
               {/* Main Stats Grid */}
@@ -303,18 +304,6 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
               )}
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 bg-black/20 rounded-b-2xl">
-          <button
-            onClick={onClose}
-            className="w-full bg-gradient-to-r from-coral to-teal hover:from-coral-dark hover:to-teal-dark text-offwhite font-bold py-3 px-6 rounded-xl transition shadow-lg"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };

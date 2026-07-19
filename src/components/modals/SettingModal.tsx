@@ -1,6 +1,7 @@
 import React from 'react';
-import { X, BookOpen, Info, HelpCircle, FileText, Newspaper } from 'lucide-react';
+import { BookOpen, Info, HelpCircle, FileText, Newspaper, Settings } from 'lucide-react';
 import { DailyPuzzleNotifications } from '../DailyPuzzleNotifications';
+import { ModalShell } from '../common/ModalShell';
 
 interface AppSettings {
   selectedLanguage: string;
@@ -57,18 +58,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-navy-light rounded-2xl max-w-md w-full shadow-2xl border-2 border-navy-dark max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="bg-navy-dark px-6 py-4 flex items-center justify-between rounded-t-2xl border-b border-navy sticky top-0 z-10">
-          <h2 className="text-2xl font-bold text-offwhite">⚙️ Settings</h2>
-          <button onClick={onClose} className="text-offwhite/60 hover:text-offwhite transition">
-            <X size={24} />
-          </button>
-        </div>
-
+    <ModalShell onClose={onClose} title="Settings" titleIcon={Settings} maxWidth="md" bodyClassName="">
         {/* Content */}
-        <div className="overflow-y-auto flex-1">
+        <div>
           {/* Learn & Info Section */}
           <div className="px-6 py-4">
             <h3 className="text-white/60 text-xs font-semibold uppercase mb-3">Learn & Info</h3>
@@ -229,7 +221,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };

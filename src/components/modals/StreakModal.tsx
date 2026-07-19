@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, X, ChevronLeft, ChevronRight, Trophy, Lock, Clock } from 'lucide-react';
+import { Zap, ChevronLeft, ChevronRight, Trophy, Lock, Clock } from 'lucide-react';
 import { getCurrentDate } from '../../utils/helpers';
 import { getMonthPuzzles, isPuzzleUnlocked } from '../../services/supabase';
+import { ModalShell } from '../common/ModalShell';
 
 interface StreakModalProps {
   onClose: () => void;
@@ -227,26 +228,22 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   ).length;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-navy-light rounded-2xl max-w-lg w-full shadow-2xl">
-        {/* Header */}
-        <div className="bg-black/30 px-6 py-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <Zap className="text-coral" />
-              Your Puzzle Calendar
-            </h2>
-            <p className="text-sm text-blue-200">
-              Click any unlocked puzzle to play
-            </p>
-          </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white">
-            <X size={24} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 max-h-[75vh] overflow-y-auto">
+    <ModalShell
+      onClose={onClose}
+      title="Your Puzzle Calendar"
+      titleIcon={Zap}
+      subtitle="Click any unlocked puzzle to play"
+      maxWidth="lg"
+      bodyClassName="p-6"
+      footer={
+        <button
+          onClick={onClose}
+          className="w-full bg-gradient-to-r from-coral to-teal hover:from-coral-dark hover:to-teal-dark text-offwhite font-bold py-3 px-6 rounded-xl transition shadow-lg"
+        >
+          Continue Playing
+        </button>
+      }
+    >
           {/* Stats */}
           <div className="bg-black/20 rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center">
@@ -539,15 +536,6 @@ export const StreakModal: React.FC<StreakModalProps> = ({
               <span className="text-white/60">No Puzzle</span>
             </div>
           </div>
-
-          <button
-            onClick={onClose}
-            className="w-full mt-6 bg-gradient-to-r from-coral to-teal hover:from-coral-dark hover:to-teal-dark text-offwhite font-bold py-3 px-6 rounded-xl transition shadow-lg"
-          >
-            Continue Playing
-          </button>
-        </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };

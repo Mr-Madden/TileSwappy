@@ -1,5 +1,6 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { Calendar } from 'lucide-react';
+import { ModalShell } from '../common/ModalShell';
 
 interface Puzzle {
   id: string;
@@ -311,21 +312,14 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
   const totalPuzzles = puzzleCategories.reduce((sum, cat) => sum + cat.puzzles.length, 0);
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-navy-light rounded-2xl max-w-2xl w-full h-[85vh] shadow-2xl flex flex-col border-2 border-navy-dark">
-        <div className="bg-navy-dark px-6 py-4 flex items-center justify-between flex-shrink-0 rounded-t-2xl border-b border-navy">
-          <div>
-            <h2 className="text-2xl font-bold text-offwhite flex items-center gap-2">
-              📅 Puzzle Archive
-            </h2>
-            <p className="text-sm text-teal">Browse and play all puzzles</p>
-          </div>
-          <button onClick={onClose} className="text-coral hover:text-teal transition">
-            <X size={24} />
-          </button>
-        </div>
-        
-        <div className="p-6 overflow-y-auto flex-1">
+    <ModalShell
+      onClose={onClose}
+      title="Puzzle Archive"
+      titleIcon={Calendar}
+      subtitle="Browse and play all puzzles"
+      maxWidth="2xl"
+      bodyClassName="p-6"
+    >
           <div className="mb-6 bg-navy-dark rounded-xl p-4 border border-navy">
             <div className="flex items-center justify-between">
               <div>
@@ -420,8 +414,6 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
               </div>
             </div>
           ))}
-        </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
