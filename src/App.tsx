@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Calendar, Settings, BarChart3 } from 'lucide-react';
 import { useGameState } from './hooks/useGameState';
 import { StartScreen } from './components/screens/StartScreen';
@@ -74,6 +74,9 @@ const App: React.FC = () => {
   const [showStreak, setShowStreak] = useState(false);
   const [showCompletionAnimation, setShowCompletionAnimation] = useState(false);
   const [hasProcessedCompletion, setHasProcessedCompletion] = useState(false);
+  const [newBests, setNewBests] = useState<{ time: boolean; moves: boolean; swaps: boolean }>({
+    time: false, moves: false, swaps: false
+  });
   const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
   const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
   
@@ -86,9 +89,18 @@ const App: React.FC = () => {
   const [completedDates, setCompletedDates] = useState<Set<string>>(() => 
     new Set(loadFromStorage<string[]>(STORAGE_KEYS.COMPLETED_DATES, []))
   );
-  const [puzzleStats, setPuzzleStats] = useState<Record<string, any>>(() => 
+  const [puzzleStats, setPuzzleStats] = useState<Record<string, any>>(() =>
     loadFromStorage(STORAGE_KEYS.PUZZLE_STATS, {})
   );
+  // Read inside the completion-detection effect below without needing
+  // puzzleStats itself in that effect's dependency array -- we only
+  // want the latest value at the moment a puzzle is solved, not to
+  // re-run the effect every time stats change (which would include its
+  // own setPuzzleStats call just below).
+  const puzzleStatsRef = useRef(puzzleStats);
+  useEffect(() => {
+    puzzleStatsRef.current = puzzleStats;
+  }, [puzzleStats]);
   const [totalGamesPlayed, setTotalGamesPlayed] = useState(() => 
     loadFromStorage(STORAGE_KEYS.TOTAL_GAMES, 0)
   );
@@ -238,6 +250,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
   setHasProcessedCompletion(false);
   setShowCompletionAnimation(false);
   setHasShownTutorialForCurrentPuzzle(false);
+  setNewBests({ time: false, moves: false, swaps: false });
 
   // Set current puzzle
   setCurrentPuzzleDate(dateToUse);
@@ -327,7 +340,25 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       if (isAdminPuzzle) {
         setCompletedDates(prev => new Set([...prev, currentPuzzleDate]));
       }
-      
+
+      const finalTime = gameState.gameState.solveTime || 0;
+      const finalMoves = gameState.gameState.moves;
+      const finalSwaps = gameState.gameState.swaps;
+
+      // Compare against the PRIOR best (before this run overwrites it)
+      // to decide what to celebrate. Only counts once there's been at
+      // least one earlier attempt -- a first-ever completion trivially
+      // "beats" a null best, which isn't a real improvement worth a
+      // New Best badge. Each stat is judged independently (you can set
+      // a new best in moves without also being your fastest time).
+      const priorStats = puzzleStatsRef.current[puzzleKey];
+      const hasPriorAttempt = !!priorStats && priorStats.attempts > 0;
+      setNewBests({
+        time: hasPriorAttempt && priorStats.bestTime != null && finalTime < priorStats.bestTime,
+        moves: hasPriorAttempt && priorStats.bestMoves != null && finalMoves < priorStats.bestMoves,
+        swaps: hasPriorAttempt && priorStats.bestSwaps != null && finalSwaps < priorStats.bestSwaps
+      });
+
       setPuzzleStats(prev => {
         const currentStats = prev[puzzleKey] || {
           attempts: 0,
@@ -337,20 +368,19 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           completionDates: [],
           puzzleTitle: null
         };
-        
-        const finalTime = gameState.gameState.solveTime || 0;
+
         const isNewBest = !currentStats.bestTime || finalTime < currentStats.bestTime;
-        
+
         return {
           ...prev,
           [puzzleKey]: {
             attempts: currentStats.attempts + 1,
             bestTime: isNewBest ? finalTime : currentStats.bestTime,
-            bestMoves: isNewBest ? gameState.gameState.moves : currentStats.bestMoves,
-            bestSwaps: isNewBest ? gameState.gameState.swaps : currentStats.bestSwaps,
+            bestMoves: isNewBest ? finalMoves : currentStats.bestMoves,
+            bestSwaps: isNewBest ? finalSwaps : currentStats.bestSwaps,
             lastPlayedTime: finalTime,
-            lastPlayedMoves: gameState.gameState.moves,
-            lastPlayedSwaps: gameState.gameState.swaps,
+            lastPlayedMoves: finalMoves,
+            lastPlayedSwaps: finalSwaps,
             completionDates: [...currentStats.completionDates, new Date().toISOString()],
             puzzleTitle: puzzleTitle || currentStats.puzzleTitle
           }
@@ -459,25 +489,43 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       {showCompletionAnimation && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
-            {[...Array(30)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-3 h-3 rounded-full animate-confetti"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: '-20px',
-                  backgroundColor: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A8E6CF'][Math.floor(Math.random() * 4)],
-                  animationDelay: `${Math.random() * 0.5}s`,
-                  animationDuration: `${2 + Math.random() * 2}s`
-                }}
-              />
-            ))}
+            {[...Array(newBests.time || newBests.moves || newBests.swaps ? 90 : 55)].map((_, i) => {
+              const shape = ['circle', 'square', 'diamond'][i % 3];
+              const size = 8 + Math.floor(Math.random() * 8);
+              const color = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A8E6CF', '#C77DFF'][Math.floor(Math.random() * 5)];
+              return (
+                <div
+                  key={i}
+                  className={`absolute animate-confetti ${shape === 'circle' ? 'rounded-full' : shape === 'diamond' ? 'rotate-45' : ''}`}
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: '-20px',
+                    width: size,
+                    height: size,
+                    backgroundColor: color,
+                    animationDelay: `${Math.random() * 0.6}s`,
+                    animationDuration: `${1.8 + Math.random() * 2.2}s`
+                  }}
+                />
+              );
+            })}
           </div>
 
           <div className="text-center relative z-10">
             <div className="mb-6 animate-bounce-in">
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-teal/30 rounded-full blur-2xl animate-pulse"></div>
+                {(newBests.time || newBests.moves || newBests.swaps) && (
+                  <div className="absolute inset-[-30px] animate-starburst">
+                    {[...Array(12)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute top-1/2 left-1/2 w-1 h-10 bg-gradient-to-t from-transparent to-yellow-300 rounded-full"
+                        style={{ transform: `rotate(${i * 30}deg) translateY(-70px)`, transformOrigin: 'center bottom' }}
+                      />
+                    ))}
+                  </div>
+                )}
                 <div className="relative text-9xl animate-wiggle">
                   🏆
                 </div>
@@ -485,27 +533,50 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             </div>
 
             <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal via-coral to-teal mb-4 animate-gradient">
+              <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal via-coral to-teal mb-2 animate-gradient">
                 Puzzle Solved!
               </h2>
             </div>
 
+            {(newBests.time || newBests.moves || newBests.swaps) && (
+              <div className="animate-badge-pop mb-4" style={{ animationDelay: '0.3s' }}>
+                <span className="inline-block bg-gradient-to-r from-yellow-400 to-yellow-500 text-navy font-extrabold text-sm px-4 py-1.5 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.6)]">
+                  🎉 New Personal Best!
+                </span>
+              </div>
+            )}
+
             <div className="flex gap-4 justify-center mb-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-              <div className="bg-navy-light/80 backdrop-blur-sm border-2 border-coral rounded-xl px-6 py-3 shadow-coral-glow">
+              <div className="relative bg-navy-light/80 backdrop-blur-sm border-2 border-coral rounded-xl px-6 py-3 shadow-coral-glow">
+                {newBests.moves && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-yellow-400 text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-[0_0_10px_rgba(250,204,21,0.7)]">
+                    ★ BEST
+                  </span>
+                )}
                 <div className="text-3xl font-bold text-coral">
                   {gameState.gameState.moves}
                 </div>
                 <div className="text-xs text-teal font-semibold">Moves</div>
               </div>
-              
-              <div className="bg-navy-light/80 backdrop-blur-sm border-2 border-teal rounded-xl px-6 py-3 shadow-teal-glow">
+
+              <div className="relative bg-navy-light/80 backdrop-blur-sm border-2 border-teal rounded-xl px-6 py-3 shadow-teal-glow">
+                {newBests.swaps && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-yellow-400 text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-[0_0_10px_rgba(250,204,21,0.7)]">
+                    ★ BEST
+                  </span>
+                )}
                 <div className="text-3xl font-bold text-teal">
                   {gameState.gameState.swaps}
                 </div>
                 <div className="text-xs text-offwhite font-semibold">Swaps</div>
               </div>
-              
-              <div className="bg-navy-light/80 backdrop-blur-sm border-2 border-coral rounded-xl px-6 py-3 shadow-coral-glow">
+
+              <div className="relative bg-navy-light/80 backdrop-blur-sm border-2 border-coral rounded-xl px-6 py-3 shadow-coral-glow">
+                {newBests.time && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-yellow-400 text-navy text-[9px] font-bold px-2 py-0.5 rounded-full animate-badge-pop shadow-[0_0_10px_rgba(250,204,21,0.7)]">
+                    ★ BEST
+                  </span>
+                )}
                 <div className="text-2xl font-bold font-mono text-coral">
                   {formatTime(gameState.gameState.solveTime || 0)}
                 </div>
@@ -581,6 +652,18 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               100% { background-position: 0% 50%; }
             }
 
+            @keyframes starburst {
+              0% { transform: scale(0.3) rotate(0deg); opacity: 0; }
+              30% { opacity: 1; }
+              100% { transform: scale(1.4) rotate(90deg); opacity: 0; }
+            }
+
+            @keyframes badge-pop {
+              0% { transform: scale(0) translateX(-50%); opacity: 0; }
+              60% { transform: scale(1.15) translateX(-50%); }
+              100% { transform: scale(1) translateX(-50%); opacity: 1; }
+            }
+
             .animate-confetti {
               animation: confetti linear forwards;
             }
@@ -601,6 +684,14 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             .animate-gradient {
               background-size: 200% auto;
               animation: gradient 3s ease infinite;
+            }
+
+            .animate-starburst {
+              animation: starburst 1.4s ease-out infinite;
+            }
+
+            .animate-badge-pop {
+              animation: badge-pop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
             }
 
             .shadow-coral-glow {
