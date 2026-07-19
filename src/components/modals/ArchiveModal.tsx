@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Heart, Check } from 'lucide-react';
 import { ModalShell } from '../common/ModalShell';
 
 interface Puzzle {
@@ -338,9 +338,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
           {favoritePuzzleIds.size > 0 && (
             <div className="mb-6">
               <h3 className="text-offwhite font-semibold text-sm mb-2 flex items-center gap-2">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-coral">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
+                <Heart size={18} fill="currentColor" className="text-coral" />
                 Your Favorites ({favoritePuzzleIds.size})
               </h3>
             </div>
@@ -373,9 +371,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
                         />
                         {isCompleted && (
                           <div className="absolute top-1 left-1 bg-teal text-navy rounded-full p-0.5">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                              <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
+                            <Check size={12} strokeWidth={3} />
                           </div>
                         )}
                         <button
@@ -385,17 +381,11 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
                           }}
                           className="absolute top-1 right-1 bg-navy-dark/80 hover:bg-navy/80 rounded-full p-1 transition"
                         >
-                          <svg 
-                            width="12" 
-                            height="12" 
-                            viewBox="0 0 24 24" 
+                          <Heart
+                            size={12}
                             fill={isFavorite ? 'currentColor' : 'none'}
-                            stroke="currentColor"
-                            strokeWidth="2"
                             className={isFavorite ? 'text-coral' : 'text-offwhite'}
-                          >
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                          </svg>
+                          />
                         </button>
                       </div>
                       <div className="mt-1 text-left">

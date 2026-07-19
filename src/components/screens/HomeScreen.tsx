@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { HelpCircle, Settings, Check, Lock, LayoutGrid, Flame, BarChart2 } from 'lucide-react';
 import { getCurrentDate, formatDisplayDate, addDays, getRelativeDayLabel } from '../../utils/helpers';
 import { getWeekPuzzles } from '../../services/supabase';
 import { IdleHintsPopup } from '../IdleHintsPopup';
@@ -151,11 +152,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         aria-label="How to Play Tutorial"
         className="fixed top-24 left-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2EC4B6" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-          <line x1="12" y1="17" x2="12.01" y2="17"></line>
-        </svg>
+        <HelpCircle size={24} className="text-teal" />
         <span className="text-teal text-[10px] font-semibold">Tutorial</span>
       </button>
 
@@ -165,16 +162,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         aria-label="Settings"
         className="fixed top-24 right-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F4F4F4" strokeWidth="2">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v6m0 6v6"></path>
-          <path d="M4.22 4.22l4.24 4.24m5.66 5.66l4.24 4.24"></path>
-          <path d="M1 12h6m6 0h6"></path>
-          <path d="M4.22 19.78l4.24-4.24m5.66-5.66l4.24-4.24"></path>
-          <path d="M19.78 4.22l-4.24 4.24m-5.66 5.66l-4.24-4.24"></path>
-          <path d="M23 12h-6m-6 0H1"></path>
-          <path d="M20.78 19.78l-4.24-4.24m-5.66-5.66l-4.24-4.24"></path>
-        </svg>
+        <Settings size={24} className="text-offwhite" />
         <span className="text-offwhite text-[10px] font-semibold">Settings</span>
       </button>
 
@@ -182,7 +170,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="max-w-md w-full py-8">
           {/* Logo and Title */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-36 h-36 bg-navy-light backdrop-blur-sm rounded-5xl mb-4 shadow-2xl border-2 border-navy-light">
+            <div className="inline-flex items-center justify-center w-36 h-36 bg-navy-light backdrop-blur-sm rounded-3xl mb-4 shadow-2xl border-2 border-navy-light">
               <img 
                 src="/icon.png" 
                 alt="TileSwappy Logo" 
@@ -340,17 +328,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                               )}
                               {day.status === 'past' && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-navy/40">
-                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2EC4B6" strokeWidth="3">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                  </svg>
+                                  <Check size={24} strokeWidth={3} className="text-teal" />
                                 </div>
                               )}
                               {day.status === 'future' && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-navy/60">
-                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF4C4C" strokeWidth="2">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                  </svg>
+                                  <Lock size={24} className="text-coral" />
                                 </div>
                               )}
                             </div>
@@ -403,12 +386,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   onClick={onOpenArchive}
                   className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F4F4" strokeWidth="2" className="mx-auto mb-1">
-                    <rect x="3" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="14" width="7" height="7"></rect>
-                    <rect x="3" y="14" width="7" height="7"></rect>
-                  </svg>
+                  <LayoutGrid size={20} className="text-offwhite mx-auto mb-1" />
                   <p className="text-[15px] text-offwhite font-semibold">Archive</p>
                   <p className="text-[12px] text-teal">Browse</p>
                 </button>
@@ -418,9 +396,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   onClick={onOpenStreak}
                   className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF4C4C" strokeWidth="2" className="mx-auto mb-1">
-                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
-                  </svg>
+                  <Flame size={20} className="text-coral mx-auto mb-1" />
                   <p className="text-[15px] text-offwhite font-semibold">Streak</p>
                   <p className="text-[12px] text-teal">Track</p>
                 </button>
@@ -430,11 +406,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   onClick={onOpenStats}
                   className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4F4F4" strokeWidth="2" className="mx-auto mb-1">
-                    <line x1="12" y1="20" x2="12" y2="10"></line>
-                    <line x1="18" y1="20" x2="18" y2="4"></line>
-                    <line x1="6" y1="20" x2="6" y2="16"></line>
-                  </svg>
+                  <BarChart2 size={20} className="text-offwhite mx-auto mb-1" />
                   <p className="text-[15px] text-offwhite font-semibold">Stats</p>
                   <p className="text-[12px] text-teal">View</p>
                 </button>

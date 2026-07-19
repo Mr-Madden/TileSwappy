@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, ChevronLeft, ChevronRight, Trophy, Lock, Clock } from 'lucide-react';
+import { Zap, ChevronLeft, ChevronRight, Trophy, Lock, Clock, Play, Check } from 'lucide-react';
 import { getCurrentDate } from '../../utils/helpers';
 import { getMonthPuzzles, isPuzzleUnlocked } from '../../services/supabase';
 import { ModalShell } from '../common/ModalShell';
@@ -418,30 +418,12 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           <div className="absolute inset-0 bg-black/60 group-hover:bg-black/40 transition flex items-center justify-center">
                             {isHovered ? (
                               <div className="flex flex-col items-center gap-1">
-                                <svg 
-                                  width="20" 
-                                  height="20" 
-                                  viewBox="0 0 24 24" 
-                                  fill="none" 
-                                  stroke="white" 
-                                  strokeWidth="2"
-                                >
-                                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                </svg>
+                                <Play size={20} fill="currentColor" className="text-white" />
                                 <span className="text-xs text-white font-bold">Play</span>
                               </div>
                             ) : (
                               <div className="w-8 h-8 bg-coral/80 rounded-full flex items-center justify-center">
-                                <svg 
-                                  width="16" 
-                                  height="16" 
-                                  viewBox="0 0 24 24" 
-                                  fill="white" 
-                                  stroke="white" 
-                                  strokeWidth="2"
-                                >
-                                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                                </svg>
+                                <Play size={16} fill="currentColor" className="text-white" />
                               </div>
                             )}
                           </div>
@@ -481,8 +463,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                             </div>
                           ) : (
                             <div className="flex flex-col items-center">
-                              <div className="w-7 h-7 bg-teal rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg">
-                                ✓
+                              <div className="w-7 h-7 bg-teal rounded-full flex items-center justify-center text-white shadow-lg">
+                                <Check size={16} strokeWidth={3} />
                               </div>
                               {userScore && (
                                 <div className="text-[10px] text-white font-bold mt-1 bg-black/60 px-1.5 py-0.5 rounded">
@@ -508,14 +490,14 @@ export const StreakModal: React.FC<StreakModalProps> = ({
           {/* Legend */}
           <div className="mt-4 flex justify-center gap-4 text-xs flex-wrap">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-teal rounded flex items-center justify-center text-white text-[10px] shadow">✓</div>
+              <div className="w-5 h-5 bg-teal rounded flex items-center justify-center text-white shadow">
+                <Check size={12} strokeWidth={3} />
+              </div>
               <span className="text-white/60">Completed</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 bg-coral/80 rounded flex items-center justify-center">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
-                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
+                <Play size={10} fill="white" className="text-white" />
               </div>
               <span className="text-white/60">Available</span>
             </div>
