@@ -146,6 +146,17 @@ export interface Puzzle {
   averageEdgeStrength?: number;
 
   averageTileComplexity?: number;
+
+  // Practice-puzzle gradient rendering (ArchiveModal's built-in catalog).
+  // Optional because Factory/daily puzzles never set these -- they render
+  // from real tile images instead. See PuzzleGenerationService.createPuzzleFromGradient,
+  // which is the actual canvas the tiles get cut from: it must honor these
+  // the same way ArchiveModal's own browse-thumbnail preview does, or the
+  // played puzzle silently becomes a different image than the one the
+  // player picked.
+  pattern?: string;
+
+  direction?: string;
 }
 
 // =====================

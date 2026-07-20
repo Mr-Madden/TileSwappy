@@ -5,25 +5,148 @@ export class PuzzleGenerationService {
   private static readonly GRID = 3;
   private static readonly MAX_ATTEMPTS = 25;
 
+  // Linear-gradient direction, in canvas start/end points -- mirrors CSS
+  // linear-gradient()'s named directions (a corner direction runs the
+  // gradient axis corner-to-corner, e.g. "to bottom right" is (0,0)->(size,size)).
+  private static linearEndpoints(
+    direction: string | undefined,
+    size: number
+  ): { x0: number; y0: number; x1: number; y1: number } {
+    switch (direction) {
+      case 'to top': return { x0: 0, y0: size, x1: 0, y1: 0 };
+      case 'to bottom': return { x0: 0, y0: 0, x1: 0, y1: size };
+      case 'to left': return { x0: size, y0: 0, x1: 0, y1: 0 };
+      case 'to right': return { x0: 0, y0: 0, x1: size, y1: 0 };
+      case 'to top left': return { x0: size, y0: size, x1: 0, y1: 0 };
+      case 'to top right': return { x0: 0, y0: size, x1: size, y1: 0 };
+      case 'to bottom left': return { x0: size, y0: 0, x1: 0, y1: size };
+      case 'to bottom right': return { x0: 0, y0: 0, x1: size, y1: size };
+      // No declared direction (or "wavy", which -- same as its CSS
+      // browse-preview -- is just a plain top-to-bottom blend, not an
+      // actual wave shape): the historical default, a top-left diagonal.
+      default: return { x0: 0, y0: 0, x1: size, y1: size };
+    }
+  }
+
+  /**
+   * Renders the exact same pattern ArchiveModal's getGradientStyle shows
+   * as a CSS preview, but as real canvas pixels -- this is the actual
+   * surface the puzzle gets cut from. Before this matched only `gradient`
+   * and `difficulty`; `pattern`/`direction` were silently dropped, so
+   * every non-default-linear practice puzzle (radial, conic, striped,
+   * diamond, checkerboard, dots, and every custom-direction flow) was
+   * actually played as a generic diagonal blend -- a different image
+   * than the one previewed, with edge characteristics that don't match
+   * what the picked pattern would really produce.
+   */
   static createPuzzleFromGradient(
     gradient: string[],
-    difficulty: Difficulty
+    difficulty: Difficulty,
+    pattern?: string,
+    direction?: string
   ): HTMLCanvasElement {
+    const size = 300;
     const canvas = document.createElement('canvas');
-    canvas.width = 300;
-    canvas.height = 300;
+    canvas.width = size;
+    canvas.height = size;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas unavailable');
 
-    const grad = ctx.createLinearGradient(0, 0, 300, 300);
+    switch (pattern) {
+      case 'radial': {
+        const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / Math.SQRT2);
+        gradient.forEach((color, index) => {
+          grad.addColorStop(index / (gradient.length - 1), color);
+        });
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+        break;
+      }
 
-    gradient.forEach((color, index) => {
-      grad.addColorStop(index / (gradient.length - 1), color);
-    });
+      case 'conic': {
+        const grad = ctx.createConicGradient(0, size / 2, size / 2);
+        gradient.forEach((color, index) => {
+          grad.addColorStop(index / (gradient.length - 1), color);
+        });
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+        break;
+      }
 
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 300, 300);
+      case 'diamond': {
+        // Matches the CSS conic-gradient(from 45deg at 50% 50%, c0 0deg,
+        // c1 90deg, c2 180deg, c1 270deg, c0 360deg) used in the preview.
+        const [c0, c1, c2] = gradient;
+        const grad = ctx.createConicGradient((45 * Math.PI) / 180, size / 2, size / 2);
+        grad.addColorStop(0, c0);
+        grad.addColorStop(0.25, c1 ?? c0);
+        grad.addColorStop(0.5, c2 ?? c0);
+        grad.addColorStop(0.75, c1 ?? c0);
+        grad.addColorStop(1, c0);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+        break;
+      }
+
+      case 'striped': {
+        // Hard color bands (not a blend) running bottom-to-top, matching
+        // the preview's linear-gradient(0deg, stripeStops).
+        const grad = ctx.createLinearGradient(0, size, 0, 0);
+        gradient.forEach((color, index) => {
+          const start = index / gradient.length;
+          const end = (index + 1) / gradient.length;
+          grad.addColorStop(start, color);
+          grad.addColorStop(end, color);
+        });
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+        break;
+      }
+
+      case 'checkerboard': {
+        const cell = 40;
+        const [c0, c1] = gradient;
+        for (let y = 0; y < size; y += cell) {
+          for (let x = 0; x < size; x += cell) {
+            const isEven = ((x / cell) + (y / cell)) % 2 === 0;
+            ctx.fillStyle = isEven ? c0 : (c1 ?? c0);
+            ctx.fillRect(x, y, cell, cell);
+          }
+        }
+        break;
+      }
+
+      case 'dots': {
+        const cell = 30;
+        const [base, dot] = gradient;
+        ctx.fillStyle = base;
+        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = dot ?? base;
+        for (let y = 0; y < size; y += cell) {
+          for (let x = 0; x < size; x += cell) {
+            ctx.beginPath();
+            ctx.arc(x + cell / 2, y + cell / 2, cell * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        break;
+      }
+
+      case 'wavy':
+      case 'linear':
+      default: {
+        const effectiveDirection = pattern === 'wavy' ? 'to bottom' : direction;
+        const { x0, y0, x1, y1 } = this.linearEndpoints(effectiveDirection, size);
+        const grad = ctx.createLinearGradient(x0, y0, x1, y1);
+        gradient.forEach((color, index) => {
+          grad.addColorStop(index / (gradient.length - 1), color);
+        });
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+        break;
+      }
+    }
 
     return canvas;
   }
@@ -75,7 +198,38 @@ export class PuzzleGenerationService {
           size
         );
 
+        // extractEdges' own matchId (`${row}-${col}-${direction}`) is
+        // unique per tile+side and so never actually equals another
+        // edge's -- real matching for canvas-generated tiles fell
+        // through to the fuzzy hash/variance/featureScore fallback in
+        // GameLogicService.edgesMatch, which only works when different
+        // grid positions happen to look visually distinct. Highly
+        // repetitive/symmetric patterns (checkerboard, dots, stripes,
+        // and to a lesser extent radial/conic) have near-identical --
+        // sometimes pixel-identical -- edges at every position, so that
+        // fallback found "matches" almost everywhere regardless of
+        // whether tiles were actually in their solved position -- the
+        // edge-glow hint was frequently meaningless. Since this canvas
+        // is our own deterministic drawing (not an unknown photo), we
+        // already know true adjacency for free; override matchId with
+        // the same grid-position scheme the real Factory-puzzle path
+        // uses. Also scramble hash/variance/featureScore the same
+        // defensive way factoryEdge() does in useGameState.ts -- matchId
+        // alone isn't enough, since edgesMatch() OR's in a raw
+        // edge1.hash === edge2.hash check that a repeating pattern can
+        // still satisfy by coincidence even when matchId correctly says
+        // "no" (this is exactly why the Factory path never uses its real
+        // pixel hash either).
         const edges = EdgeExtractionService.extractEdges(tileCanvas, row, col);
+        const gridMatchIds = this.gridEdgeMatchIds(row, col, this.GRID);
+        const position = row * this.GRID + col;
+        const directionIndex: Record<'top' | 'right' | 'bottom' | 'left', number> = { top: 0, right: 1, bottom: 2, left: 3 };
+        (Object.keys(gridMatchIds) as (keyof typeof gridMatchIds)[]).forEach((direction) => {
+          edges[direction].matchId = gridMatchIds[direction];
+          edges[direction].hash = `grid-${position}-${directionIndex[direction]}`;
+          edges[direction].variance = (position * 37 + directionIndex[direction] * 11) % 100;
+          edges[direction].featureScore = (position * 53 + directionIndex[direction] * 17) % 100;
+        });
 
         tiles.push({
           id: crypto.randomUUID(),
@@ -93,6 +247,27 @@ export class PuzzleGenerationService {
     }
 
     return this.shuffle(tiles);
+  }
+
+  // Deterministic per-seam id for a tile cut at (row, col) in a
+  // gridSize x gridSize grid: two tiles that truly touch in the
+  // original, unshuffled layout get the same id for their facing edges;
+  // outer-border edges (no true neighbor) each get a unique id so they
+  // can never falsely match anything. Mirrors useGameState.ts's
+  // factoryEdgeMatchIds for the same reason -- see the comment at this
+  // method's call site.
+  private static gridEdgeMatchIds(
+    row: number,
+    col: number,
+    gridSize: number
+  ): { top: string; right: string; bottom: string; left: string } {
+    const position = row * gridSize + col;
+    return {
+      top: row > 0 ? `v-${position - gridSize}` : `boundary-${position}-top`,
+      bottom: row < gridSize - 1 ? `v-${position}` : `boundary-${position}-bottom`,
+      left: col > 0 ? `h-${position - 1}` : `boundary-${position}-left`,
+      right: col < gridSize - 1 ? `h-${position}` : `boundary-${position}-right`
+    };
   }
 
   private static scoreComplexity(edgeData: any): number {
@@ -151,9 +326,11 @@ export class PuzzleGenerationService {
 
   static generateValidatedPuzzle(
     gradient: string[],
-    difficulty: Difficulty = 'Medium'
+    difficulty: Difficulty = 'Medium',
+    pattern?: string,
+    direction?: string
   ): Tile[] {
-    const canvas = this.createPuzzleFromGradient(gradient, difficulty);
+    const canvas = this.createPuzzleFromGradient(gradient, difficulty, pattern, direction);
     return this.createTilesFromCanvas(canvas, difficulty);
   }
 }

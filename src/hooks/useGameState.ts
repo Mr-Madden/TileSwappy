@@ -281,7 +281,9 @@ export const useGameState = () => {
                 '#4ecdc4',
                 '#45b7d1'
               ],
-              puzzle?.difficulty ?? 'Medium'
+              puzzle?.difficulty ?? 'Medium',
+              puzzle?.pattern,
+              puzzle?.direction
             );
 
           loadPuzzleCanvas(
