@@ -135,25 +135,36 @@
   --color-bronze: 138 90 47;
 }
 
+/*
+ * Zen, Desert, and Candy Shop are genuine LIGHT themes -- light
+ * backgrounds, dark ink text -- unlike every other theme (dark chrome,
+ * light text). navy/navy-light/navy-dark still follow the same
+ * light -> lighter -> "recessed header" ordering the rest of the app
+ * expects, and `offwhite` (used everywhere as the body-text color) is
+ * a dark ink instead of near-white. Accent colors (coral/teal/violet/
+ * gold) are darkened versions of each mood's palette for contrast as
+ * text/icons, with the softer original mockup tone kept as the
+ * `-light` variant for background fills.
+ */
 :root[data-theme="zen"] {
-  --color-navy: 42 51 44;
-  --color-navy-light: 56 68 58;
-  --color-navy-dark: 28 35 30;
-  --color-coral: 217 163 123;
-  --color-coral-light: 232 194 163;
-  --color-coral-dark: 181 126 86;
-  --color-teal: 143 166 147;
-  --color-teal-light: 176 194 179;
-  --color-teal-dark: 109 130 114;
-  --color-offwhite: 246 244 236;
-  --color-violet: 155 143 166;
-  --color-violet-light: 184 174 194;
-  --color-violet-dark: 122 110 133;
-  --color-gold: 203 178 121;
-  --color-gold-light: 221 208 168;
-  --color-gold-dark: 166 142 84;
-  --color-silver: 183 189 178;
-  --color-bronze: 166 124 82;
+  --color-navy: 238 240 230;
+  --color-navy-light: 255 253 248;
+  --color-navy-dark: 210 216 196;
+  --color-coral: 181 117 74;
+  --color-coral-light: 217 163 123;
+  --color-coral-dark: 143 90 55;
+  --color-teal: 95 122 99;
+  --color-teal-light: 143 166 147;
+  --color-teal-dark: 68 92 72;
+  --color-offwhite: 58 66 56;
+  --color-violet: 107 90 115;
+  --color-violet-light: 155 143 166;
+  --color-violet-dark: 74 61 82;
+  --color-gold: 163 117 47;
+  --color-gold-light: 203 178 121;
+  --color-gold-dark: 122 88 32;
+  --color-silver: 125 133 119;
+  --color-bronze: 138 100 64;
 }
 
 :root[data-theme="ocean"] {
@@ -177,25 +188,26 @@
   --color-bronze: 166 106 61;
 }
 
+/* Genuine light theme -- see the comment above [data-theme="zen"]. */
 :root[data-theme="desert"] {
-  --color-navy: 61 40 24;
-  --color-navy-light: 79 53 32;
-  --color-navy-dark: 42 26 15;
+  --color-navy: 232 201 155;
+  --color-navy-light: 251 241 226;
+  --color-navy-dark: 196 158 102;
   --color-coral: 181 86 47;
   --color-coral-light: 207 145 105;
   --color-coral-dark: 138 61 31;
-  --color-teal: 122 139 94;
-  --color-teal-light: 157 174 130;
-  --color-teal-dark: 92 107 68;
-  --color-offwhite: 251 241 226;
-  --color-violet: 138 106 122;
-  --color-violet-light: 168 138 153;
-  --color-violet-dark: 107 78 92;
-  --color-gold: 218 165 32;
-  --color-gold-light: 233 201 106;
-  --color-gold-dark: 166 124 31;
-  --color-silver: 201 188 174;
-  --color-bronze: 138 90 47;
+  --color-teal: 92 107 68;
+  --color-teal-light: 122 139 94;
+  --color-teal-dark: 70 80 36;
+  --color-offwhite: 90 56 37;
+  --color-violet: 107 74 90;
+  --color-violet-light: 138 106 122;
+  --color-violet-dark: 74 47 58;
+  --color-gold: 163 120 31;
+  --color-gold-light: 218 165 32;
+  --color-gold-dark: 122 92 20;
+  --color-silver: 138 125 110;
+  --color-bronze: 107 68 35;
 }
 
 :root[data-theme="ice"] {
@@ -219,24 +231,25 @@
   --color-bronze: 138 106 74;
 }
 
+/* Genuine light theme -- see the comment above [data-theme="zen"]. */
 :root[data-theme="candy"] {
-  --color-navy: 61 26 92;
-  --color-navy-light: 79 37 117;
-  --color-navy-dark: 42 16 64;
-  --color-coral: 255 95 162;
-  --color-coral-light: 255 143 199;
-  --color-coral-dark: 214 61 127;
-  --color-teal: 110 230 179;
-  --color-teal-light: 189 240 216;
-  --color-teal-dark: 47 163 116;
-  --color-offwhite: 255 245 251;
-  --color-violet: 217 198 255;
-  --color-violet-light: 232 219 255;
-  --color-violet-dark: 179 153 235;
-  --color-gold: 240 201 74;
-  --color-gold-light: 247 221 138;
-  --color-gold-dark: 201 159 31;
-  --color-silver: 217 208 232;
+  --color-navy: 255 214 236;
+  --color-navy-light: 255 245 251;
+  --color-navy-dark: 235 165 205;
+  --color-coral: 214 49 127;
+  --color-coral-light: 255 95 162;
+  --color-coral-dark: 163 34 95;
+  --color-teal: 42 157 111;
+  --color-teal-light: 110 230 179;
+  --color-teal-dark: 31 117 80;
+  --color-offwhite: 91 42 134;
+  --color-violet: 120 87 184;
+  --color-violet-light: 217 198 255;
+  --color-violet-dark: 90 61 143;
+  --color-gold: 184 144 31;
+  --color-gold-light: 240 201 74;
+  --color-gold-dark: 138 106 23;
+  --color-silver: 154 138 168;
   --color-bronze: 181 122 90;
 }
 
