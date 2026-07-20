@@ -71,3 +71,234 @@
   --color-silver: 180 230 230;
   --color-bronze: 200 90 60;
 }
+
+:root[data-theme="arcade"] {
+  --color-navy: 27 17 64;
+  --color-navy-light: 42 31 92;
+  --color-navy-dark: 18 11 46;
+  --color-coral: 255 61 129;
+  --color-coral-light: 255 122 171;
+  --color-coral-dark: 214 31 102;
+  --color-teal: 53 193 255;
+  --color-teal-light: 125 216 255;
+  --color-teal-dark: 26 143 201;
+  --color-offwhite: 255 250 242;
+  --color-violet: 139 92 246;
+  --color-violet-light: 167 139 250;
+  --color-violet-dark: 124 58 237;
+  --color-gold: 255 201 60;
+  --color-gold-light: 255 224 138;
+  --color-gold-dark: 217 159 0;
+  --color-silver: 201 195 224;
+  --color-bronze: 184 118 63;
+}
+
+:root[data-theme="retro"] {
+  --color-navy: 26 19 16;
+  --color-navy-light: 43 31 25;
+  --color-navy-dark: 18 12 10;
+  --color-coral: 255 122 61;
+  --color-coral-light: 255 168 120;
+  --color-coral-dark: 214 90 31;
+  --color-teal: 255 169 77;
+  --color-teal-light: 255 207 153;
+  --color-teal-dark: 204 122 31;
+  --color-offwhite: 245 230 211;
+  --color-violet: 138 90 61;
+  --color-violet-light: 168 122 92;
+  --color-violet-dark: 107 66 42;
+  --color-gold: 232 163 61;
+  --color-gold-light: 245 200 119;
+  --color-gold-dark: 179 120 31;
+  --color-silver: 168 154 140;
+  --color-bronze: 138 90 47;
+}
+
+:root[data-theme="botanical"] {
+  --color-navy: 22 40 30;
+  --color-navy-light: 31 58 44;
+  --color-navy-dark: 15 26 19;
+  --color-coral: 217 143 78;
+  --color-coral-light: 232 177 132;
+  --color-coral-dark: 181 112 58;
+  --color-teal: 143 174 107;
+  --color-teal-light: 174 203 142;
+  --color-teal-dark: 107 138 74;
+  --color-offwhite: 243 234 217;
+  --color-violet: 122 90 122;
+  --color-violet-light: 155 122 155;
+  --color-violet-dark: 92 66 92;
+  --color-gold: 217 168 61;
+  --color-gold-light: 238 200 122;
+  --color-gold-dark: 179 132 31;
+  --color-silver: 184 196 174;
+  --color-bronze: 138 90 47;
+}
+
+:root[data-theme="zen"] {
+  --color-navy: 42 51 44;
+  --color-navy-light: 56 68 58;
+  --color-navy-dark: 28 35 30;
+  --color-coral: 217 163 123;
+  --color-coral-light: 232 194 163;
+  --color-coral-dark: 181 126 86;
+  --color-teal: 143 166 147;
+  --color-teal-light: 176 194 179;
+  --color-teal-dark: 109 130 114;
+  --color-offwhite: 246 244 236;
+  --color-violet: 155 143 166;
+  --color-violet-light: 184 174 194;
+  --color-violet-dark: 122 110 133;
+  --color-gold: 203 178 121;
+  --color-gold-light: 221 208 168;
+  --color-gold-dark: 166 142 84;
+  --color-silver: 183 189 178;
+  --color-bronze: 166 124 82;
+}
+
+:root[data-theme="ocean"] {
+  --color-navy: 8 74 80;
+  --color-navy-light: 15 110 118;
+  --color-navy-dark: 6 58 63;
+  --color-coral: 255 138 101;
+  --color-coral-light: 255 176 143;
+  --color-coral-dark: 224 101 58;
+  --color-teal: 79 209 197;
+  --color-teal-light: 189 238 226;
+  --color-teal-dark: 13 138 143;
+  --color-offwhite: 234 250 246;
+  --color-violet: 61 90 122;
+  --color-violet-light: 94 125 158;
+  --color-violet-dark: 42 64 92;
+  --color-gold: 224 180 99;
+  --color-gold-light: 240 213 154;
+  --color-gold-dark: 179 135 47;
+  --color-silver: 207 232 226;
+  --color-bronze: 166 106 61;
+}
+
+:root[data-theme="desert"] {
+  --color-navy: 61 40 24;
+  --color-navy-light: 79 53 32;
+  --color-navy-dark: 42 26 15;
+  --color-coral: 181 86 47;
+  --color-coral-light: 207 145 105;
+  --color-coral-dark: 138 61 31;
+  --color-teal: 122 139 94;
+  --color-teal-light: 157 174 130;
+  --color-teal-dark: 92 107 68;
+  --color-offwhite: 251 241 226;
+  --color-violet: 138 106 122;
+  --color-violet-light: 168 138 153;
+  --color-violet-dark: 107 78 92;
+  --color-gold: 218 165 32;
+  --color-gold-light: 233 201 106;
+  --color-gold-dark: 166 124 31;
+  --color-silver: 201 188 174;
+  --color-bronze: 138 90 47;
+}
+
+:root[data-theme="ice"] {
+  --color-navy: 11 31 42;
+  --color-navy-light: 18 49 63;
+  --color-navy-dark: 7 22 32;
+  --color-coral: 216 138 154;
+  --color-coral-light: 232 179 192;
+  --color-coral-dark: 179 89 108;
+  --color-teal: 95 184 220;
+  --color-teal-light: 159 215 236;
+  --color-teal-dark: 47 127 163;
+  --color-offwhite: 234 248 255;
+  --color-violet: 138 154 217;
+  --color-violet-light: 174 186 232;
+  --color-violet-dark: 97 112 179;
+  --color-gold: 217 201 138;
+  --color-gold-light: 235 224 184;
+  --color-gold-dark: 166 147 74;
+  --color-silver: 203 213 225;
+  --color-bronze: 138 106 74;
+}
+
+:root[data-theme="candy"] {
+  --color-navy: 61 26 92;
+  --color-navy-light: 79 37 117;
+  --color-navy-dark: 42 16 64;
+  --color-coral: 255 95 162;
+  --color-coral-light: 255 143 199;
+  --color-coral-dark: 214 61 127;
+  --color-teal: 110 230 179;
+  --color-teal-light: 189 240 216;
+  --color-teal-dark: 47 163 116;
+  --color-offwhite: 255 245 251;
+  --color-violet: 217 198 255;
+  --color-violet-light: 232 219 255;
+  --color-violet-dark: 179 153 235;
+  --color-gold: 240 201 74;
+  --color-gold-light: 247 221 138;
+  --color-gold-dark: 201 159 31;
+  --color-silver: 217 208 232;
+  --color-bronze: 181 122 90;
+}
+
+:root[data-theme="autumn"] {
+  --color-navy: 74 30 30;
+  --color-navy-light: 96 58 42;
+  --color-navy-dark: 46 20 20;
+  --color-coral: 224 122 63;
+  --color-coral-light: 239 157 110;
+  --color-coral-dark: 184 85 31;
+  --color-teal: 107 122 63;
+  --color-teal-light: 150 166 106;
+  --color-teal-dark: 74 90 38;
+  --color-offwhite: 246 232 216;
+  --color-violet: 107 42 58;
+  --color-violet-light: 148 82 98;
+  --color-violet-dark: 77 21 34;
+  --color-gold: 212 162 76;
+  --color-gold-light: 230 197 131;
+  --color-gold-dark: 166 122 31;
+  --color-silver: 184 168 154;
+  --color-bronze: 138 90 47;
+}
+
+:root[data-theme="deco"] {
+  --color-navy: 13 31 22;
+  --color-navy-light: 22 40 28;
+  --color-navy-dark: 10 20 16;
+  --color-coral: 166 61 74;
+  --color-coral-light: 201 106 118;
+  --color-coral-dark: 122 31 42;
+  --color-teal: 63 107 82;
+  --color-teal-light: 107 150 120;
+  --color-teal-dark: 35 74 54;
+  --color-offwhite: 237 224 189;
+  --color-violet: 107 74 138;
+  --color-violet-light: 148 118 179;
+  --color-violet-dark: 77 50 107;
+  --color-gold: 212 175 106;
+  --color-gold-light: 230 204 154;
+  --color-gold-dark: 166 128 58;
+  --color-silver: 184 176 160;
+  --color-bronze: 138 106 58;
+}
+
+:root[data-theme="mono"] {
+  --color-navy: 12 12 12;
+  --color-navy-light: 26 26 26;
+  --color-navy-dark: 5 5 5;
+  --color-coral: 255 76 76;
+  --color-coral-light: 255 107 107;
+  --color-coral-dark: 230 57 70;
+  --color-teal: 217 217 217;
+  --color-teal-light: 240 240 240;
+  --color-teal-dark: 160 160 160;
+  --color-offwhite: 255 255 255;
+  --color-violet: 138 138 138;
+  --color-violet-light: 170 170 170;
+  --color-violet-dark: 105 105 105;
+  --color-gold: 204 204 204;
+  --color-gold-light: 232 232 232;
+  --color-gold-dark: 153 153 153;
+  --color-silver: 154 154 154;
+  --color-bronze: 122 122 122;
+}
