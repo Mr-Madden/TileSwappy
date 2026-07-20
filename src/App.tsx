@@ -5,6 +5,7 @@ import { StartScreen } from './components/screens/StartScreen';
 import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
 import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
+import { ThemeBackground } from './components/common/ThemeBackground';
 import { DEFAULT_THEME } from './theme/themes';
 
 // Lazy load modals - they're not needed on initial load
@@ -427,6 +428,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
   return (
     <div className="min-h-screen bg-navy">
+      <ThemeBackground theme={settings.theme || DEFAULT_THEME} />
       <TileSwappyLogo size={150} bouncing />
       
       {gameState.gameState.status === 'start' && (
