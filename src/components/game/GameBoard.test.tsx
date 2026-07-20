@@ -48,7 +48,7 @@ function renderBoard(tiles: Tile[], matchingEdges: Set<string>) {
 describe('GameBoard seam-match glow', () => {
   it('renders no glow bars when nothing matches', () => {
     const { container } = renderBoard(makeTiles(), new Set());
-    expect(container.querySelectorAll('.animate-pulse.bg-green-500').length).toBe(0);
+    expect(container.querySelectorAll('.animate-pulse.bg-match').length).toBe(0);
   });
 
   it('renders exactly one glow bar per matched seam', () => {
@@ -57,14 +57,14 @@ describe('GameBoard seam-match glow', () => {
       GameLogicService.seamKey(1, 1, 'bottom')
     ]);
     const { container } = renderBoard(makeTiles(), matches);
-    expect(container.querySelectorAll('.animate-pulse.bg-green-500').length).toBe(2);
+    expect(container.querySelectorAll('.animate-pulse.bg-match').length).toBe(2);
   });
 
   it('positions a matched seam the same regardless of either tile\'s own rotation', () => {
     const matches = new Set([GameLogicService.seamKey(0, 0, 'right')]);
 
     const unrotated = renderBoard(makeTiles(), matches);
-    const unrotatedBar = unrotated.container.querySelector('.animate-pulse.bg-green-500') as HTMLElement;
+    const unrotatedBar = unrotated.container.querySelector('.animate-pulse.bg-match') as HTMLElement;
     const unrotatedLeft = unrotatedBar.style.left;
     const unrotatedTop = unrotatedBar.style.top;
     unrotated.unmount();
@@ -74,7 +74,7 @@ describe('GameBoard seam-match glow', () => {
     // As a grid-level overlay, it must not.
     const rotatedTiles = makeTiles([{ rotation: 90 }]);
     const rotated = renderBoard(rotatedTiles, matches);
-    const rotatedBar = rotated.container.querySelector('.animate-pulse.bg-green-500') as HTMLElement;
+    const rotatedBar = rotated.container.querySelector('.animate-pulse.bg-match') as HTMLElement;
 
     expect(rotatedBar.style.left).toBe(unrotatedLeft);
     expect(rotatedBar.style.top).toBe(unrotatedTop);
