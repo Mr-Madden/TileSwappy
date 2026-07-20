@@ -363,18 +363,18 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                           <div className="bg-gradient-to-br from-teal-400 to-green-400 rounded-br border border-navy-dark"></div>
                         </div>
                         
-                        {/* Green glowing edges - Vertical lines */}
-                        <div className="absolute top-0 left-[33%] w-1 h-full bg-green-500 animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
-                        <div className="absolute top-0 left-[66%] w-1 h-full bg-green-500 animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
-                        
-                        {/* Green glowing edges - Horizontal lines */}
-                        <div className="absolute top-[33%] left-0 w-full h-1 bg-green-500 animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
-                        <div className="absolute top-[66%] left-0 w-full h-1 bg-green-500 animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
+                        {/* Match-glow edges - Vertical lines */}
+                        <div className="absolute top-0 left-[33%] w-1 h-full bg-match animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
+                        <div className="absolute top-0 left-[66%] w-1 h-full bg-match animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
+
+                        {/* Match-glow edges - Horizontal lines */}
+                        <div className="absolute top-[33%] left-0 w-full h-1 bg-match animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
+                        <div className="absolute top-[66%] left-0 w-full h-1 bg-match animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
                       </div>
                       <div className="mt-3 flex items-center justify-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <p className="text-green-400 text-xs font-semibold">All 12 edges glowing green!</p>
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <div className="w-2 h-2 rounded-full bg-match animate-pulse"></div>
+                        <p className="text-match text-xs font-semibold">All 12 edges glowing green!</p>
+                        <div className="w-2 h-2 rounded-full bg-match animate-pulse"></div>
                       </div>
                     </div>
 

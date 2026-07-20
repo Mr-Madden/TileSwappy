@@ -401,7 +401,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
                         <div className="text-offwhite text-[10px] font-semibold truncate">{puzzle.title}</div>
                         <div className={`text-[9px] font-medium ${
                           puzzle.difficulty === 'Easy' ? 'text-teal' :
-                          puzzle.difficulty === 'Medium' ? 'text-yellow-400' :
+                          puzzle.difficulty === 'Medium' ? 'text-gold' :
                           'text-coral'
                         }`}>
                           {puzzle.difficulty}

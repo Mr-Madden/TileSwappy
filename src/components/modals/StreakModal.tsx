@@ -245,21 +245,21 @@ export const StreakModal: React.FC<StreakModalProps> = ({
       }
     >
           {/* Stats */}
-          <div className="bg-black/20 rounded-xl p-4 mb-4">
+          <div className="bg-navy-dark/40 rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center">
               <div className="text-center">
                 <div className="text-3xl font-bold text-teal">{completedDates.size}</div>
-                <div className="text-xs text-white/60">Total Completed</div>
+                <div className="text-xs text-offwhite/60">Total Completed</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-teal">{completedAdminPuzzles}</div>
-                <div className="text-xs text-white/60">This Month</div>
+                <div className="text-xs text-offwhite/60">This Month</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-coral">
                   {totalAdminPuzzles > 0 ? Math.round((completedDates.size / totalAdminPuzzles) * 100) : 0}%
                 </div>
-                <div className="text-xs text-white/60">Overall</div>
+                <div className="text-xs text-offwhite/60">Overall</div>
               </div>
             </div>
           </div>
@@ -268,34 +268,34 @@ export const StreakModal: React.FC<StreakModalProps> = ({
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={goToPreviousMonth}
-              className="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition"
+              className="bg-offwhite/10 hover:bg-offwhite/20 p-2 rounded-lg transition"
             >
-              <ChevronLeft className="text-white" size={20} />
+              <ChevronLeft className="text-offwhite" size={20} />
             </button>
-            <div className="text-white font-bold text-lg">
+            <div className="text-offwhite font-bold text-lg">
               {monthNames[currentMonth]} {currentYear}
             </div>
             <button
               onClick={goToNextMonth}
-              className="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition"
+              className="bg-offwhite/10 hover:bg-offwhite/20 p-2 rounded-lg transition"
             >
-              <ChevronRight className="text-white" size={20} />
+              <ChevronRight className="text-offwhite" size={20} />
             </button>
           </div>
 
           {/* Calendar */}
-          <div className="bg-black/20 rounded-xl p-4">
+          <div className="bg-navy-dark/40 rounded-xl p-4">
             {isInitialLoading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-teal border-t-coral mb-4"></div>
-                <p className="text-white/60 text-sm">Loading puzzle calendar...</p>
+                <p className="text-offwhite/60 text-sm">Loading puzzle calendar...</p>
               </div>
             ) : (
               <>
                 {/* Day Headers */}
                 <div className="grid grid-cols-7 gap-2 text-center mb-2">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                    <div key={day} className="text-xs text-white/60 font-semibold">
+                    <div key={day} className="text-xs text-offwhite/60 font-semibold">
                       {day}
                     </div>
                   ))}
@@ -321,7 +321,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                       return (
                         <div
                           key={dayNum}
-                          className="aspect-square rounded-lg flex items-center justify-center text-sm font-semibold bg-white/5 text-white/20"
+                          className="aspect-square rounded-lg flex items-center justify-center text-sm font-semibold bg-offwhite/5 text-offwhite/20"
                         >
                           {dayNum}
                         </div>
@@ -344,8 +344,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           
                           {/* Future overlay */}
                           <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center">
-                            <Clock size={16} className="text-blue-400 mb-1" />
-                            <div className="text-[9px] text-blue-300 font-bold">Coming</div>
+                            <Clock size={16} className="text-teal mb-1" />
+                            <div className="text-[9px] text-teal-light font-bold">Coming</div>
                           </div>
 
                           {/* Day number */}
@@ -365,7 +365,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           onMouseLeave={() => setHoveredDate(null)}
                           className={`aspect-square rounded-lg relative overflow-hidden transition-all cursor-not-allowed ${
                             isToday
-                              ? 'ring-2 ring-yellow-500 ring-offset-2 ring-offset-navy-light'
+                              ? 'ring-2 ring-gold ring-offset-2 ring-offset-navy-light'
                               : ''
                           }`}
                         >
@@ -376,14 +376,14 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           
                           {/* Lock overlay */}
                           <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center">
-                            <Lock size={16} className="text-yellow-500 mb-1" />
+                            <Lock size={16} className="text-gold mb-1" />
                             {isHovered && puzzleData?.release_time ? (
-                              <div className="text-[9px] text-yellow-300 font-bold flex items-center gap-1">
+                              <div className="text-[9px] text-gold-light font-bold flex items-center gap-1">
                                 <Clock size={10} />
                                 {formatTimeUntilUnlock(puzzleData.release_time)}
                               </div>
                             ) : (
-                              <div className="text-[9px] text-yellow-300 font-bold">Locked</div>
+                              <div className="text-[9px] text-gold-light font-bold">Locked</div>
                             )}
                           </div>
 
@@ -445,7 +445,7 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                         onMouseLeave={() => setHoveredDate(null)}
                         className={`aspect-square rounded-lg relative overflow-hidden transition-all shadow-lg hover:scale-105 cursor-pointer group ${
                           isToday
-                            ? 'ring-2 ring-white ring-offset-2 ring-offset-navy-light'
+                            ? 'ring-2 ring-offwhite ring-offset-2 ring-offset-navy-light'
                             : ''
                         }`}
                       >
@@ -490,32 +490,32 @@ export const StreakModal: React.FC<StreakModalProps> = ({
           {/* Legend */}
           <div className="mt-4 flex justify-center gap-4 text-xs flex-wrap">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-teal rounded flex items-center justify-center text-white shadow">
+              <div className="w-5 h-5 bg-teal rounded flex items-center justify-center text-offwhite shadow">
                 <Check size={12} strokeWidth={3} />
               </div>
-              <span className="text-white/60">Completed</span>
+              <span className="text-offwhite/60">Completed</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 bg-coral/80 rounded flex items-center justify-center">
-                <Play size={10} fill="white" className="text-white" />
+                <Play size={10} fill="currentColor" className="text-offwhite" />
               </div>
-              <span className="text-white/60">Available</span>
+              <span className="text-offwhite/60">Available</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-black/60 rounded flex items-center justify-center">
-                <Lock size={10} className="text-yellow-500" />
+              <div className="w-5 h-5 bg-navy-dark/60 rounded flex items-center justify-center">
+                <Lock size={10} className="text-gold" />
               </div>
-              <span className="text-white/60">Locked</span>
+              <span className="text-offwhite/60">Locked</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-black/80 rounded flex items-center justify-center">
-                <Clock size={10} className="text-blue-400" />
+              <div className="w-5 h-5 bg-navy-dark/80 rounded flex items-center justify-center">
+                <Clock size={10} className="text-teal" />
               </div>
-              <span className="text-white/60">Coming</span>
+              <span className="text-offwhite/60">Coming</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-white/5 rounded"></div>
-              <span className="text-white/60">No Puzzle</span>
+              <div className="w-5 h-5 bg-offwhite/5 rounded"></div>
+              <span className="text-offwhite/60">No Puzzle</span>
             </div>
           </div>
     </ModalShell>

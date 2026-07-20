@@ -701,11 +701,11 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             }
 
             .shadow-coral-glow {
-              box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+              box-shadow: 0 0 20px rgb(var(--color-coral) / 0.4);
             }
 
             .shadow-teal-glow {
-              box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
+              box-shadow: 0 0 20px rgb(var(--color-teal) / 0.4);
             }
           `}</style>
         </div>

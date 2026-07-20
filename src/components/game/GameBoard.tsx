@@ -149,7 +149,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         seamBars.push(
           <div
             key={`v-${row}-${col}`}
-            className="absolute w-1 bg-green-500 animate-pulse"
+            className="absolute w-1 bg-match animate-pulse"
             style={{
               left: `${((col + 1) / gridSize) * 100}%`,
               top: `${(row / gridSize) * 100}%`,
@@ -164,7 +164,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         seamBars.push(
           <div
             key={`h-${row}-${col}`}
-            className="absolute h-1 bg-green-500 animate-pulse"
+            className="absolute h-1 bg-match animate-pulse"
             style={{
               top: `${((row + 1) / gridSize) * 100}%`,
               left: `${(col / gridSize) * 100}%`,
