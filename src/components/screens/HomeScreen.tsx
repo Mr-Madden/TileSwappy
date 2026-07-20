@@ -3,6 +3,7 @@ import { HelpCircle, Settings, Check, Lock, LayoutGrid, Flame, BarChart2 } from 
 import { getCurrentDate, formatDisplayDate, addDays, getRelativeDayLabel } from '../../utils/helpers';
 import { getWeekPuzzles } from '../../services/supabase';
 import { IdleHintsPopup } from '../IdleHintsPopup';
+import { TileSwappyLogo } from '../TileSwappyLogo/TileSwappyLogo';
 
 interface HomeScreenProps {
   onStartPuzzle: (puzzle?: any) => void;
@@ -170,12 +171,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="max-w-md w-full py-8">
           {/* Logo and Title */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-36 h-36 bg-navy-light backdrop-blur-sm rounded-3xl mb-4 shadow-2xl border-2 border-navy-light">
-              <img 
-                src="/icon.png" 
-                alt="TileSwappy Logo" 
-                className="w-36 h-36 object-contain"
-              />
+            <div className="inline-block mb-4 rounded-2xl shadow-2xl">
+              <TileSwappyLogo size={144} />
             </div>
             <p className="text-teal text-lg font-medium">Addictive tile puzzle madness</p>
           </div>
