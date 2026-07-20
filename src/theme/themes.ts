@@ -5,21 +5,24 @@ export interface ThemeOption {
   swatch: [string, string, string];
 }
 
+// Swatch triplets are [navy, coral, teal] pulled directly from each
+// theme's actual src/styles/themes.css values -- kept in sync so the
+// picker preview always matches what selecting it really does.
 export const THEMES: ThemeOption[] = [
-  { id: 'current', name: 'Current', swatch: ['#0D1B2A', '#FF4C4C', '#2EC4B6'] },
-  { id: 'cosmic', name: 'Cosmic', swatch: ['#0a0e1a', '#7c5cff', '#22d3ee'] },
-  { id: 'arcade', name: 'Arcade', swatch: ['#1b1140', '#ff3d81', '#ffc93c'] },
-  { id: 'neon', name: 'Neon', swatch: ['#05070a', '#ff2d6e', '#00f5d4'] },
-  { id: 'retro', name: 'Retro Handheld', swatch: ['#1a1310', '#ffa94d', '#ff7a3d'] },
+  { id: 'current', name: 'Current', swatch: ['#0d1b2a', '#ff4c4c', '#2ec4b6'] },
+  { id: 'cosmic', name: 'Cosmic', swatch: ['#121a2b', '#fb7185', '#22d3ee'] },
+  { id: 'arcade', name: 'Arcade', swatch: ['#1b1140', '#ff3d81', '#35c1ff'] },
+  { id: 'neon', name: 'Neon', swatch: ['#0d1417', '#ff2d6e', '#00f5d4'] },
+  { id: 'retro', name: 'Retro Handheld', swatch: ['#1a1310', '#ff7a3d', '#ffa94d'] },
   { id: 'botanical', name: 'Botanical', swatch: ['#16281e', '#d98f4e', '#8fae6b'] },
-  { id: 'zen', name: 'Zen', swatch: ['#eef0e6', '#8fa693', '#d9a37b'] },
-  { id: 'ocean', name: 'Ocean', swatch: ['#063a3f', '#ff8a65', '#4fd1c5'] },
-  { id: 'desert', name: 'Desert', swatch: ['#e8c99b', '#b5562f', '#7a8b5e'] },
-  { id: 'ice', name: 'Ice', swatch: ['#0b1f2a', '#5fb8dc', '#eaf8ff'] },
-  { id: 'candy', name: 'Candy Shop', swatch: ['#ffd6ec', '#ff5fa2', '#d9c6ff'] },
-  { id: 'autumn', name: 'Autumn', swatch: ['#4a1e1e', '#d4a24c', '#e07a3f'] },
-  { id: 'deco', name: 'Art Deco', swatch: ['#0a1410', '#d4af6a', '#3f6b52'] },
-  { id: 'mono', name: 'Monochrome', swatch: ['#0c0c0c', '#ffffff', '#FF4C4C'] },
+  { id: 'zen', name: 'Zen', swatch: ['#2a332c', '#d9a37b', '#8fa693'] },
+  { id: 'ocean', name: 'Ocean', swatch: ['#084a50', '#ff8a65', '#4fd1c5'] },
+  { id: 'desert', name: 'Desert', swatch: ['#3d2818', '#b5562f', '#7a8b5e'] },
+  { id: 'ice', name: 'Ice', swatch: ['#0b1f2a', '#d88a9a', '#5fb8dc'] },
+  { id: 'candy', name: 'Candy Shop', swatch: ['#3d1a5c', '#ff5fa2', '#6ee6b3'] },
+  { id: 'autumn', name: 'Autumn', swatch: ['#4a1e1e', '#e07a3f', '#6b7a3f'] },
+  { id: 'deco', name: 'Art Deco', swatch: ['#0d1f16', '#a63d4a', '#3f6b52'] },
+  { id: 'mono', name: 'Monochrome', swatch: ['#0c0c0c', '#ff4c4c', '#d9d9d9'] },
 ];
 
 export const DEFAULT_THEME = 'current';

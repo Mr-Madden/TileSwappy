@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Check } from 'lucide-react';
 
 interface Tile {
   id: string;
@@ -323,14 +324,12 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
           {(step === 5 || step === 6) && (
             <div className="space-y-4 mb-6">
               {step === 5 && (
-                <div className="bg-navy-light/90 rounded-xl p-4 border border-green-500/30">
+                <div className="bg-navy-light/90 rounded-xl p-4 border border-match/30">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                    <div className="w-12 h-12 bg-match/20 rounded-lg flex items-center justify-center">
+                      <Check className="w-6 h-6 text-match" strokeWidth={3} />
                     </div>
-                    <h3 className="text-lg font-bold text-green-400">Matching Edges</h3>
+                    <h3 className="text-lg font-bold text-match">Matching Edges</h3>
                   </div>
                   <p className="text-offwhite text-sm leading-relaxed">
                     When two tiles' edges match, you'll see a bright green glow between them. 
@@ -408,7 +407,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
             {(step === 0 || step === 2 || step === 4 || step === 5) && (
               <button
                 onClick={() => setStep(step + 1)}
-                className="w-full bg-gradient-to-r from-teal to-cyan-500 hover:from-teal/90 hover:to-cyan-500/90 text-navy font-bold py-4 px-6 rounded-xl transition-all shadow-lg transform hover:scale-105 text-lg"
+                className="w-full bg-gradient-to-r from-teal to-teal-dark hover:from-teal-dark hover:to-teal text-navy font-bold py-4 px-6 rounded-xl transition-all shadow-lg transform hover:scale-105 text-lg"
               >
                 Next →
               </button>
@@ -421,7 +420,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                     type="checkbox"
                     checked={dontShowAgain}
                     onChange={(e) => setDontShowAgain(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-400 text-teal focus:ring-teal cursor-pointer"
+                    className="w-5 h-5 rounded border-navy-dark text-teal focus:ring-teal cursor-pointer"
                   />
                   <span className="text-offwhite text-sm">
                     Don't show this tutorial again
@@ -430,7 +429,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
 
                 <button
                   onClick={handleComplete}
-                  className="w-full bg-gradient-to-r from-coral to-red-500 hover:from-coral/90 hover:to-red-500/90 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg transform hover:scale-105 text-lg"
+                  className="w-full bg-gradient-to-r from-coral to-teal hover:from-coral-dark hover:to-teal-dark text-offwhite font-bold py-4 px-6 rounded-xl transition-all shadow-lg transform hover:scale-105 text-lg"
                 >
                   Start Playing! 🎮
                 </button>
@@ -457,14 +456,6 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
         
         .animate-bounce {
           animation: bounce 1s ease-in-out infinite;
-        }
-
-        .shadow-coral-glow {
-          box-shadow: 0 0 20px rgba(255, 76, 76, 0.6);
-        }
-
-        .shadow-teal-glow {
-          box-shadow: 0 0 20px rgba(46, 196, 182, 0.6);
         }
       `}</style>
     </div>

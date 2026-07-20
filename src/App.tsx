@@ -6,7 +6,7 @@ import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
 import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
 import { ThemeBackground } from './components/common/ThemeBackground';
-import { DEFAULT_THEME } from './theme/themes';
+import { THEMES, DEFAULT_THEME } from './theme/themes';
 
 // Lazy load modals - they're not needed on initial load
 const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
@@ -147,7 +147,14 @@ const App: React.FC = () => {
   }, [settings]);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', settings.theme || DEFAULT_THEME);
+    const themeId = settings.theme || DEFAULT_THEME;
+    document.documentElement.setAttribute('data-theme', themeId);
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      const navyHex = THEMES.find((t) => t.id === themeId)?.swatch[0];
+      if (navyHex) meta.setAttribute('content', navyHex);
+    }
   }, [settings.theme]);
 
   useEffect(() => {
