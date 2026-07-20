@@ -1,0 +1,73 @@
+/*
+ * Each --color-* variable holds a space-separated R G B triplet (no commas)
+ * so Tailwind's `rgb(var(--x) / <alpha-value>)` pattern keeps opacity
+ * modifiers (bg-navy/80, text-offwhite/60, etc.) working per theme.
+ *
+ * `match` (the edge-match "correct" glow) is intentionally NOT a variable
+ * here — it's a semantic state color, not a brand color, and stays fixed
+ * across every theme. See tailwind.config.js.
+ */
+
+:root,
+:root[data-theme="current"] {
+  --color-navy: 13 27 42;
+  --color-navy-light: 27 43 58;
+  --color-navy-dark: 10 20 32;
+  --color-coral: 255 76 76;
+  --color-coral-light: 255 107 107;
+  --color-coral-dark: 230 57 70;
+  --color-teal: 46 196 182;
+  --color-teal-light: 79 209 197;
+  --color-teal-dark: 31 163 154;
+  --color-offwhite: 244 244 244;
+  --color-violet: 139 92 246;
+  --color-violet-light: 167 139 250;
+  --color-violet-dark: 124 58 237;
+  --color-gold: 251 191 36;
+  --color-gold-light: 253 230 138;
+  --color-gold-dark: 217 119 6;
+  --color-silver: 156 163 175;
+  --color-bronze: 194 112 61;
+}
+
+:root[data-theme="cosmic"] {
+  --color-navy: 18 26 43;
+  --color-navy-light: 27 38 59;
+  --color-navy-dark: 10 14 26;
+  --color-coral: 251 113 133;
+  --color-coral-light: 253 164 175;
+  --color-coral-dark: 236 72 100;
+  --color-teal: 34 211 238;
+  --color-teal-light: 103 232 249;
+  --color-teal-dark: 8 145 178;
+  --color-offwhite: 238 242 247;
+  --color-violet: 124 92 255;
+  --color-violet-light: 167 148 255;
+  --color-violet-dark: 99 60 220;
+  --color-gold: 252 211 77;
+  --color-gold-light: 253 230 138;
+  --color-gold-dark: 217 160 40;
+  --color-silver: 203 213 225;
+  --color-bronze: 180 130 90;
+}
+
+:root[data-theme="neon"] {
+  --color-navy: 13 20 23;
+  --color-navy-light: 20 30 34;
+  --color-navy-dark: 5 7 10;
+  --color-coral: 255 45 110;
+  --color-coral-light: 255 107 158;
+  --color-coral-dark: 214 20 84;
+  --color-teal: 0 245 212;
+  --color-teal-light: 128 250 232;
+  --color-teal-dark: 0 184 158;
+  --color-offwhite: 215 250 255;
+  --color-violet: 176 38 255;
+  --color-violet-light: 205 128 255;
+  --color-violet-dark: 138 10 214;
+  --color-gold: 255 176 0;
+  --color-gold-light: 255 210 100;
+  --color-gold-dark: 214 140 0;
+  --color-silver: 180 230 230;
+  --color-bronze: 200 90 60;
+}

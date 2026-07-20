@@ -6,42 +6,42 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // TileSwappy Brand Colors
+        // TileSwappy Brand Colors -- driven by CSS custom properties
+        // (see src/styles/themes.css) so the whole app can be reskinned
+        // at runtime via a `data-theme` attribute on <html>. The
+        // `rgb(var(--x) / <alpha-value>)` pattern keeps opacity
+        // modifiers (bg-navy/80, text-offwhite/60, ...) working per theme.
         navy: {
-          DEFAULT: '#0D1B2A',
-          light: '#1B2B3A',
-          dark: '#0A1420',
+          DEFAULT: 'rgb(var(--color-navy) / <alpha-value>)',
+          light: 'rgb(var(--color-navy-light) / <alpha-value>)',
+          dark: 'rgb(var(--color-navy-dark) / <alpha-value>)',
         },
         coral: {
-          DEFAULT: '#FF4C4C',
-          light: '#FF6B6B',
-          dark: '#E63946',
+          DEFAULT: 'rgb(var(--color-coral) / <alpha-value>)',
+          light: 'rgb(var(--color-coral-light) / <alpha-value>)',
+          dark: 'rgb(var(--color-coral-dark) / <alpha-value>)',
         },
         teal: {
-          DEFAULT: '#2EC4B6',
-          light: '#4FD1C5',
-          dark: '#1FA39A',
+          DEFAULT: 'rgb(var(--color-teal) / <alpha-value>)',
+          light: 'rgb(var(--color-teal-light) / <alpha-value>)',
+          dark: 'rgb(var(--color-teal-dark) / <alpha-value>)',
         },
-        offwhite: '#F4F4F4',
-        // Added for design-system consistency: replaces raw Tailwind
-        // defaults (purple-500, yellow-500, gray-400, orange-600) that
-        // had leaked into IdleHintsPopup/PlayerStatsModal/App.tsx.
+        offwhite: 'rgb(var(--color-offwhite) / <alpha-value>)',
         violet: {
-          DEFAULT: '#8B5CF6',
-          light: '#A78BFA',
-          dark: '#7C3AED',
+          DEFAULT: 'rgb(var(--color-violet) / <alpha-value>)',
+          light: 'rgb(var(--color-violet-light) / <alpha-value>)',
+          dark: 'rgb(var(--color-violet-dark) / <alpha-value>)',
         },
         gold: {
-          DEFAULT: '#FBBF24',
-          light: '#FDE68A',
-          dark: '#D97706',
+          DEFAULT: 'rgb(var(--color-gold) / <alpha-value>)',
+          light: 'rgb(var(--color-gold-light) / <alpha-value>)',
+          dark: 'rgb(var(--color-gold-dark) / <alpha-value>)',
         },
-        silver: '#9CA3AF',
-        bronze: '#C2703D',
-        // Formalizes the green edge-match color already used in
-        // GameBoard.tsx/TutorialScreen.tsx -- token added now, NOT
-        // adopted there this pass (that's the deferred gameplay-polish
-        // scope), so those files still use raw green-500 for now.
+        silver: 'rgb(var(--color-silver) / <alpha-value>)',
+        bronze: 'rgb(var(--color-bronze) / <alpha-value>)',
+        // Semantic state color (edge-match "correct" glow), NOT a brand
+        // color -- deliberately a plain static value, never themed, so
+        // "correct" always reads as green regardless of the active theme.
         match: {
           DEFAULT: '#22C55E',
           dark: '#16A34A',
@@ -51,9 +51,9 @@ module.exports = {
         '5xl': '2.5rem', // fixes HomeScreen.tsx's invalid `rounded-5xl` (previously a no-op, no such class existed)
       },
       boxShadow: {
-        'coral-glow': '0 0 20px rgba(255, 76, 76, 0.5)',
-        'teal-glow': '0 0 20px rgba(46, 196, 182, 0.5)',
-        'gold-glow': '0 0 20px rgba(251, 191, 36, 0.6)',
+        'coral-glow': '0 0 20px rgb(var(--color-coral) / 0.5)',
+        'teal-glow': '0 0 20px rgb(var(--color-teal) / 0.5)',
+        'gold-glow': '0 0 20px rgb(var(--color-gold) / 0.6)',
       },
     },
   },
