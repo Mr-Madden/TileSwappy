@@ -20,6 +20,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
   const [selectedTile, setSelectedTile] = useState<string | null>(null);
   const [swipeStart, setSwipeStart] = useState({ x: 0, y: 0, tileId: '' });
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
 
   // Initialize tutorial tiles with numbered gradient tiles
   useEffect(() => {
@@ -159,9 +160,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
   };
 
   const handleSkip = () => {
-    if (window.confirm('Skip tutorial? You can access it later from the settings.')) {
-      handleComplete();
-    }
+    setShowSkipConfirm(true);
   };
 
   const steps = [
@@ -237,7 +236,10 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
           </div>
 
           {/* Instruction Card */}
-          <div className="bg-navy-light/90 backdrop-blur-sm rounded-2xl p-6 mb-6 border-2 border-teal/30 shadow-2xl">
+          <div
+            key={step}
+            className="tutorial-step-enter bg-navy-light/90 backdrop-blur-sm rounded-2xl p-6 mb-6 border-2 border-teal/30 shadow-2xl"
+          >
             <h2 className="text-2xl md:text-3xl font-bold text-teal mb-3">
               {currentStep.title}
             </h2>
@@ -322,7 +324,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
 
           {/* Info Cards for Steps 5-6 */}
           {(step === 5 || step === 6) && (
-            <div className="space-y-4 mb-6">
+            <div key={step} className="tutorial-step-enter space-y-4 mb-6">
               {step === 5 && (
                 <div className="bg-navy-light/90 rounded-xl p-4 border border-match/30">
                   <div className="flex items-center gap-3 mb-2">
@@ -448,14 +450,54 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
         </div>
       </div>
 
+      {showSkipConfirm && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="tutorial-step-enter bg-navy-light rounded-2xl w-full max-w-sm shadow-2xl border-2 border-navy-dark p-6">
+            <h3 className="text-xl font-bold text-offwhite mb-2">Skip tutorial?</h3>
+            <p className="text-offwhite/70 text-sm mb-6">
+              You can start it again anytime from the Tutorial button on the home screen.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSkipConfirm(false)}
+                className="flex-1 bg-navy-dark text-offwhite font-semibold py-2.5 px-4 rounded-xl hover:bg-navy transition-all"
+              >
+                Keep Learning
+              </button>
+              <button
+                onClick={handleComplete}
+                className="flex-1 bg-coral/20 border border-coral/40 text-coral font-semibold py-2.5 px-4 rounded-xl hover:bg-coral/30 transition-all"
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0) translateX(-50%); }
           50% { transform: translateY(-10px) translateX(-50%); }
         }
-        
+
         .animate-bounce {
           animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes tutorial-step-enter {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tutorial-step-enter {
+          animation: tutorial-step-enter 0.3s ease-out;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .tutorial-step-enter {
+            animation: none;
+          }
         }
       `}</style>
     </div>
