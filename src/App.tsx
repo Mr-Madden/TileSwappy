@@ -7,6 +7,7 @@ import { GameBoard } from './components/game/GameBoard';
 import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
 import { ThemeBackground } from './components/common/ThemeBackground';
 import { THEMES, DEFAULT_THEME } from './theme/themes';
+import { getCurrentDate } from './utils/helpers';
 
 // Lazy load modals - they're not needed on initial load
 const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
@@ -33,8 +34,13 @@ const STORAGE_KEYS = {
   TOTAL_GAMES: 'tileswappy_total_games',
   SETTINGS: 'tileswappy_settings',
   USER_ID: 'tileswappy_user_id',
-  DAILY_PUZZLES: 'tileswappy_daily_puzzles'
+  DAILY_PUZZLES: 'tileswappy_daily_puzzles',
+  STREAK_FREEZES: 'tileswappy_streak_freezes',
+  FROZEN_DATES: 'tileswappy_frozen_dates',
+  FREEZE_GRANT_MONTH: 'tileswappy_freeze_grant_month'
 };
+
+const MAX_STREAK_FREEZES = 3;
 
 const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   try {
@@ -103,8 +109,14 @@ const App: React.FC = () => {
   useEffect(() => {
     puzzleStatsRef.current = puzzleStats;
   }, [puzzleStats]);
-  const [totalGamesPlayed, setTotalGamesPlayed] = useState(() => 
+  const [totalGamesPlayed, setTotalGamesPlayed] = useState(() =>
     loadFromStorage(STORAGE_KEYS.TOTAL_GAMES, 0)
+  );
+  const [streakFreezes, setStreakFreezes] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.STREAK_FREEZES, 1)
+  );
+  const [frozenDates, setFrozenDates] = useState<Set<string>>(() =>
+    new Set(loadFromStorage<string[]>(STORAGE_KEYS.FROZEN_DATES, []))
   );
   const [settings, setSettings] = useState(() => 
     loadFromStorage(STORAGE_KEYS.SETTINGS, {
@@ -141,7 +153,32 @@ const App: React.FC = () => {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.TOTAL_GAMES, totalGamesPlayed);
   }, [totalGamesPlayed]);
-  
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.STREAK_FREEZES, streakFreezes);
+  }, [streakFreezes]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.FROZEN_DATES, Array.from(frozenDates));
+  }, [frozenDates]);
+
+  // Grant one streak freeze per calendar month (capped), the first time
+  // the app loads in a new month.
+  useEffect(() => {
+    const currentMonthKey = getCurrentDate().slice(0, 7); // "YYYY-MM"
+    const lastGrantedMonth = loadFromStorage<string | null>(STORAGE_KEYS.FREEZE_GRANT_MONTH, null);
+    if (lastGrantedMonth !== currentMonthKey) {
+      setStreakFreezes(prev => Math.min(MAX_STREAK_FREEZES, prev + 1));
+      saveToStorage(STORAGE_KEYS.FREEZE_GRANT_MONTH, currentMonthKey);
+    }
+  }, []);
+
+  const applyStreakFreeze = (dateStr: string) => {
+    if (streakFreezes <= 0) return;
+    setStreakFreezes(prev => prev - 1);
+    setFrozenDates(prev => new Set([...prev, dateStr]));
+  };
+
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.SETTINGS, settings);
   }, [settings]);
@@ -481,6 +518,10 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             onClose={() => setShowStreak(false)}
             completedDates={completedDates}
             onDateSelect={(dateStr, puzzleData) => handleDateSelect(dateStr, puzzleData)}
+            puzzleStats={puzzleStats}
+            frozenDates={frozenDates}
+            streakFreezes={streakFreezes}
+            onApplyFreeze={applyStreakFreeze}
           />
         </Suspense>
       )}

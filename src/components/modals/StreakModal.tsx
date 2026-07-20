@@ -1,21 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, ChevronLeft, ChevronRight, Trophy, Lock, Clock, Play, Check } from 'lucide-react';
+import { Zap, ChevronLeft, ChevronRight, Trophy, Lock, Clock, Play, Check, Flame, Snowflake, Award } from 'lucide-react';
 import { getCurrentDate } from '../../utils/helpers';
 import { getMonthPuzzles, isPuzzleUnlocked } from '../../services/supabase';
 import { ModalShell } from '../common/ModalShell';
+import {
+  STREAK_MILESTONES,
+  calculateCurrentStreak,
+  calculateLongestStreak,
+  findFreezableGap
+} from '../../utils/streaks';
 
 interface StreakModalProps {
   onClose: () => void;
   completedDates: Set<string>;
   onDateSelect: (dateStr: string, puzzleData?: any) => void;
   userScores?: Map<string, number>;
+  puzzleStats?: Record<string, any>;
+  frozenDates?: Set<string>;
+  streakFreezes?: number;
+  onApplyFreeze?: (dateStr: string) => void;
 }
 
-export const StreakModal: React.FC<StreakModalProps> = ({ 
-  onClose, 
+export const StreakModal: React.FC<StreakModalProps> = ({
+  onClose,
   completedDates,
   onDateSelect,
-  userScores = new Map()
+  userScores = new Map(),
+  puzzleStats = {},
+  frozenDates = new Set(),
+  streakFreezes = 0,
+  onApplyFreeze
 }) => {
   const todayDate = new Date();
   const [currentMonth, setCurrentMonth] = useState(todayDate.getMonth());
@@ -223,9 +237,14 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   
   const currentMonthStart = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
   const currentMonthEnd = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-31`;
-  const completedAdminPuzzles = adminPuzzleDates.filter(date => 
+  const completedAdminPuzzles = adminPuzzleDates.filter(date =>
     completedDates.has(date) && date >= currentMonthStart && date <= currentMonthEnd
   ).length;
+
+  const currentStreak = calculateCurrentStreak(completedDates, frozenDates, todayStr);
+  const longestStreak = calculateLongestStreak(completedDates, frozenDates);
+  const freezableGap = findFreezableGap(completedDates, frozenDates, todayStr);
+  const nextMilestone = STREAK_MILESTONES.find((m) => m > currentStreak);
 
   return (
     <ModalShell
@@ -244,6 +263,64 @@ export const StreakModal: React.FC<StreakModalProps> = ({
         </button>
       }
     >
+          {/* Streak */}
+          <div className="bg-gradient-to-r from-coral/20 to-gold/20 border border-gold/30 rounded-xl p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
+                  <Flame size={26} className="text-gold" fill="currentColor" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-offwhite leading-tight">
+                    {currentStreak} day{currentStreak === 1 ? '' : 's'}
+                  </div>
+                  <div className="text-xs text-offwhite/60">
+                    Current streak · Best {longestStreak}
+                    {nextMilestone && ` · ${nextMilestone - currentStreak} to next milestone`}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {STREAK_MILESTONES.map((milestone) => {
+                  const achieved = longestStreak >= milestone;
+                  return (
+                    <div
+                      key={milestone}
+                      title={`${milestone}-day streak`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition ${
+                        achieved ? 'bg-gold text-navy' : 'bg-navy-dark/60 text-offwhite/30'
+                      }`}
+                    >
+                      <Award size={16} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Streak freeze -- offered only when yesterday was just missed */}
+          {freezableGap && onApplyFreeze && (
+            <div className="bg-teal/10 border border-teal/30 rounded-xl p-4 mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Snowflake size={22} className="text-teal flex-shrink-0" />
+                <div>
+                  <div className="text-sm font-semibold text-offwhite">Your streak is at risk</div>
+                  <div className="text-xs text-offwhite/60">
+                    You missed {freezableGap} · {streakFreezes} freeze{streakFreezes === 1 ? '' : 's'} available
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => onApplyFreeze(freezableGap)}
+                disabled={streakFreezes <= 0}
+                className="flex-shrink-0 bg-teal hover:bg-teal-dark disabled:bg-navy-dark disabled:text-offwhite/40 text-navy font-semibold text-sm px-4 py-2 rounded-lg transition"
+              >
+                Use Freeze
+              </button>
+            </div>
+          )}
+
           {/* Stats */}
           <div className="bg-navy-dark/40 rounded-xl p-4 mb-4">
             <div className="flex justify-between items-center">
@@ -311,7 +388,8 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                     const { day: dayNum, dateStr, hasAdminPuzzle, isCompleted, isToday, puzzleData } = day;
                     const userScore = userScores.get(dateStr);
                     const isHovered = hoveredDate === dateStr;
-                    
+                    const isFrozen = frozenDates.has(dateStr);
+
                     // Determine status based on date and unlock time
                     const isFutureDate = dateStr > todayStr;
                     const isUnlocked = puzzleData ? isPuzzleUnlocked(puzzleData.release_time) : false;
@@ -432,11 +510,32 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                           <div className="absolute top-0.5 left-0.5 text-[10px] font-bold text-white bg-black/70 px-1.5 py-0.5 rounded z-10">
                             {dayNum}
                           </div>
+
+                          {/* Frozen indicator -- this gap didn't break the streak */}
+                          {isFrozen && (
+                            <div
+                              title="Streak freeze applied"
+                              className="absolute top-0.5 right-0.5 bg-teal/90 text-navy rounded-full p-0.5 z-10"
+                            >
+                              <Snowflake size={10} strokeWidth={3} />
+                            </div>
+                          )}
                         </button>
                       );
                     }
 
-                    // Completed puzzle - CAN REPLAY
+                    // Completed puzzle - CAN REPLAY. The overlay's tint is a
+                    // lightweight performance heatmap: a clean one-attempt
+                    // solve glows teal, more retries read progressively
+                    // darker -- visible across the whole month at a glance.
+                    const attempts = puzzleStats[dateStr]?.attempts ?? 1;
+                    const heatmapOverlay =
+                      attempts <= 1
+                        ? 'bg-teal/20 group-hover:bg-teal/10'
+                        : attempts === 2
+                        ? 'bg-black/30 group-hover:bg-black/20'
+                        : 'bg-black/55 group-hover:bg-black/45';
+
                     return (
                       <button
                         key={dayNum}
@@ -453,9 +552,9 @@ export const StreakModal: React.FC<StreakModalProps> = ({
                         <div className="absolute inset-0">
                           {renderPuzzleThumbnail(puzzleData)}
                         </div>
-                        
+
                         {/* Checkmark overlay */}
-                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition flex items-center justify-center">
+                        <div className={`absolute inset-0 ${heatmapOverlay} transition flex items-center justify-center`}>
                           {isHovered ? (
                             <div className="flex flex-col items-center gap-1">
                               <Trophy size={18} className="text-white drop-shadow-lg" />
@@ -516,6 +615,12 @@ export const StreakModal: React.FC<StreakModalProps> = ({
             <div className="flex items-center gap-2">
               <div className="w-5 h-5 bg-offwhite/5 rounded"></div>
               <span className="text-offwhite/60">No Puzzle</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-teal/90 rounded flex items-center justify-center">
+                <Snowflake size={10} strokeWidth={3} className="text-navy" />
+              </div>
+              <span className="text-offwhite/60">Frozen</span>
             </div>
           </div>
     </ModalShell>
