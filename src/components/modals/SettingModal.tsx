@@ -63,8 +63,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     <ModalShell onClose={onClose} title="Settings" titleIcon={Settings} maxWidth="md" bodyClassName="">
         {/* Content */}
         <div>
-          {/* Learn & Info Section */}
+          {/* Theme -- kept first so it catches the eye immediately */}
           <div className="px-6 py-4">
+            <h3 className="text-offwhite/60 text-xs font-semibold uppercase mb-3">Theme</h3>
+            <div className="bg-navy-dark/40 rounded-lg p-4">
+              <div className="grid grid-cols-4 gap-2">
+                {THEMES.map((t) => {
+                  const isSelected = (settings.theme || 'current') === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => onUpdateSettings({ theme: t.id })}
+                      className={`relative flex flex-col items-center gap-1 p-2 rounded-lg transition ${
+                        isSelected ? 'bg-navy-dark ring-2 ring-teal' : 'hover:bg-navy-dark/60'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex border border-offwhite/20 shadow-md">
+                        <div className="w-1/3 h-full" style={{ backgroundColor: t.swatch[0] }} />
+                        <div className="w-1/3 h-full" style={{ backgroundColor: t.swatch[1] }} />
+                        <div className="w-1/3 h-full" style={{ backgroundColor: t.swatch[2] }} />
+                      </div>
+                      <span className="text-[10px] text-offwhite/80 font-medium text-center leading-tight">
+                        {t.name}
+                      </span>
+                      {isSelected && (
+                        <span className="absolute -top-1 -right-1 bg-teal rounded-full p-0.5">
+                          <Check size={10} strokeWidth={3} className="text-navy" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Learn & Info Section */}
+          <div className="px-6 py-4 border-t border-offwhite/10">
             <h3 className="text-offwhite/60 text-xs font-semibold uppercase mb-3">Learn & Info</h3>
 
             <button
@@ -155,39 +190,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </option>
                   ))}
                 </select>
-              </div>
-            </div>
-
-            {/* Theme */}
-            <div className="bg-navy-dark/40 rounded-lg mb-2 p-4">
-              <div className="text-offwhite font-semibold mb-3">Theme</div>
-              <div className="grid grid-cols-4 gap-2">
-                {THEMES.map((t) => {
-                  const isSelected = (settings.theme || 'current') === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => onUpdateSettings({ theme: t.id })}
-                      className={`relative flex flex-col items-center gap-1 p-2 rounded-lg transition ${
-                        isSelected ? 'bg-navy-dark ring-2 ring-teal' : 'hover:bg-navy-dark/60'
-                      }`}
-                    >
-                      <div className="w-8 h-8 rounded-full overflow-hidden flex border border-offwhite/20 shadow-md">
-                        <div className="w-1/3 h-full" style={{ backgroundColor: t.swatch[0] }} />
-                        <div className="w-1/3 h-full" style={{ backgroundColor: t.swatch[1] }} />
-                        <div className="w-1/3 h-full" style={{ backgroundColor: t.swatch[2] }} />
-                      </div>
-                      <span className="text-[10px] text-offwhite/80 font-medium text-center leading-tight">
-                        {t.name}
-                      </span>
-                      {isSelected && (
-                        <span className="absolute -top-1 -right-1 bg-teal rounded-full p-0.5">
-                          <Check size={10} strokeWidth={3} className="text-navy" />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
               </div>
             </div>
 
