@@ -356,13 +356,22 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
                   const isFavorite = favoritePuzzleIds.has(puzzle.id);
 
                   return (
-                    <button
+                    <div
                       key={puzzle.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => {
                         onStartPuzzle(puzzle);
                         onClose();
-                        }}
-                      className="relative group"
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onStartPuzzle(puzzle);
+                          onClose();
+                        }
+                      }}
+                      className="relative group cursor-pointer"
                     >
                       <div className="aspect-square rounded-lg overflow-hidden border-2 border-navy-dark hover:border-teal transition-all">
                         <div 
@@ -398,7 +407,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
                           {puzzle.difficulty}
                         </div>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>

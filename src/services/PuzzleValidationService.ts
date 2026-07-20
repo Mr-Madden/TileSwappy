@@ -148,11 +148,3 @@ function passesComplexity(
     50
   );
 }
-
-export function validateSinglePuzzle(
-  puzzle: GeneratedPuzzle
-): boolean {
-  return validatePuzzle(
-    puzzle
-  );
-}
