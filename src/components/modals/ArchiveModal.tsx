@@ -1,6 +1,8 @@
-import React from 'react';
-import { Calendar, Heart, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, Heart, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { ModalShell } from '../common/ModalShell';
+
+type ArchiveFilter = 'all' | 'favorites' | 'completed' | 'Easy' | 'Medium' | 'Hard';
 
 interface Puzzle {
   id: string;
@@ -92,7 +94,25 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
   favoritePuzzleIds,
   onToggleFavorite
 }) => {
-  const puzzleCategories = [
+  const [activeFilter, setActiveFilter] = useState<ArchiveFilter>('all');
+  // Empty by default -- with 21 categories, an all-expanded view is a
+  // wall of scrolling. Filtering (below) auto-expands whatever matches
+  // regardless of this set, so collapsing here only affects idle browsing.
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+  const toggleCategory = (name: string) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
+  };
+
+  const puzzleCategories: { name: string; icon: string; puzzles: Puzzle[] }[] = [
     {
       name: 'Abstract & Gradients',
       icon: '🎨',
@@ -102,6 +122,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'abstract-003', title: 'Forest Green', difficulty: 'Easy' as const, gradient: ['#2d5016', '#4a7c2c', '#6fa84a'], pattern: undefined, direction: undefined },
         { id: 'abstract-004', title: 'Purple Dreams', difficulty: 'Medium' as const, gradient: ['#6a0dad', '#9370db', '#dda0dd'], pattern: undefined, direction: undefined },
         { id: 'abstract-005', title: 'Cherry Blossom', difficulty: 'Medium' as const, gradient: ['#ffb7c5', '#ffc0cb', '#ffd1dc'], pattern: undefined, direction: undefined },
+        { id: 'abstract-006', title: 'Golden Hour', difficulty: 'Hard' as const, gradient: ['#1a1a2e', '#8b5a2b', '#ffd700', '#ff8c42'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -111,6 +132,9 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'seasonal-001', title: 'Autumn Leaves', difficulty: 'Easy' as const, gradient: ['#ff4500', '#ff8c00', '#ffa500'], pattern: undefined, direction: undefined },
         { id: 'seasonal-002', title: 'Winter Snow', difficulty: 'Medium' as const, gradient: ['#e0f7fa', '#b2ebf2', '#80deea'], pattern: undefined, direction: undefined },
         { id: 'seasonal-003', title: 'Spring Bloom', difficulty: 'Medium' as const, gradient: ['#ff69b4', '#ff1493', '#c71585'], pattern: undefined, direction: undefined },
+        { id: 'seasonal-004', title: 'Summer Heat', difficulty: 'Easy' as const, gradient: ['#ffeb3b', '#ff9800', '#ff5722'], pattern: undefined, direction: undefined },
+        { id: 'seasonal-005', title: 'Harvest Moon', difficulty: 'Medium' as const, gradient: ['#3e2723', '#8d6e63', '#ffab00'], pattern: undefined, direction: undefined },
+        { id: 'seasonal-006', title: 'Frost Bite', difficulty: 'Hard' as const, gradient: ['#0d47a1', '#e1f5fe', '#01579b', '#4fc3f7', '#ffffff'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -120,6 +144,9 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'cosmic-001', title: 'Galaxy Spiral', difficulty: 'Hard' as const, gradient: ['#191970', '#8a2be2', '#ff69b4'], pattern: undefined, direction: undefined },
         { id: 'cosmic-002', title: 'Neon Nights', difficulty: 'Hard' as const, gradient: ['#ff00ff', '#00ffff', '#ffff00'], pattern: undefined, direction: undefined },
         { id: 'cosmic-003', title: 'Toxic Flares', difficulty: 'Hard' as const, gradient: ['#bb00bb', '#6fa84a', '#00bb00'], pattern: undefined, direction: undefined },
+        { id: 'cosmic-004', title: 'Moonlit Void', difficulty: 'Easy' as const, gradient: ['#0a0e27', '#1a1a3e', '#e8e8e8'], pattern: undefined, direction: undefined },
+        { id: 'cosmic-005', title: 'Solar Flare', difficulty: 'Medium' as const, gradient: ['#ff6600', '#ffcc00', '#ff0000'], pattern: undefined, direction: undefined },
+        { id: 'cosmic-006', title: 'Nebula Dust', difficulty: 'Medium' as const, gradient: ['#2d1b4e', '#6b2d5c', '#ff6b9d'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -131,6 +158,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'vertical-003', title: 'Deep Ocean', difficulty: 'Medium' as const, gradient: ['#001f3f', '#003d5c', '#006ba6', '#0496ff'], pattern: undefined, direction: 'to bottom' },
         { id: 'vertical-004', title: 'Mountain Peak', difficulty: 'Medium' as const, gradient: ['#2d3142', '#4f5d75', '#bfc0c0', '#ffffff'], pattern: undefined, direction: 'to top' },
         { id: 'vertical-005', title: 'Jungle Canopy', difficulty: 'Hard' as const, gradient: ['#064e3b', '#047857', '#10b981', '#6ee7b7', '#d1fae5'], pattern: undefined, direction: 'to bottom' },
+        { id: 'vertical-006', title: 'Waterfall Rush', difficulty: 'Easy' as const, gradient: ['#a8dadc', '#457b9d', '#1d3557'], pattern: undefined, direction: 'to bottom' },
       ]
     },
     {
@@ -139,8 +167,10 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
       puzzles: [
         { id: 'horizontal-001', title: 'Dawn to Dusk', difficulty: 'Easy' as const, gradient: ['#ff6b6b', '#ffa500', '#4a90e2', '#2c3e50'], pattern: undefined, direction: 'to right' },
         { id: 'horizontal-002', title: 'Desert Horizon', difficulty: 'Easy' as const, gradient: ['#c77c11', '#e9b44c', '#f4e4c1'], pattern: undefined, direction: 'to right' },
-        { id: 'horizontal-003', title: 'Ocean Depth', difficulty: 'Medium' as const, gradient: ['#e0f7fa', '#80deea', '#26c6da', '#0097a7', '#006064'], pattern: undefined, direction: 'to right' },
+        { id: 'horizontal-003', title: 'Tidal Depth', difficulty: 'Medium' as const, gradient: ['#e0f7fa', '#80deea', '#26c6da', '#0097a7', '#006064'], pattern: undefined, direction: 'to right' },
         { id: 'horizontal-004', title: 'Fire to Ice', difficulty: 'Hard' as const, gradient: ['#ff0000', '#ff4500', '#ffa500', '#4a90e2', '#0000ff'], pattern: undefined, direction: 'to right' },
+        { id: 'horizontal-005', title: 'Coral Reef Drift', difficulty: 'Medium' as const, gradient: ['#ff7e5f', '#feb47b', '#86a8e7', '#5ffbf1'], pattern: undefined, direction: 'to right' },
+        { id: 'horizontal-006', title: 'Midnight Run', difficulty: 'Hard' as const, gradient: ['#0f0c29', '#302b63', '#24243e', '#ff6a00'], pattern: undefined, direction: 'to right' },
       ]
     },
     {
@@ -151,6 +181,8 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'corner-002', title: 'Southeast Storm', difficulty: 'Medium' as const, gradient: ['#1a1a2e', '#16213e', '#0f3460', '#533483'], pattern: undefined, direction: 'to bottom right' },
         { id: 'corner-003', title: 'Northwest Chill', difficulty: 'Medium' as const, gradient: ['#00d2ff', '#3a7bd5', '#2d3561'], pattern: undefined, direction: 'to top left' },
         { id: 'corner-004', title: 'Southwest Heat', difficulty: 'Hard' as const, gradient: ['#ff512f', '#dd2476', '#8e2de2'], pattern: undefined, direction: 'to bottom left' },
+        { id: 'corner-005', title: 'Sunrise Corner', difficulty: 'Easy' as const, gradient: ['#fceabb', '#f8b500'], pattern: undefined, direction: 'to top right' },
+        { id: 'corner-006', title: 'Abyss Drop', difficulty: 'Hard' as const, gradient: ['#000428', '#004e92', '#00c9ff', '#92fe9d'], pattern: undefined, direction: 'to bottom left' },
       ]
     },
     {
@@ -162,6 +194,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'multi-003', title: 'Neon City', difficulty: 'Medium' as const, gradient: ['#ff00ff', '#00ffff', '#ff1493', '#00ff00', '#ffff00'], pattern: undefined, direction: undefined },
         { id: 'multi-004', title: 'Aurora Borealis', difficulty: 'Medium' as const, gradient: ['#00ff87', '#60efff', '#7b68ee', '#ff1493', '#00ff87'], pattern: undefined, direction: undefined },
         { id: 'multi-005', title: 'Cosmic Burst', difficulty: 'Hard' as const, gradient: ['#1a1a2e', '#16213e', '#e94560', '#f4a261', '#e76f51', '#2a9d8f'], pattern: undefined, direction: undefined },
+        { id: 'multi-006', title: 'Kaleidoscope', difficulty: 'Hard' as const, gradient: ['#ff006e', '#8338ec', '#3a86ff', '#06ffa5', '#ffbe0b', '#fb5607'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -173,6 +206,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'pastel-003', title: 'Lavender Fields', difficulty: 'Medium' as const, gradient: ['#e6d5f5', '#d4c5e8', '#c2b5db', '#b0a5ce'], pattern: undefined, direction: undefined },
         { id: 'pastel-004', title: 'Peach Sorbet', difficulty: 'Medium' as const, gradient: ['#ffd4a3', '#ffcba4', '#ffc1a6', '#ffb8a7'], pattern: undefined, direction: undefined },
         { id: 'pastel-005', title: 'Baby Blue', difficulty: 'Easy' as const, gradient: ['#c8e7f5', '#b8dff0', '#a8d7eb', '#98cfe6'], pattern: undefined, direction: undefined },
+        { id: 'pastel-006', title: 'Vanilla Cream', difficulty: 'Easy' as const, gradient: ['#fff5e1', '#ffedcc', '#ffe0b3', '#ffd699'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -183,6 +217,8 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'dark-002', title: 'Deep Purple', difficulty: 'Medium' as const, gradient: ['#1a0033', '#2d0052', '#400070', '#53008f'], pattern: undefined, direction: undefined },
         { id: 'dark-003', title: 'Blood Moon', difficulty: 'Hard' as const, gradient: ['#1a0000', '#330000', '#660000', '#990000', '#cc0000'], pattern: undefined, direction: undefined },
         { id: 'dark-004', title: 'Forest Night', difficulty: 'Hard' as const, gradient: ['#001a00', '#003300', '#004d00', '#006600'], pattern: undefined, direction: undefined },
+        { id: 'dark-005', title: 'Charcoal Ash', difficulty: 'Medium' as const, gradient: ['#0d0d0d', '#262626', '#3d3d3d', '#595959'], pattern: undefined, direction: undefined },
+        { id: 'dark-006', title: 'Abyssal Trench', difficulty: 'Hard' as const, gradient: ['#000000', '#0a1128', '#1a237e', '#000000'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -194,6 +230,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'metal-003', title: 'Bronze Age', difficulty: 'Medium' as const, gradient: ['#804000', '#996515', '#b38728', '#cca43b'], pattern: undefined, direction: undefined },
         { id: 'metal-004', title: 'Copper Penny', difficulty: 'Hard' as const, gradient: ['#b87333', '#cd7f32', '#e29c5c', '#f2b88a'], pattern: undefined, direction: undefined },
         { id: 'metal-005', title: 'Platinum', difficulty: 'Hard' as const, gradient: ['#8c8c8c', '#9c9c9c', '#adadad', '#bebebe', '#d0d0d0'], pattern: undefined, direction: undefined },
+        { id: 'metal-006', title: 'Pearl Shimmer', difficulty: 'Easy' as const, gradient: ['#f0f0f0', '#e8e0d5', '#d4c5b9', '#c9b8a8'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -204,6 +241,8 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'earth-002', title: 'Clay Pottery', difficulty: 'Easy' as const, gradient: ['#8b4513', '#a0522d', '#b5651d', '#cd853f'], pattern: undefined, direction: undefined },
         { id: 'earth-003', title: 'Moss Garden', difficulty: 'Medium' as const, gradient: ['#556b2f', '#6b8e23', '#8fbc8f', '#9dc183'], pattern: undefined, direction: undefined },
         { id: 'earth-004', title: 'Canyon Rocks', difficulty: 'Medium' as const, gradient: ['#8b4500', '#a0522d', '#cd853f', '#daa520', '#f4a460'], pattern: undefined, direction: undefined },
+        { id: 'earth-005', title: 'Redwood Bark', difficulty: 'Medium' as const, gradient: ['#3e2417', '#5c3a21', '#7a4f2b'], pattern: undefined, direction: undefined },
+        { id: 'earth-006', title: 'Canyon Shadow', difficulty: 'Hard' as const, gradient: ['#2b1b0e', '#5c3d1f', '#8b5a2b', '#c68642', '#e8b877'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -215,6 +254,7 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'neon-003', title: 'Lime Light', difficulty: 'Medium' as const, gradient: ['#00ff00', '#33ff33', '#66ff66', '#99ff99'], pattern: undefined, direction: undefined },
         { id: 'neon-004', title: 'Cyber Purple', difficulty: 'Medium' as const, gradient: ['#9d00ff', '#b733ff', '#d166ff', '#eb99ff'], pattern: undefined, direction: undefined },
         { id: 'neon-005', title: 'Toxic Yellow', difficulty: 'Hard' as const, gradient: ['#ccff00', '#d6ff33', '#e0ff66', '#ebff99'], pattern: undefined, direction: undefined },
+        { id: 'neon-006', title: 'Laser Orange', difficulty: 'Medium' as const, gradient: ['#ff5e00', '#ff8c1a', '#ffab4d', '#ffc785'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -225,6 +265,8 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'blue-002', title: 'Navy Depths', difficulty: 'Easy' as const, gradient: ['#001f3f', '#003d5c', '#005c7a', '#007a99'], pattern: undefined, direction: undefined },
         { id: 'blue-003', title: 'Sapphire Gem', difficulty: 'Medium' as const, gradient: ['#0f52ba', '#1560c8', '#1e6ed6', '#2a7ee0'], pattern: undefined, direction: undefined },
         { id: 'blue-004', title: 'Turquoise Waters', difficulty: 'Medium' as const, gradient: ['#00bcd4', '#26c6da', '#4dd0e1', '#80deea'], pattern: undefined, direction: undefined },
+        { id: 'blue-005', title: 'Deep Sea Trench', difficulty: 'Medium' as const, gradient: ['#012a4a', '#013a63', '#01497c', '#014f86'], pattern: undefined, direction: undefined },
+        { id: 'blue-006', title: 'Arctic Storm', difficulty: 'Hard' as const, gradient: ['#03045e', '#023e8a', '#0077b6', '#00b4d8', '#90e0ef'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -235,6 +277,8 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'red-002', title: 'Rose Petal', difficulty: 'Easy' as const, gradient: ['#ff1493', '#ff69b4', '#ffb6c1', '#ffc0cb'], pattern: undefined, direction: undefined },
         { id: 'red-003', title: 'Rust Belt', difficulty: 'Medium' as const, gradient: ['#8b4513', '#a0522d', '#b8860b', '#cd853f'], pattern: undefined, direction: undefined },
         { id: 'red-004', title: 'Volcano', difficulty: 'Hard' as const, gradient: ['#8b0000', '#b22222', '#ff4500', '#ff6347', '#ffa500'], pattern: undefined, direction: undefined },
+        { id: 'red-005', title: 'Terracotta Sun', difficulty: 'Medium' as const, gradient: ['#c1440e', '#e07a3f', '#f0a868'], pattern: undefined, direction: undefined },
+        { id: 'red-006', title: 'Inferno Core', difficulty: 'Hard' as const, gradient: ['#3d0000', '#7a0000', '#b30000', '#ff0000', '#ff5500'], pattern: undefined, direction: undefined },
       ]
     },
     {
@@ -242,10 +286,11 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
       icon: '⭕',
       puzzles: [
         { id: 'radial-001', title: 'Sunset Burst', difficulty: 'Easy' as const, gradient: ['#ff6b6b', '#ffa500', '#ffd700'], pattern: 'radial', direction: undefined },
-        { id: 'radial-002', title: 'Ocean Depth', difficulty: 'Easy' as const, gradient: ['#001f3f', '#0074D9', '#7FDBFF'], pattern: 'radial', direction: undefined },
+        { id: 'radial-002', title: 'Abyss Glow', difficulty: 'Easy' as const, gradient: ['#001f3f', '#0074D9', '#7FDBFF'], pattern: 'radial', direction: undefined },
         { id: 'radial-003', title: 'Forest Ring', difficulty: 'Medium' as const, gradient: ['#1a4d2e', '#4f7942', '#90be6d'], pattern: 'radial', direction: undefined },
         { id: 'radial-004', title: 'Purple Haze', difficulty: 'Medium' as const, gradient: ['#2d004d', '#7209b7', '#f72585'], pattern: 'radial', direction: undefined },
         { id: 'radial-005', title: 'Fire Core', difficulty: 'Hard' as const, gradient: ['#370617', '#dc2f02', '#ffba08'], pattern: 'radial', direction: undefined },
+        { id: 'radial-006', title: 'Lime Splash', difficulty: 'Easy' as const, gradient: ['#84cc16', '#bef264', '#ecfccb'], pattern: 'radial', direction: undefined },
       ]
     },
     {
@@ -256,6 +301,8 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'conic-002', title: 'Twilight Twist', difficulty: 'Medium' as const, gradient: ['#1e3a8a', '#7c3aed', '#ec4899', '#1e3a8a'], pattern: 'conic', direction: undefined },
         { id: 'conic-003', title: 'Neon Vortex', difficulty: 'Hard' as const, gradient: ['#00ffff', '#ff00ff', '#ffff00', '#00ffff'], pattern: 'conic', direction: undefined },
         { id: 'conic-004', title: 'Earth Rotation', difficulty: 'Hard' as const, gradient: ['#064e3b', '#fbbf24', '#dc2626', '#064e3b'], pattern: 'conic', direction: undefined },
+        { id: 'conic-005', title: 'Pastel Pinwheel', difficulty: 'Easy' as const, gradient: ['#ffd6e8', '#c9e4ff', '#d4f5dd', '#fff2cc', '#ffd6e8'], pattern: 'conic', direction: undefined },
+        { id: 'conic-006', title: 'Solar Vortex', difficulty: 'Medium' as const, gradient: ['#ff6b00', '#ffb800', '#fff200', '#ff6b00'], pattern: 'conic', direction: undefined },
       ]
     },
     {
@@ -266,6 +313,8 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'stripe-002', title: 'Beach Towel', difficulty: 'Easy' as const, gradient: ['#0ea5e9', '#fbbf24', '#0ea5e9'], pattern: 'striped', direction: undefined },
         { id: 'stripe-003', title: 'Zebra Crossing', difficulty: 'Medium' as const, gradient: ['#000000', '#ffffff', '#000000', '#ffffff'], pattern: 'striped', direction: undefined },
         { id: 'stripe-004', title: 'Sunset Layers', difficulty: 'Medium' as const, gradient: ['#ff6b6b', '#ffa500', '#ffd700', '#87ceeb'], pattern: 'striped', direction: undefined },
+        { id: 'stripe-005', title: 'Tiger Stripes', difficulty: 'Hard' as const, gradient: ['#000000', '#ff8c00', '#000000', '#ff8c00', '#000000'], pattern: 'striped', direction: undefined },
+        { id: 'stripe-006', title: 'Neon Barcode', difficulty: 'Hard' as const, gradient: ['#0a0a0a', '#39ff14', '#0a0a0a', '#ff073a', '#0a0a0a'], pattern: 'striped', direction: undefined },
       ]
     },
     {
@@ -276,6 +325,8 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'diamond-002', title: 'Ice Crystal', difficulty: 'Medium' as const, gradient: ['#0c4a6e', '#38bdf8', '#e0f2fe'], pattern: 'diamond', direction: undefined },
         { id: 'diamond-003', title: 'Emerald Cut', difficulty: 'Hard' as const, gradient: ['#064e3b', '#10b981', '#6ee7b7'], pattern: 'diamond', direction: undefined },
         { id: 'diamond-004', title: 'Ruby Facet', difficulty: 'Hard' as const, gradient: ['#7f1d1d', '#dc2626', '#fca5a5'], pattern: 'diamond', direction: undefined },
+        { id: 'diamond-005', title: 'Rose Quartz', difficulty: 'Easy' as const, gradient: ['#fecdd3', '#fda4af', '#fb7185'], pattern: 'diamond', direction: undefined },
+        { id: 'diamond-006', title: 'Sapphire Cut', difficulty: 'Medium' as const, gradient: ['#1e3a8a', '#3b82f6', '#93c5fd'], pattern: 'diamond', direction: undefined },
       ]
     },
     {
@@ -285,16 +336,21 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'checker-001', title: 'Classic Board', difficulty: 'Medium' as const, gradient: ['#1f2937', '#f3f4f6'], pattern: 'checkerboard', direction: undefined },
         { id: 'checker-002', title: 'Bubblegum', difficulty: 'Medium' as const, gradient: ['#ec4899', '#fce7f3'], pattern: 'checkerboard', direction: undefined },
         { id: 'checker-003', title: 'Cyber Grid', difficulty: 'Hard' as const, gradient: ['#00ffff', '#ff00ff'], pattern: 'checkerboard', direction: undefined },
+        { id: 'checker-004', title: 'Cream Latte', difficulty: 'Easy' as const, gradient: ['#f5deb3', '#8b5a2b'], pattern: 'checkerboard', direction: undefined },
+        { id: 'checker-005', title: 'Mint Choc', difficulty: 'Easy' as const, gradient: ['#a8e6cf', '#4a2c1a'], pattern: 'checkerboard', direction: undefined },
+        { id: 'checker-006', title: 'Royal Flag', difficulty: 'Medium' as const, gradient: ['#1e3a8a', '#fbbf24'], pattern: 'checkerboard', direction: undefined },
       ]
     },
     {
       name: 'Wavy Patterns',
       icon: '🌊',
       puzzles: [
-        { id: 'wave-001', title: 'Ocean Waves', difficulty: 'Medium' as const, gradient: ['#0369a1', '#0ea5e9', '#bae6fd'], pattern: 'wavy', direction: undefined },
+        { id: 'wave-001', title: 'Wave Crest', difficulty: 'Medium' as const, gradient: ['#0369a1', '#0ea5e9', '#bae6fd'], pattern: 'wavy', direction: undefined },
         { id: 'wave-002', title: 'Desert Dunes', difficulty: 'Medium' as const, gradient: ['#78350f', '#d97706', '#fcd34d'], pattern: 'wavy', direction: undefined },
         { id: 'wave-003', title: 'Aurora Flow', difficulty: 'Hard' as const, gradient: ['#1e3a8a', '#7c3aed', '#ec4899', '#06b6d4'], pattern: 'wavy', direction: undefined },
         { id: 'wave-004', title: 'Lava Flow', difficulty: 'Hard' as const, gradient: ['#7f1d1d', '#dc2626', '#fb923c'], pattern: 'wavy', direction: undefined },
+        { id: 'wave-005', title: 'Gentle Ripple', difficulty: 'Easy' as const, gradient: ['#bae6fd', '#7dd3fc', '#38bdf8'], pattern: 'wavy', direction: undefined },
+        { id: 'wave-006', title: 'Meadow Breeze', difficulty: 'Easy' as const, gradient: ['#d9f99d', '#a3e635', '#65a30d'], pattern: 'wavy', direction: undefined },
       ]
     },
     {
@@ -304,12 +360,39 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
         { id: 'dots-001', title: 'Polka Party', difficulty: 'Easy' as const, gradient: ['#ec4899', '#fce7f3'], pattern: 'dots', direction: undefined },
         { id: 'dots-002', title: 'Starry Night', difficulty: 'Medium' as const, gradient: ['#0f172a', '#1e40af', '#60a5fa'], pattern: 'dots', direction: undefined },
         { id: 'dots-003', title: 'Confetti', difficulty: 'Medium' as const, gradient: ['#ff0000', '#ffff00', '#00ff00', '#0000ff'], pattern: 'dots', direction: undefined },
+        { id: 'dots-004', title: 'Bubblegum Pop', difficulty: 'Easy' as const, gradient: ['#ff9ecd', '#ffd1e8'], pattern: 'dots', direction: undefined },
+        { id: 'dots-005', title: 'Galaxy Spots', difficulty: 'Medium' as const, gradient: ['#1a0933', '#4c1d95', '#a78bfa'], pattern: 'dots', direction: undefined },
+        { id: 'dots-006', title: 'Toxic Bubbles', difficulty: 'Hard' as const, gradient: ['#0a1f0a', '#39ff14', '#0a1f0a'], pattern: 'dots', direction: undefined },
       ]
     }
   ];
 
   // Calculate total puzzles
   const totalPuzzles = puzzleCategories.reduce((sum, cat) => sum + cat.puzzles.length, 0);
+
+  const matchesFilter = (puzzle: Puzzle): boolean => {
+    switch (activeFilter) {
+      case 'all':
+        return true;
+      case 'favorites':
+        return favoritePuzzleIds.has(puzzle.id);
+      case 'completed':
+        return completedPuzzleIds.has(puzzle.id);
+      default:
+        return puzzle.difficulty === activeFilter;
+    }
+  };
+
+  const isFiltering = activeFilter !== 'all';
+
+  const filterChips: { id: ArchiveFilter; label: string }[] = [
+    { id: 'all', label: 'All' },
+    ...(favoritePuzzleIds.size > 0 ? [{ id: 'favorites' as const, label: 'Favorites' }] : []),
+    { id: 'completed', label: 'Completed' },
+    { id: 'Easy', label: 'Easy' },
+    { id: 'Medium', label: 'Medium' },
+    { id: 'Hard', label: 'Hard' },
+  ];
 
   return (
     <ModalShell
@@ -335,23 +418,46 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
             </div>
           </div>
 
-          {favoritePuzzleIds.size > 0 && (
-            <div className="mb-6">
-              <h3 className="text-offwhite font-semibold text-sm mb-2 flex items-center gap-2">
-                <Heart size={18} fill="currentColor" className="text-coral" />
-                Your Favorites ({favoritePuzzleIds.size})
-              </h3>
-            </div>
-          )}
+          {/* Filter chips */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {filterChips.map((chip) => (
+              <button
+                key={chip.id}
+                onClick={() => setActiveFilter(chip.id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                  activeFilter === chip.id
+                    ? 'bg-teal text-navy'
+                    : 'bg-navy-dark text-offwhite/70 hover:bg-navy-dark/70 hover:text-offwhite'
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
 
-          {puzzleCategories.map((category) => (
-            <div key={category.name} className="mb-6">
-              <h3 className="text-offwhite font-semibold text-sm mb-3 flex items-center gap-2">
+          {puzzleCategories.map((category) => {
+            const filteredPuzzles = category.puzzles.filter(matchesFilter);
+            if (isFiltering && filteredPuzzles.length === 0) return null;
+
+            const isExpanded = isFiltering || expandedCategories.has(category.name);
+            const puzzlesToShow = isFiltering ? filteredPuzzles : category.puzzles;
+
+            return (
+            <div key={category.name} className="mb-3">
+              <button
+                onClick={() => toggleCategory(category.name)}
+                className="w-full text-offwhite font-semibold text-sm mb-2 flex items-center gap-2 hover:text-teal transition"
+              >
+                {isExpanded ? <ChevronDown size={16} className="text-offwhite/50" /> : <ChevronRight size={16} className="text-offwhite/50" />}
                 <span>{category.icon}</span>
-                {category.name}
-              </h3>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {category.puzzles.map((puzzle) => {
+                <span className="flex-1 text-left">{category.name}</span>
+                <span className="text-offwhite/40 font-normal">
+                  {isFiltering ? filteredPuzzles.length : category.puzzles.length}
+                </span>
+              </button>
+              {isExpanded && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+                {puzzlesToShow.map((puzzle) => {
                   const isCompleted = completedPuzzleIds.has(puzzle.id);
                   const isFavorite = favoritePuzzleIds.has(puzzle.id);
 
@@ -411,8 +517,10 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
                   );
                 })}
               </div>
+              )}
             </div>
-          ))}
+            );
+          })}
     </ModalShell>
   );
 };
