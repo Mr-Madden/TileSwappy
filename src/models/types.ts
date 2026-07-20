@@ -260,6 +260,8 @@ export interface AppSettings {
   vibrateEnabled: boolean;
 
   soundEnabled?: boolean;
+
+  theme?: string;
 }
 
 // =====================

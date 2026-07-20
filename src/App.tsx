@@ -5,6 +5,7 @@ import { StartScreen } from './components/screens/StartScreen';
 import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
 import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
+import { DEFAULT_THEME } from './theme/themes';
 
 // Lazy load modals - they're not needed on initial load
 const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
@@ -110,7 +111,8 @@ const App: React.FC = () => {
       language: 'English',
       notificationsEnabled: true,
       vibrateEnabled: true,
-      soundEnabled: true
+      soundEnabled: true,
+      theme: DEFAULT_THEME
     })
   );
   const [dailyPuzzles, setDailyPuzzles] = useState<Record<string, any>>(() => 
@@ -142,6 +144,10 @@ const App: React.FC = () => {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.SETTINGS, settings);
   }, [settings]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', settings.theme || DEFAULT_THEME);
+  }, [settings.theme]);
 
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.DAILY_PUZZLES, dailyPuzzles);
