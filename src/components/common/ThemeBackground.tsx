@@ -61,12 +61,16 @@ const ZenLayer: React.FC = () => (
   </div>
 );
 
-const DesertLayer: React.FC = () => (
-  <div className="theme-bg-layer">
-    <div className="bg-effect-haze" />
-    <div className="bg-effect-dune" />
-  </div>
-);
+const DesertLayer: React.FC = () => {
+  const canvasRef = useCanvasParticles('sand');
+  return (
+    <div className="theme-bg-layer">
+      <canvas ref={canvasRef} />
+      <div className="bg-effect-haze" />
+      <div className="bg-effect-dune" />
+    </div>
+  );
+};
 
 const IceLayer: React.FC = () => (
   <div className="theme-bg-layer">

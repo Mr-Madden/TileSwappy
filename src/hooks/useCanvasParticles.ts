@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export type ParticleBehavior = 'stars' | 'bubbles';
+export type ParticleBehavior = 'stars' | 'bubbles' | 'sand';
 
 interface Star {
   x: number;
@@ -19,10 +19,20 @@ interface Bubble {
   wobbleAmt: number;
 }
 
+interface SandGrain {
+  x: number;
+  y: number;
+  r: number;
+  speed: number;
+  drift: number;
+  driftAmt: number;
+}
+
 /**
- * Drives a small canvas particle field (twinkling stars or rising bubbles)
- * for the animated theme backgrounds. Ported from the theme-directions
- * mockup artifact's two draw loops.
+ * Drives a small canvas particle field (twinkling stars, rising bubbles,
+ * or drifting sand) for the animated theme backgrounds. The stars/bubbles
+ * behaviors were ported from the theme-directions mockup artifact's draw
+ * loops; sand follows the same pattern for Desert's blowing-dust effect.
  */
 export function useCanvasParticles(behavior: ParticleBehavior) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -70,7 +80,7 @@ export function useCanvasParticles(behavior: ParticleBehavior) {
         if (!reduce) rafId = requestAnimationFrame(draw);
       };
       rafId = requestAnimationFrame(draw);
-    } else {
+    } else if (behavior === 'bubbles') {
       const bubbles: Bubble[] = Array.from({ length: 36 }, () => ({
         x: Math.random(),
         y: Math.random(),
@@ -93,6 +103,34 @@ export function useCanvasParticles(behavior: ParticleBehavior) {
           const x = b.x + (reduce ? 0 : Math.sin(t * 0.0006 + b.wobble) * b.wobbleAmt);
           ctx.beginPath();
           ctx.arc(x * w, b.y * h, b.r * devicePixelRatio, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        if (!reduce) rafId = requestAnimationFrame(draw);
+      };
+      rafId = requestAnimationFrame(draw);
+    } else {
+      const grains: SandGrain[] = Array.from({ length: 60 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        r: Math.random() * 1.5 + 0.4,
+        speed: Math.random() * 0.00035 + 0.00015,
+        drift: Math.random() * Math.PI * 2,
+        driftAmt: Math.random() * 0.01 + 0.004,
+      }));
+
+      const draw = (t: number) => {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(122, 90, 55, 0.35)';
+        grains.forEach((g) => {
+          if (!reduce) {
+            g.x += g.speed * 16;
+            if (g.x > 1.05) g.x = -0.05;
+          }
+          const y = g.y + (reduce ? 0 : Math.sin(t * 0.0005 + g.drift) * g.driftAmt);
+          ctx.beginPath();
+          ctx.arc(g.x * w, y * h, g.r * devicePixelRatio, 0, Math.PI * 2);
           ctx.fill();
         });
         if (!reduce) rafId = requestAnimationFrame(draw);

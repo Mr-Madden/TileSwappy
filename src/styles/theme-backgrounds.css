@@ -49,9 +49,9 @@
   opacity: 0.5;
   filter: blur(1px);
 }
-.bg-effect-blob.b1 { width: 32vw; height: 32vw; max-width: 340px; max-height: 340px; top: -8vw; right: -8vw; background: rgb(var(--color-coral)); border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; }
-.bg-effect-blob.b2 { width: 24vw; height: 24vw; max-width: 260px; max-height: 260px; bottom: 8vh; left: -6vw; background: rgb(var(--color-teal)); border-radius: 58% 42% 37% 63% / 55% 40% 60% 45%; }
-.bg-effect-blob.b3 { width: 12vw; height: 12vw; max-width: 120px; max-height: 120px; bottom: 30vh; right: 4vw; background: rgb(var(--color-gold)); border-radius: 50%; }
+.bg-effect-blob.b1 { width: 32vw; height: 32vw; max-width: 340px; max-height: 340px; top: -8vw; right: -8vw; background: rgb(var(--color-coral)); border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; animation: theme-blob-float 9s ease-in-out infinite; }
+.bg-effect-blob.b2 { width: 24vw; height: 24vw; max-width: 260px; max-height: 260px; bottom: 8vh; left: -6vw; background: rgb(var(--color-teal)); border-radius: 58% 42% 37% 63% / 55% 40% 60% 45%; animation: theme-blob-float 11s ease-in-out infinite; animation-delay: -3s; }
+.bg-effect-blob.b3 { width: 12vw; height: 12vw; max-width: 120px; max-height: 120px; bottom: 30vh; right: 4vw; background: rgb(var(--color-gold)); border-radius: 50%; animation: theme-blob-float 7s ease-in-out infinite; animation-delay: -5s; }
 
 /* Neon: grid + scanline */
 .bg-effect-grid {
@@ -76,6 +76,7 @@
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(180deg, rgb(var(--color-coral) / 0.05) 0px, rgb(var(--color-coral) / 0.05) 1px, transparent 1px, transparent 3px);
+  animation: theme-scanline-flicker 3s ease-in-out infinite;
 }
 
 /* Botanical: sun + leaves */
@@ -94,9 +95,10 @@
   opacity: 0.7;
   background: rgb(var(--color-teal-dark));
   border-radius: 0% 90% 0% 90%;
+  transform-origin: top center;
 }
-.bg-effect-leaf.l1 { width: 18vw; height: 24vw; max-width: 200px; max-height: 260px; top: -6vw; right: -3vw; transform: rotate(18deg); }
-.bg-effect-leaf.l2 { width: 12vw; height: 16vw; max-width: 140px; max-height: 180px; bottom: -3vw; left: -4vw; transform: rotate(-25deg); }
+.bg-effect-leaf.l1 { width: 18vw; height: 24vw; max-width: 200px; max-height: 260px; top: -6vw; right: -3vw; animation: theme-leaf-sway 7s ease-in-out infinite; --leaf-rotate: 18deg; }
+.bg-effect-leaf.l2 { width: 12vw; height: 16vw; max-width: 140px; max-height: 180px; bottom: -3vw; left: -4vw; animation: theme-leaf-sway 9s ease-in-out infinite; animation-delay: -2.5s; --leaf-rotate: -25deg; }
 
 /* Zen: breathing ripples */
 .bg-effect-ripple {
@@ -137,8 +139,8 @@
   background: linear-gradient(160deg, rgb(var(--color-offwhite) / 0.18), rgb(var(--color-offwhite) / 0.03));
   border: 1px solid rgb(var(--color-offwhite) / 0.2);
 }
-.bg-effect-facet.f1 { width: 26vw; height: 26vw; max-width: 260px; max-height: 260px; top: -6vw; right: -4vw; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); }
-.bg-effect-facet.f2 { width: 16vw; height: 16vw; max-width: 160px; max-height: 160px; bottom: 12vh; left: -3vw; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+.bg-effect-facet.f1 { width: 26vw; height: 26vw; max-width: 260px; max-height: 260px; top: -6vw; right: -4vw; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); animation: theme-glacier-drift 22s ease-in-out infinite; }
+.bg-effect-facet.f2 { width: 16vw; height: 16vw; max-width: 160px; max-height: 160px; bottom: 12vh; left: -3vw; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); animation: theme-glacier-drift 27s ease-in-out infinite reverse; animation-delay: -8s; }
 
 /* Candy: dot grid */
 .bg-effect-dotgrid {
@@ -147,6 +149,7 @@
   opacity: 0.4;
   background-image: radial-gradient(rgb(var(--color-navy-light) / 0.8) 2px, transparent 2px);
   background-size: 26px 26px;
+  animation: theme-dot-twinkle 4s ease-in-out infinite;
 }
 
 /* Autumn: falling leaves */
@@ -170,6 +173,7 @@
   background: repeating-conic-gradient(from 0deg, rgb(var(--color-gold) / 0.14) 0deg 2deg, transparent 2deg 12deg);
   -webkit-mask-image: radial-gradient(circle, black 35%, transparent 68%);
   mask-image: radial-gradient(circle, black 35%, transparent 68%);
+  animation: theme-sunburst-spin 90s linear infinite;
 }
 
 @keyframes theme-drift {
@@ -188,12 +192,51 @@
   from { transform: translateY(-10vh) rotate(0deg); opacity: 0.9; }
   to { transform: translateY(110vh) rotate(200deg); opacity: 0.2; }
 }
+@keyframes theme-blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4%, 5%) scale(1.06); }
+}
+@keyframes theme-scanline-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+  75% { opacity: 0.9; }
+}
+@keyframes theme-leaf-sway {
+  0%, 100% { transform: rotate(calc(var(--leaf-rotate) - 4deg)) scale(0.97); }
+  50% { transform: rotate(calc(var(--leaf-rotate) + 4deg)) scale(1.03); }
+}
+@keyframes theme-glacier-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-3%, 2%) rotate(-2deg); }
+}
+@keyframes theme-dot-twinkle {
+  0%, 100% { opacity: 0.3; background-position: 0 0; }
+  50% { opacity: 0.55; background-position: 4px 4px; }
+}
+@keyframes theme-sunburst-spin {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .bg-effect-aurora,
   .bg-effect-scan,
   .bg-effect-ripple,
-  .bg-effect-leafdrop {
+  .bg-effect-leafdrop,
+  .bg-effect-scanlines,
+  .bg-effect-dotgrid,
+  .bg-effect-sunburst,
+  /* These three effects vary duration/delay per instance via a compound
+     class (e.g. .bg-effect-blob.b1), which has higher specificity than
+     the plain .bg-effect-blob rule above -- list the compound selectors
+     explicitly so this override actually wins. */
+  .bg-effect-blob.b1,
+  .bg-effect-blob.b2,
+  .bg-effect-blob.b3,
+  .bg-effect-leaf.l1,
+  .bg-effect-leaf.l2,
+  .bg-effect-facet.f1,
+  .bg-effect-facet.f2 {
     animation: none;
   }
 }
