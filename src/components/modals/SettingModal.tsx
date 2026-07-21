@@ -1,8 +1,13 @@
-import React from 'react';
-import { BookOpen, Info, HelpCircle, FileText, Newspaper, Settings, Check } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { BookOpen, Info, HelpCircle, FileText, Newspaper, Settings, Check, Globe, Bell, Volume2, Eye } from 'lucide-react';
 import { DailyPuzzleNotifications } from '../DailyPuzzleNotifications';
 import { ModalShell } from '../common/ModalShell';
 import { THEMES } from '../../theme/themes';
+
+// Long-press threshold before a theme swatch starts live-previewing --
+// short of this, a press-and-release is treated as an ordinary tap
+// (select immediately, no preview step).
+const THEME_PREVIEW_HOLD_MS = 350;
 
 interface AppSettings {
   selectedLanguage: string;
@@ -25,6 +30,67 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   settings,
   onUpdateSettings
 }) => {
+  const activeThemeId = settings.theme || 'current';
+
+  // Tap-and-hold live preview: holding a swatch applies its theme to the
+  // whole app immediately (via the data-theme attribute App.tsx's own
+  // effect otherwise owns) so the player can see it in context before
+  // committing. Releasing while still over the swatch commits the
+  // preview by calling onUpdateSettings for real; dragging off (or
+  // closing the modal) before releasing reverts to the prior theme
+  // without ever touching settings.
+  const [previewThemeId, setPreviewThemeId] = useState<string | null>(null);
+  const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressedThemeRef = useRef<string | null>(null);
+
+  const clearPressTimer = () => {
+    if (pressTimerRef.current) {
+      clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      clearPressTimer();
+      if (previewThemeId) {
+        document.documentElement.setAttribute('data-theme', activeThemeId);
+      }
+    };
+    // Only needs to run on unmount -- activeThemeId/previewThemeId are
+    // read from refs/closure at that moment, not tracked reactively.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleThemePressStart = (themeId: string) => {
+    pressedThemeRef.current = themeId;
+    clearPressTimer();
+    pressTimerRef.current = setTimeout(() => {
+      document.documentElement.setAttribute('data-theme', themeId);
+      setPreviewThemeId(themeId);
+    }, THEME_PREVIEW_HOLD_MS);
+  };
+
+  const handleThemePressEnd = (themeId: string) => {
+    clearPressTimer();
+    if (previewThemeId) {
+      onUpdateSettings({ theme: previewThemeId });
+      setPreviewThemeId(null);
+    } else if (pressedThemeRef.current === themeId) {
+      onUpdateSettings({ theme: themeId });
+    }
+    pressedThemeRef.current = null;
+  };
+
+  const handleThemePressCancel = () => {
+    clearPressTimer();
+    if (previewThemeId) {
+      document.documentElement.setAttribute('data-theme', activeThemeId);
+      setPreviewThemeId(null);
+    }
+    pressedThemeRef.current = null;
+  };
+
   const handleSettingClick = (type: string) => {
     switch (type) {
       case 'howToPlay':
@@ -65,18 +131,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div>
           {/* Theme -- kept first so it catches the eye immediately */}
           <div className="px-6 py-4">
-            <h3 className="text-offwhite/60 text-xs font-semibold uppercase mb-3">Theme</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-offwhite/60 text-xs font-semibold uppercase">Theme</h3>
+              <span
+                className={`flex items-center gap-1 text-[10px] font-semibold text-teal transition-opacity ${
+                  previewThemeId ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <Eye size={12} /> Previewing — release to apply
+              </span>
+            </div>
             <div className="bg-navy-dark/40 rounded-lg p-4">
               <div className="grid grid-cols-4 gap-2">
                 {THEMES.map((t) => {
-                  const isSelected = (settings.theme || 'current') === t.id;
+                  const isSelected = activeThemeId === t.id;
                   return (
                     <button
                       key={t.id}
-                      onClick={() => onUpdateSettings({ theme: t.id })}
-                      className={`relative flex flex-col items-center gap-1 p-2 rounded-lg transition ${
+                      onPointerDown={() => handleThemePressStart(t.id)}
+                      onPointerUp={() => handleThemePressEnd(t.id)}
+                      onPointerLeave={handleThemePressCancel}
+                      onPointerCancel={handleThemePressCancel}
+                      onContextMenu={(e) => e.preventDefault()}
+                      className={`relative flex flex-col items-center gap-1 p-2 rounded-lg transition select-none touch-none ${
                         isSelected ? 'bg-navy-dark ring-2 ring-teal' : 'hover:bg-navy-dark/60'
-                      }`}
+                      } ${previewThemeId === t.id ? 'ring-2 ring-teal scale-105' : ''}`}
                     >
                       <div className="w-8 h-8 rounded-full overflow-hidden flex border border-offwhite/20 shadow-md">
                         <div className="w-1/3 h-full" style={{ backgroundColor: t.swatch[0] }} />
@@ -176,54 +255,57 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <h3 className="text-offwhite/60 text-xs font-semibold uppercase mb-3">Preferences</h3>
 
             {/* Language */}
-            <div className="bg-offwhite/10 rounded-lg mb-2 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-offwhite font-semibold">Language</span>
-                <select
-                  value={settings.selectedLanguage}
-                  onChange={(e) => onUpdateSettings({ selectedLanguage: e.target.value })}
-                  className="bg-offwhite/20 text-offwhite px-3 py-1 rounded-lg border-none outline-none"
-                >
-                  {languages.map((lang) => (
-                    <option key={lang} value={lang} className="bg-navy-dark">
-                      {lang}
-                    </option>
-                  ))}
-                </select>
+            <div className="flex items-center gap-3 bg-offwhite/10 hover:bg-offwhite/15 rounded-lg mb-2 p-4 transition">
+              <div className="w-10 h-10 rounded-full bg-teal/20 flex items-center justify-center flex-shrink-0">
+                <Globe size={20} className="text-teal" />
               </div>
+              <span className="text-offwhite font-semibold flex-1">Language</span>
+              <select
+                value={settings.selectedLanguage}
+                onChange={(e) => onUpdateSettings({ selectedLanguage: e.target.value })}
+                className="bg-offwhite/20 text-offwhite px-3 py-1 rounded-lg border-none outline-none"
+              >
+                {languages.map((lang) => (
+                  <option key={lang} value={lang} className="bg-navy-dark">
+                    {lang}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Daily Puzzle Notifications */}
-            <div className="bg-offwhite/10 rounded-lg mb-2 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="text-offwhite font-semibold mb-1">Daily Puzzle Alerts</div>
-                  <p className="text-xs text-offwhite/60">Get notified when new puzzles are available</p>
+            <div className="bg-offwhite/10 hover:bg-offwhite/15 rounded-lg mb-2 p-4 transition">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-full bg-coral/20 flex items-center justify-center flex-shrink-0">
+                  <Bell size={20} className="text-coral" />
                 </div>
-                <div className="flex-shrink-0">
-                  <DailyPuzzleNotifications />
-                </div>
+                <span className="text-offwhite font-semibold flex-1">Daily Puzzle Alerts</span>
+              </div>
+              <p className="text-xs text-offwhite/60 mb-3 pl-[52px]">Get notified when new puzzles are available</p>
+              <div className="pl-[52px]">
+                <DailyPuzzleNotifications />
               </div>
             </div>
 
             {/* Sound */}
             {settings.soundEnabled !== undefined && (
-              <div className="bg-offwhite/10 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-offwhite font-semibold">Audio (Coming Soon)</span>
-                  <button
-                    onClick={() => onUpdateSettings({ soundEnabled: !settings.soundEnabled })}
-                    className={`relative w-12 h-6 rounded-full transition ${
-                      settings.soundEnabled ? 'bg-teal' : 'bg-offwhite/20'
-                    }`}
-                  >
-                    <div
-                      className={`absolute top-1 left-1 w-4 h-4 bg-offwhite rounded-full transition-transform ${
-                        settings.soundEnabled ? 'translate-x-6' : ''
-                      }`}
-                    ></div>
-                  </button>
+              <div className="flex items-center gap-3 bg-offwhite/10 hover:bg-offwhite/15 rounded-lg p-4 transition">
+                <div className="w-10 h-10 rounded-full bg-violet/20 flex items-center justify-center flex-shrink-0">
+                  <Volume2 size={20} className="text-violet" />
                 </div>
+                <span className="text-offwhite font-semibold flex-1">Audio (Coming Soon)</span>
+                <button
+                  onClick={() => onUpdateSettings({ soundEnabled: !settings.soundEnabled })}
+                  className={`relative w-12 h-6 rounded-full transition ${
+                    settings.soundEnabled ? 'bg-teal' : 'bg-offwhite/20'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 left-1 w-4 h-4 bg-offwhite rounded-full transition-transform ${
+                      settings.soundEnabled ? 'translate-x-6' : ''
+                    }`}
+                  ></div>
+                </button>
               </div>
             )}
           </div>
