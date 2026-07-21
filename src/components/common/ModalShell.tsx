@@ -41,7 +41,19 @@ export const ModalShell: React.FC<ModalShellProps> = ({
   children,
 }) => {
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onMouseDown={(e) => {
+        // e.target === e.currentTarget means the press itself started
+        // on the backdrop, not inside the panel -- using mousedown
+        // (rather than click/mouseup) means a text-selection drag that
+        // starts inside the panel and is released over the backdrop
+        // never registers here, since it never began on this element.
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
       <div
         className={`bg-navy-light rounded-2xl w-full ${MAX_WIDTH_CLASSES[maxWidth]} max-h-[90vh] shadow-2xl border-2 border-navy-dark flex flex-col`}
       >
@@ -53,7 +65,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
             </h2>
             {subtitle && <p className="text-sm text-teal">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="text-offwhite/60 hover:text-offwhite transition flex-shrink-0">
+          <button onClick={onClose} aria-label="Close" className="text-offwhite/60 hover:text-offwhite transition flex-shrink-0">
             <X size={24} />
           </button>
         </div>
