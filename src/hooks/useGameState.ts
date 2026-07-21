@@ -45,16 +45,13 @@ const factoryEdgeMatchIds = (
   };
 };
 
-// hash/variance/featureScore are GameLogicService.edgesMatch's fallback
-// checks (used by the original canvas-tile path, where no exact matchId
-// exists) -- kept spread out per tile/direction here purely so that
-// fallback can never produce a false-positive match when matchId
-// already, correctly, says "no" (e.g. two different boundary edges).
+// GameLogicService.edgesMatch relies solely on matchId, which is always
+// deterministically correct here (from factoryEdgeMatchIds) -- hash is
+// otherwise unused (EdgeData requires it, but no real pixel data exists
+// client-side for server-hosted Factory tiles to derive one from).
 const factoryEdge = (matchId: string, tileIndex: number, direction: number): EdgeData => ({
   hash: `factory-${tileIndex}-${direction}`,
-  matchId,
-  variance: (tileIndex * 37 + direction * 11) % 100,
-  featureScore: (tileIndex * 53 + direction * 17) % 100
+  matchId
 });
 
 const shuffledGridPositions = (gridSize: number): { row: number; col: number }[] => {

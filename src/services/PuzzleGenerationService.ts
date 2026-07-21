@@ -200,35 +200,19 @@ export class PuzzleGenerationService {
 
         // extractEdges' own matchId (`${row}-${col}-${direction}`) is
         // unique per tile+side and so never actually equals another
-        // edge's -- real matching for canvas-generated tiles fell
-        // through to the fuzzy hash/variance/featureScore fallback in
-        // GameLogicService.edgesMatch, which only works when different
-        // grid positions happen to look visually distinct. Highly
-        // repetitive/symmetric patterns (checkerboard, dots, stripes,
-        // and to a lesser extent radial/conic) have near-identical --
-        // sometimes pixel-identical -- edges at every position, so that
-        // fallback found "matches" almost everywhere regardless of
-        // whether tiles were actually in their solved position -- the
-        // edge-glow hint was frequently meaningless. Since this canvas
-        // is our own deterministic drawing (not an unknown photo), we
-        // already know true adjacency for free; override matchId with
-        // the same grid-position scheme the real Factory-puzzle path
-        // uses. Also scramble hash/variance/featureScore the same
-        // defensive way factoryEdge() does in useGameState.ts -- matchId
-        // alone isn't enough, since edgesMatch() OR's in a raw
-        // edge1.hash === edge2.hash check that a repeating pattern can
-        // still satisfy by coincidence even when matchId correctly says
-        // "no" (this is exactly why the Factory path never uses its real
-        // pixel hash either).
+        // edge's -- real matching for canvas-generated tiles needs a
+        // matchId that reflects true grid adjacency instead. Since this
+        // canvas is our own deterministic drawing (not an unknown
+        // photo), we already know true adjacency for free; override
+        // matchId with the same grid-position scheme the real
+        // Factory-puzzle path uses (GameLogicService.edgesMatch relies
+        // on matchId alone, so this is the only field that needs
+        // overriding -- hash/variance/featureScore keep their real,
+        // pixel-derived values from extractEdges for complexity scoring).
         const edges = EdgeExtractionService.extractEdges(tileCanvas, row, col);
         const gridMatchIds = this.gridEdgeMatchIds(row, col, this.GRID);
-        const position = row * this.GRID + col;
-        const directionIndex: Record<'top' | 'right' | 'bottom' | 'left', number> = { top: 0, right: 1, bottom: 2, left: 3 };
         (Object.keys(gridMatchIds) as (keyof typeof gridMatchIds)[]).forEach((direction) => {
           edges[direction].matchId = gridMatchIds[direction];
-          edges[direction].hash = `grid-${position}-${directionIndex[direction]}`;
-          edges[direction].variance = (position * 37 + directionIndex[direction] * 11) % 100;
-          edges[direction].featureScore = (position * 53 + directionIndex[direction] * 17) % 100;
         });
 
         tiles.push({

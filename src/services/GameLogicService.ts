@@ -36,28 +36,27 @@ export class GameLogicService {
     ];
   }
 
+  // matchId is a required field, assigned deterministically by every
+  // puzzle-generation path (the Factory path's factoryEdgeMatchIds and
+  // the canvas path's gridEdgeMatchIds) from true grid adjacency at cut
+  // time -- it is always present and always authoritative, so it's the
+  // sole determinant here. An earlier version of this method also fell
+  // back to raw hash equality and a variance/featureScore proximity
+  // check for edges without a reliable matchId; that fallback is what
+  // produced this bug's false positives -- on a fresh shuffle, unrelated
+  // tiles would frequently glow as "matched" purely because their
+  // synthetic variance/featureScore values landed within the fuzzy
+  // threshold by coincidence (pigeonhole: ~36 edge values crammed into a
+  // 0-99 range collide within a threshold of 20 often). Since no
+  // generation path has ever needed that fallback (extractEdges' own
+  // per-tile-unique matchId is unconditionally overridden before use),
+  // removing it fixes the false positives at the root instead of trying
+  // to scramble the fallback inputs further apart.
   static edgesMatch(
     edge1: EdgeData,
     edge2: EdgeData
   ): boolean {
-    if (edge1.matchId === edge2.matchId) {
-      return true;
-    }
-
-    if (edge1.hash === edge2.hash) {
-      return true;
-    }
-
-    const varianceDiff =
-      Math.abs((edge1.variance ?? 0) - (edge2.variance ?? 0));
-
-    const featureDiff =
-      Math.abs((edge1.featureScore ?? 0) - (edge2.featureScore ?? 0));
-
-    return (
-      varianceDiff < 20 &&
-      featureDiff < 15
-    );
+    return edge1.matchId === edge2.matchId;
   }
 
   // Shared key format for a physical grid seam -- used by both the
