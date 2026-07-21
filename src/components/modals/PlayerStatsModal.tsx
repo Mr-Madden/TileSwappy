@@ -46,6 +46,30 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
     return `${seconds}.${centiseconds.toString().padStart(2, '0')}s`;
   };
 
+  // Mirrors StreakModal's renderPuzzleThumbnail -- real image if this
+  // was a photo puzzle, else the same gradient the puzzle was actually
+  // generated from, else a generic placeholder for older entries saved
+  // before puzzleImageUrl/puzzleGradient started being captured.
+  const renderPuzzleThumbnail = (stats: any) => {
+    if (stats.puzzleImageUrl) {
+      return <img src={stats.puzzleImageUrl} alt="" className="w-full h-full object-cover" />;
+    }
+    if (stats.puzzleGradient && Array.isArray(stats.puzzleGradient)) {
+      return (
+        <div
+          className="w-full h-full"
+          style={{ background: `linear-gradient(135deg, ${stats.puzzleGradient.join(', ')})` }}
+        />
+      );
+    }
+    return (
+      <div
+        className="w-full h-full"
+        style={{ background: 'linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1)' }}
+      />
+    );
+  };
+
   // Get puzzle title from puzzleId
   const getPuzzleTitle = (puzzleId: string, stats: any): string => {
     // PRIORITY 1: If the stats object has a puzzleTitle field, use it
@@ -417,8 +441,8 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                       key={puzzleId}
                       className="bg-navy-dark/50 rounded-lg p-3 flex items-center justify-between"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
                           index === 0 ? 'bg-gold text-navy' :
                           index === 1 ? 'bg-silver text-navy' :
                           index === 2 ? 'bg-bronze text-white' :
@@ -426,8 +450,11 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                         }`}>
                           {index + 1}
                         </div>
-                        <div>
-                          <div className="text-sm font-semibold text-white">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
+                          {renderPuzzleThumbnail(stats)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-white truncate">
                             {getPuzzleTitle(puzzleId, stats)}
                           </div>
                           <div className="text-xs text-white/60">
@@ -540,16 +567,21 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                       key={puzzleId}
                       className="bg-black/20 rounded-xl p-4 hover:bg-black/30 transition"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="text-lg font-bold text-white">
-                            {getPuzzleTitle(puzzleId, stats)}
-                          </h4>
-                          <p className="text-xs text-white/60">
-                            Played {stats.attempts} {stats.attempts === 1 ? 'time' : 'times'}
-                          </p>
+                      <div className="flex items-start justify-between mb-3 gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
+                            {renderPuzzleThumbnail(stats)}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-lg font-bold text-white truncate">
+                              {getPuzzleTitle(puzzleId, stats)}
+                            </h4>
+                            <p className="text-xs text-white/60">
+                              Played {stats.attempts} {stats.attempts === 1 ? 'time' : 'times'}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex-shrink-0">
                           <div className="text-xs text-teal mb-1">Best Time</div>
                           <div className="text-lg font-bold font-mono text-coral">
                             {formatTime(stats.bestTime)}

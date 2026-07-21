@@ -119,9 +119,12 @@ export const getFactoryPuzzlesForDateRange = async (startDate: string, endDate: 
     const defaultVariant = variants.medium || variants.easy || variants.hard;
     return {
       date,
-      title: `Puzzle for ${date}`,
       gradient: ['#ff6b6b', '#4ecdc4', '#45b7d1'],
       ...defaultVariant,
+      // themeName (e.g. "Coral Reef Bloom") is the real, human-authored
+      // name for this surface -- falls back to the generic date-based
+      // label only if a puzzle somehow has no theme name at all.
+      title: defaultVariant?.themeName || `Puzzle for ${date}`,
       difficultyVariants: variants
     };
   });

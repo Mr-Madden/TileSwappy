@@ -384,7 +384,16 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       
       const puzzleKey = currentPuzzle?.date || currentPuzzleDate || 'today';
       const puzzleTitle = currentPuzzle?.title || null;
-      
+      // Captured once per puzzle (same keep-existing-if-already-set
+      // pattern as puzzleTitle below) so Player Stats can render a mini
+      // thumbnail without re-fetching puzzle data it no longer has
+      // handy -- photo puzzles carry imageUrl, practice/gradient
+      // puzzles carry gradient+pattern+direction instead.
+      const puzzleImageUrl = currentPuzzle?.imageUrl || currentPuzzle?.image_url || null;
+      const puzzleGradient = currentPuzzle?.gradient || null;
+      const puzzlePattern = currentPuzzle?.pattern || null;
+      const puzzleDirection = currentPuzzle?.direction || null;
+
       setCompletedPuzzleIds(prev => new Set([...prev, puzzleKey]));
       
       const isAdminPuzzle = currentPuzzle?.imageUrl || currentPuzzle?.image_url || currentPuzzle?.fromDatabase;
@@ -417,7 +426,11 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           bestMoves: null,
           bestSwaps: null,
           completionDates: [],
-          puzzleTitle: null
+          puzzleTitle: null,
+          puzzleImageUrl: null,
+          puzzleGradient: null,
+          puzzlePattern: null,
+          puzzleDirection: null
         };
 
         const isNewBest = !currentStats.bestTime || finalTime < currentStats.bestTime;
@@ -433,7 +446,11 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             lastPlayedMoves: finalMoves,
             lastPlayedSwaps: finalSwaps,
             completionDates: [...currentStats.completionDates, new Date().toISOString()],
-            puzzleTitle: puzzleTitle || currentStats.puzzleTitle
+            puzzleTitle: puzzleTitle || currentStats.puzzleTitle,
+            puzzleImageUrl: puzzleImageUrl || currentStats.puzzleImageUrl,
+            puzzleGradient: puzzleGradient || currentStats.puzzleGradient,
+            puzzlePattern: puzzlePattern || currentStats.puzzlePattern,
+            puzzleDirection: puzzleDirection || currentStats.puzzleDirection
           }
         };
       });
