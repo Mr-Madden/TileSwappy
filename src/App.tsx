@@ -508,6 +508,8 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             onClose={() => setShowPlayerStats(false)}
             puzzleStats={puzzleStats}
             totalGamesPlayed={totalGamesPlayed}
+            completedDates={completedDates}
+            frozenDates={frozenDates}
           />
         </Suspense>
       )}
