@@ -16,17 +16,26 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
   const [hasBeenUsed, setHasBeenUsed] = useState(false);
 
   useEffect(() => {
-    // Only reset the idle timer on interactions, don't close the popup
+    // Only reset the idle timer on interactions, don't close the popup.
+    // click/touchstart are the actual primary interaction on a touch-
+    // first puzzle game -- without them, tapping tiles/buttons never
+    // registered as activity, so the "last interaction" timestamp went
+    // stale the moment the popup was dismissed and the very next 1s
+    // idle-check immediately reopened it.
     const handleInteraction = () => {
       setLastInteraction(Date.now());
     };
 
     window.addEventListener('keydown', handleInteraction);
     window.addEventListener('scroll', handleInteraction);
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction);
 
     return () => {
       window.removeEventListener('keydown', handleInteraction);
       window.removeEventListener('scroll', handleInteraction);
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
     };
   }, []);
 
@@ -46,24 +55,25 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
 
   if (!showPopup) return null;
 
-  const handleArchiveClick = () => {
-    console.log('Archive clicked!');
+  // Any dismissal -- X, backdrop click, or picking a suggestion -- counts
+  // as "seen" for the rest of this session, not just picking a suggestion.
+  const dismiss = () => {
     setShowPopup(false);
-    setHasBeenUsed(true); // Mark as used
+    setHasBeenUsed(true);
+  };
+
+  const handleArchiveClick = () => {
+    dismiss();
     setTimeout(() => onOpenArchive(), 100);
   };
 
   const handleStreakClick = () => {
-    console.log('Streak clicked!');
-    setShowPopup(false);
-    setHasBeenUsed(true); // Mark as used
+    dismiss();
     setTimeout(() => onOpenStreak(), 100);
   };
 
   const handleStatsClick = () => {
-    console.log('Stats clicked!');
-    setShowPopup(false);
-    setHasBeenUsed(true); // Mark as used
+    dismiss();
     setTimeout(() => onOpenStats(), 100);
   };
 
@@ -74,7 +84,7 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
       onMouseDown={(e) => {
         // Close if clicking the backdrop directly
         if (e.target === e.currentTarget) {
-          setShowPopup(false);
+          dismiss();
         }
       }}
     >
@@ -84,9 +94,9 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-teal">💡 Quick Tips</h3>
-          <span 
+          <span
             className="text-offwhite/60 hover:text-offwhite cursor-pointer text-2xl"
-            onClick={() => setShowPopup(false)}
+            onClick={dismiss}
           >
             ×
           </span>
@@ -104,7 +114,6 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
               e.stopPropagation();
               handleArchiveClick();
             }}
-            onMouseEnter={() => console.log('Hovering Archive')}
             className="w-full rounded-xl p-4 cursor-pointer bg-violet/20 hover:bg-violet/30 border-2 border-violet/40 hover:border-violet/60 transition-all"
           >
             <h4 className="text-lg font-bold text-violet-light mb-1">🗂️ Practice Puzzles</h4>
@@ -118,7 +127,6 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
               e.stopPropagation();
               handleStreakClick();
             }}
-            onMouseEnter={() => console.log('Hovering Streak')}
             className="w-full rounded-xl p-4 cursor-pointer bg-teal/20 hover:bg-teal/30 border-2 border-teal/40 hover:border-teal/60 transition-all"
           >
             <h4 className="text-lg font-bold text-teal mb-1">📅 Daily Calendar</h4>
@@ -132,7 +140,6 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
               e.stopPropagation();
               handleStatsClick();
             }}
-            onMouseEnter={() => console.log('Hovering Stats')}
             className="w-full rounded-xl p-4 cursor-pointer bg-coral/20 hover:bg-coral/30 border-2 border-coral/40 hover:border-coral/60 transition-all"
           >
             <h4 className="text-lg font-bold text-coral mb-1">📊 Your Stats</h4>
