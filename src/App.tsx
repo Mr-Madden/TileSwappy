@@ -373,7 +373,12 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
   };
 
   const handleRotateTile = (tileId: string, direction: 1 | -1) => {
-    gameState.rotateTile(tileId, direction > 0 ? 270 : 90);
+    // direction 1 => +90 (clockwise), -1 => +270 (i.e. -90, counterclockwise)
+    // -- matches TutorialScreen's own rotateTile, which does `rotation +
+    // direction` directly. This mapping used to be inverted (270/90
+    // swapped), so a flick that the tutorial taught as one direction
+    // rotated the opposite way in real gameplay.
+    gameState.rotateTile(tileId, direction > 0 ? 90 : 270);
     triggerHaptic(10);
   };
 

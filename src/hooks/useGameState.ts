@@ -121,24 +121,47 @@ export const useGameState = () => {
 
   const pauseStartRef = useRef<number | null>(null);
 
-  const updateMatches = useCallback(
-    (tiles: Tile[]) => {
+  // Pure -- no setState of its own. rotateTile/swapTiles/undoLastMove/
+  // shuffleAll each already replace `tiles` inside their OWN setGameState
+  // updater; this just derives the matchingEdges/status/solveTime fields
+  // that change alongside it, so they can be merged into that same single
+  // returned object. It used to be a separate setGameState call invoked
+  // from *inside* those updaters -- calling setState while React is still
+  // executing another setState's updater doesn't merge into one atomic
+  // update, it queues a second, separate one. The board's move (tiles)
+  // committed and painted a render ahead of the glow (matchingEdges),
+  // which is exactly the delay that was reported: the correct-match glow
+  // visibly lagged a frame behind the swap/rotate that caused it.
+  const computeMatchFields = useCallback(
+    (tiles: Tile[], prev: GameState) => {
       const matches =
         GameLogicService.checkEdgeMatches(tiles);
 
       const solved =
         GameLogicService.isSolved(tiles);
 
-      setGameState(prev => ({
-        ...prev,
+      return {
         matchingEdges: matches,
-        status: solved ? 'solved' : prev.status,
+        status: solved ? ('solved' as const) : prev.status,
         solveTime: solved
           ? Date.now() - prev.startTime - prev.pausedTime
           : prev.solveTime
-      }));
+      };
     },
     []
+  );
+
+  // loadPuzzleCanvas/startGame call this directly (not nested inside
+  // another setGameState updater), so a plain setState-calling helper is
+  // fine there -- kept as a thin wrapper over computeMatchFields.
+  const updateMatches = useCallback(
+    (tiles: Tile[]) => {
+      setGameState(prev => ({
+        ...prev,
+        ...computeMatchFields(tiles, prev)
+      }));
+    },
+    [computeMatchFields]
   );
 
   const loadPuzzleCanvas = useCallback(
@@ -322,8 +345,6 @@ export const useGameState = () => {
             amount
           );
 
-        updateMatches(tiles);
-
         return {
           ...prev,
           tiles,
@@ -335,11 +356,12 @@ export const useGameState = () => {
               tileId,
               previousRotation: tile.rotation
             }
-          ]
+          ],
+          ...computeMatchFields(tiles, prev)
         };
       });
     },
-    [gameState.status, gameState.isPaused, updateMatches]
+    [gameState.status, gameState.isPaused, computeMatchFields]
   );
 
   const swapTiles = useCallback(
@@ -361,8 +383,6 @@ export const useGameState = () => {
             tile2
           );
 
-        updateMatches(tiles);
-
         return {
           ...prev,
           tiles,
@@ -383,11 +403,12 @@ export const useGameState = () => {
                 col: second.col
               }
             }
-          ]
+          ],
+          ...computeMatchFields(tiles, prev)
         };
       });
     },
-    [updateMatches]
+    [computeMatchFields]
   );
 
   const selectTile = useCallback(
@@ -510,8 +531,6 @@ export const useGameState = () => {
             last
           );
 
-        updateMatches(tiles);
-
         return {
           ...prev,
           tiles,
@@ -520,11 +539,12 @@ export const useGameState = () => {
             prev.moveHistory.slice(
               0,
               prev.moveHistory.length - 1
-            )
+            ),
+          ...computeMatchFields(tiles, prev)
         };
       });
     },
-    [updateMatches]
+    [computeMatchFields]
   );
 
   const shuffleAll = useCallback(
@@ -559,16 +579,15 @@ export const useGameState = () => {
             col: shuffled[index].col
           }));
 
-        updateMatches(tiles);
-
         return {
           ...prev,
           tiles,
-          selectedTile: null
+          selectedTile: null,
+          ...computeMatchFields(tiles, prev)
         };
       });
     },
-    [updateMatches]
+    [computeMatchFields]
   );
 
   return {
