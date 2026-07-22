@@ -1,5 +1,5 @@
 // src/components/game/GameBoard.tsx
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GameLogicService } from '../../services/GameLogicService';
 import { useTileDragGesture } from '../../hooks/useTileDragGesture';
 
@@ -53,6 +53,48 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   onZoomOut
 }) => {
   const boardRef = useRef<HTMLDivElement | null>(null);
+
+  // The board must fit any device shape (phone/tablet/laptop, portrait or
+  // landscape) without either overflowing the viewport or going tiny on a
+  // wide-but-short window. Measured off boardRef via ResizeObserver's
+  // contentRect (the box's true layout size).
+  const [available, setAvailable] = useState({ width: 300, height: 300 });
+
+  // Approx height of the zoom-control row plus the flex gap above it --
+  // reserved so the row always has real room below the board instead of
+  // sitting past the box's edge, where the bottom toolbar (painted after
+  // it) would cover it.
+  const hasZoomControls = Boolean(onZoomIn && onZoomOut);
+  const zoomRowReservedPx = hasZoomControls ? 44 : 0;
+
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      setAvailable({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // zoomLevel used to be applied as a CSS `transform: scale()` on top of
+  // this fitted size -- transforms don't participate in layout, so at
+  // 110%+ zoom the tiles-grid visually overflowed past its own box and
+  // got covered by whatever sibling painted after it (the zoom row, then
+  // the bottom toolbar). Folding zoomLevel directly into the real
+  // rendered width/height instead makes overflow structurally impossible.
+  //
+  // Default (zoomLevel 1) is deliberately sized to fill ~96-99% of the
+  // available box -- by request, prioritizing the board looking as big as
+  // possible by default over zoom-in having headroom to grow further (zoom
+  // in beyond 100% has nowhere left to go and is a near no-op; zooming out
+  // below 100% still visibly shrinks it).
+  const maxCap = Math.min(available.width, available.height - zoomRowReservedPx) * 0.98;
+  const fitAtDefault = maxCap * 0.96;
+  const squareSize = Math.max(120, Math.min(900, fitAtDefault * zoomLevel, maxCap));
 
   const { dragState, hoverTargetId, getTileHandlers, tileAttr } = useTileDragGesture({
     onTap: onSelectTile,
@@ -130,10 +172,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   return (
     <div
       ref={boardRef}
-      className="game-board w-full h-full flex items-center justify-center"
-      style={{ transform: `scale(${zoomLevel})` }}
+      className="game-board w-full h-full flex flex-col items-center justify-center gap-3 min-h-0"
     >
-      <div className="tiles-grid grid gap-1 relative" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: 'min(900px, 95%)' }}>
+      <div className="tiles-grid grid gap-1 relative" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: squareSize, height: squareSize }}>
         {tiles.map((tile) => {
           const isSelected = selectedTile === tile.id;
           const isBeingDragged = dragState?.tileId === tile.id;
@@ -200,28 +241,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         )}
       </div>
 
-      {/* Controls fallback for accessibility / quick actions */}
-      <div className="absolute bottom-4 right-4 flex gap-2">
-        <button onClick={onUndo} disabled={!canUndo} className="px-3 py-1 rounded bg-offwhite text-navy text-xs">
-          Undo
-        </button>
-        <button onClick={onShuffle} className="px-3 py-1 rounded bg-teal/20 text-teal text-xs">
-          Shuffle
-        </button>
-        <button onClick={onPause} className="px-3 py-1 rounded bg-offwhite text-navy text-xs">
-          Pause
-        </button>
-        <button onClick={onRestart} className="px-3 py-1 rounded bg-coral/20 text-coral text-xs">
-          Restart
-        </button>
-        {onZoomIn && onZoomOut && (
-          <>
-            <button onClick={onZoomOut} className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">-</button>
-            <div className="px-2 py-1 rounded bg-navy text-offwhite text-xs">{Math.round(zoomLevel * 100)}%</div>
-            <button onClick={onZoomIn} className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">+</button>
-          </>
-        )}
-      </div>
+      {/* Zoom only -- Undo/Shuffle/Pause/Restart already live in the
+          persistent toolbar below the board (App.tsx); duplicating them
+          here as a second, absolutely-positioned cluster was the "extra
+          buttons floating on the right" bug. */}
+      {onZoomIn && onZoomOut && (
+        <div className="flex items-center gap-2">
+          <button onClick={onZoomOut} className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">-</button>
+          <div className="px-2 py-1 rounded bg-navy text-offwhite text-xs">{Math.round(zoomLevel * 100)}%</div>
+          <button onClick={onZoomIn} className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">+</button>
+        </div>
+      )}
     </div>
   );
 };

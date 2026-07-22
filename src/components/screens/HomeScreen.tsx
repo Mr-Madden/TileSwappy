@@ -147,44 +147,44 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div className="min-h-screen bg-navy overflow-hidden">
-      {/* Tutorial Button - Top Left - MOVED DOWN */}
+      {/* Tutorial Button - Top Left */}
       <button
         onClick={onOpenTutorial}
         aria-label="How to Play Tutorial"
-        className="fixed top-24 left-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
+        className="fixed top-20 left-4 bg-navy-light hover:bg-navy-dark rounded-lg transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-2 gap-0.5"
       >
-        <HelpCircle size={24} className="text-teal" />
-        <span className="text-teal text-[10px] font-semibold">Tutorial</span>
+        <HelpCircle size={18} className="text-teal" />
+        <span className="text-teal text-[9px] font-semibold">Tutorial</span>
       </button>
 
-      {/* Settings Button - Top Right - MOVED DOWN */}
+      {/* Settings Button - Top Right */}
       <button
         onClick={onOpenSettings}
         aria-label="Settings"
-        className="fixed top-24 right-6 bg-navy-light hover:bg-navy-dark rounded-xl transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-3 gap-1"
+        className="fixed top-20 right-4 bg-navy-light hover:bg-navy-dark rounded-lg transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-2 gap-0.5"
       >
-        <Settings size={24} className="text-offwhite" />
-        <span className="text-offwhite text-[10px] font-semibold">Settings</span>
+        <Settings size={18} className="text-offwhite" />
+        <span className="text-offwhite text-[9px] font-semibold">Settings</span>
       </button>
 
       <div className="flex items-center justify-center p-4">
-        <div className="max-w-md w-full py-8">
+        <div className="max-w-md w-full py-4">
           {/* Logo and Title */}
-          <div className="text-center mb-8">
-            <div className="inline-block mb-4 rounded-2xl shadow-2xl">
-              <TileSwappyLogo size={144} />
+          <div className="text-center mb-4">
+            <div className="inline-block mb-2 rounded-2xl shadow-2xl">
+              <TileSwappyLogo size={96} />
             </div>
-            <p className="text-teal text-lg font-medium">Addictive tile puzzle madness</p>
+            <p className="text-teal text-sm font-medium">Addictive tile puzzle madness</p>
           </div>
-          
+
           {/* Main Game Content - No login required */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Daily Puzzle Carousel */}
-            <div className="bg-navy-light/10 backdrop-blur-sm rounded-2xl p-6 border border-navy-light">
-              <h2 className="text-offwhite text-lg font-semibold mb-4 text-center">Daily Puzzles</h2>
-              
-              <div 
-                className="relative h-64 mb-4 overflow-hidden rounded-xl"
+            <div className="bg-navy-light/10 backdrop-blur-sm rounded-2xl p-4 border border-navy-light">
+              <h2 className="text-offwhite text-base font-semibold mb-2 text-center">Daily Puzzles</h2>
+
+              <div
+                className="relative h-80 mb-3 overflow-hidden rounded-xl"
                 onTouchStart={(e) => handleCarouselSwipeStart(e.touches[0].clientX, e.touches[0].clientY)}
                 onTouchEnd={(e) => handleCarouselSwipeEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY)}
                 onMouseDown={(e) => handleCarouselSwipeStart(e.clientX, e.clientY)}
@@ -203,32 +203,36 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     {dailyPuzzles.map((day, index) => {
                       const centerOffset = (index - 3 - carouselOffset + 7) % 7;
                       const adjustedOffset = centerOffset > 3 ? centerOffset - 7 : centerOffset;
-                      const xPos = adjustedOffset * 95;
-                      const yPos = Math.abs(adjustedOffset) * 6;
-                      
+                      // Carousel container grew from h-64 to h-80 (1.25x) --
+                      // every size/position number here is scaled by the
+                      // same 1.25x so cards fill the bigger box in the same
+                      // proportions instead of just floating in more padding.
+                      const xPos = adjustedOffset * 119;
+                      const yPos = Math.abs(adjustedOffset) * 7.5;
+
                       let scale = 1;
-                      let width = 180;
+                      let width = 225;
                       let opacity = 1;
-                      
+
                       if (adjustedOffset === 0) {
                         scale = 1.3;
-                        width = 120;
+                        width = 150;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 1) {
                         scale = 0.85;
-                        width = 105;
+                        width = 131;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 2) {
                         scale = 0.65;
-                        width = 90;
+                        width = 113;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 3) {
                         scale = 0.5;
-                        width = 75;
+                        width = 94;
                         opacity = 1;
                       } else {
                         scale = 0.3;
-                        width = 50;
+                        width = 63;
                         opacity = 1;
                       }
 
@@ -348,7 +352,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
               {todaysPuzzle?.realPuzzleData?.difficultyVariants &&
                 Object.keys(todaysPuzzle.realPuzzleData.difficultyVariants).length > 1 && (
-                  <div className="flex justify-center gap-2 mb-3">
+                  <div className="flex justify-center gap-2 mb-2">
                     {(['Easy', 'Medium', 'Hard'] as const).map((tier) => {
                       const available = tier.toLowerCase() in todaysPuzzle.realPuzzleData.difficultyVariants;
                       const isSelected = selectedDifficulty === tier;
@@ -372,42 +376,42 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </div>
                 )}
 
-              <p className="text-teal text-[12px] text-center mb-6">
+              <p className="text-teal text-[11px] text-center mb-3">
                 Swipe to browse • New puzzles release at midnight
               </p>
 
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-2">
-                <button 
+                <button
                   data-button="archive"
                   onClick={onOpenArchive}
-                  className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
+                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 transition border border-navy-light"
                 >
-                  <LayoutGrid size={20} className="text-offwhite mx-auto mb-1" />
-                  <p className="text-[15px] text-offwhite font-semibold">Archive</p>
-                  <p className="text-[12px] text-teal">Browse</p>
+                  <LayoutGrid size={18} className="text-offwhite mx-auto mb-0.5" />
+                  <p className="text-[13px] text-offwhite font-semibold">Archive</p>
+                  <p className="text-[11px] text-teal">Browse</p>
                 </button>
 
-                <button 
+                <button
                   data-button="streak"
                   onClick={onOpenStreak}
-                  className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
+                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 transition border border-navy-light"
                 >
-                  <Flame size={20} className="text-coral mx-auto mb-1" />
-                  <p className="text-[15px] text-offwhite font-semibold">Streak</p>
-                  <p className="text-[12px] text-teal">Track</p>
+                  <Flame size={18} className="text-coral mx-auto mb-0.5" />
+                  <p className="text-[13px] text-offwhite font-semibold">Streak</p>
+                  <p className="text-[11px] text-teal">Track</p>
                 </button>
 
-                <button 
+                <button
                   data-button="stats"
                   onClick={onOpenStats}
-                  className="bg-navy-dark hover:bg-navy rounded-xl p-3 transition border border-navy-light"
+                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 transition border border-navy-light"
                 >
-                  <BarChart2 size={20} className="text-offwhite mx-auto mb-1" />
-                  <p className="text-[15px] text-offwhite font-semibold">Stats</p>
-                  <p className="text-[12px] text-teal">View</p>
+                  <BarChart2 size={18} className="text-offwhite mx-auto mb-0.5" />
+                  <p className="text-[13px] text-offwhite font-semibold">Stats</p>
+                  <p className="text-[11px] text-teal">View</p>
                 </button>
-              </div>        
+              </div>
             </div>
           </div>
         </div>

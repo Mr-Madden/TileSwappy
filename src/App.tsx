@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Calendar, Settings, BarChart3 } from 'lucide-react';
+import { Calendar, Settings, BarChart3, Home, Menu } from 'lucide-react';
 import { useGameState } from './hooks/useGameState';
 import { StartScreen } from './components/screens/StartScreen';
 import { HomeScreen } from './components/screens/HomeScreen';
@@ -86,6 +86,7 @@ const App: React.FC = () => {
     time: false, moves: false, swaps: false
   });
   const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
+  const [showGameMenu, setShowGameMenu] = useState(false);
   const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
   
   const [completedPuzzleIds, setCompletedPuzzleIds] = useState<Set<string>>(() => 
@@ -183,6 +184,28 @@ const App: React.FC = () => {
     saveToStorage(STORAGE_KEYS.SETTINGS, settings);
   }, [settings]);
 
+  // The sticky marketing header + footer baked into public/index.html
+  // (nav links, SEO footer) wrap every screen including live gameplay.
+  // Their height isn't fixed -- the nav wraps to extra lines on narrow
+  // screens -- so it silently ate into the "playing" screen's available
+  // height differently per device, which is what made the board/toolbar
+  // look misaligned/cramped depending on screen size. index.html's
+  // <style> block defines the CSS these classes react to (same pattern
+  // already used there for #puzzle-banner).
+  useEffect(() => {
+    const status = gameState.gameState.status;
+    const isPlaying = status === 'playing' || status === 'solved';
+    document.body.classList.toggle('hide-site-chrome', isPlaying);
+    // The SEO footer (sitemap links, copyright) only earns its keep on
+    // the very first splash screen -- it just adds scroll weight on the
+    // daily-puzzle menu and obviously has no place during actual play.
+    document.body.classList.toggle('hide-site-footer', status !== 'start');
+    return () => {
+      document.body.classList.remove('hide-site-chrome');
+      document.body.classList.remove('hide-site-footer');
+    };
+  }, [gameState.gameState.status]);
+
   useEffect(() => {
     const themeId = settings.theme || DEFAULT_THEME;
     document.documentElement.setAttribute('data-theme', themeId);
@@ -253,6 +276,21 @@ const App: React.FC = () => {
   const handleTutorialComplete = () => {
     setShowTutorialOverlay(false);
     gameState.resumeGame();
+  };
+
+  // Same reset as the pause modal's "Quit to Home" -- but reachable
+  // directly from the gameboard's top bar, without pausing first. Confirms
+  // before discarding an in-progress puzzle; a solved one has nothing left
+  // to lose, so it skips the prompt.
+  const handleQuitToHome = () => {
+    const canQuitSilently = gameState.gameState.status === 'solved';
+    if (!canQuitSilently && !window.confirm('Quit to home? Your progress on this puzzle will be lost.')) {
+      return;
+    }
+    setHasProcessedCompletion(false);
+    setShowCompletionAnimation(false);
+    gameState.resumeGame();
+    gameState.resetGame();
   };
 
 const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
@@ -801,52 +839,103 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       )}
 
       {(gameState.gameState.status === 'playing' || gameState.gameState.status === 'solved') && (
-        <div className="min-h-screen bg-navy flex flex-col">
-          <div className="flex-shrink-0 p-3 bg-navy">
+        <div
+          className="h-dvh bg-navy flex flex-col overflow-hidden"
+          style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <div className="flex-shrink-0 p-2 bg-navy">
             <div className="max-w-2xl mx-auto">
-              <div className="flex items-center justify-between mb-2">
-                <h1 className="text-lg font-bold text-offwhite">
-                  {currentPuzzle?.title || 'Daily Puzzle'}
-                </h1>
-                <div className="text-xs text-teal">
-                  {currentPuzzle?.difficulty || 'Medium'}
+              {/* Everything the player might tap sits in one slim row now --
+                  Home/Menu, title+difficulty, and How to Play (now icon-only)
+                  used to be three stacked rows plus a full stats grid below,
+                  which was the single biggest chunk of space taken away from
+                  the board itself. */}
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <button
+                  onClick={handleQuitToHome}
+                  aria-label="Quit to home"
+                  className="flex-shrink-0 p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
+                >
+                  <Home size={16} />
+                </button>
+
+                <div className="flex-1 min-w-0 flex items-baseline justify-center gap-1.5">
+                  <h1 className="text-sm font-bold text-offwhite truncate">
+                    {currentPuzzle?.title || 'Daily Puzzle'}
+                  </h1>
+                  <span className="text-[10px] text-teal flex-shrink-0">
+                    {currentPuzzle?.difficulty || 'Medium'}
+                  </span>
                 </div>
-              </div>
-              
-              <div className="flex justify-center mb-2">
+
                 <button
                   onClick={() => setShowTutorialOverlay(true)}
-                  className="px-4 py-2 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-sm font-medium flex items-center gap-2"
+                  aria-label="How to play"
+                  className="flex-shrink-0 p-1.5 rounded-lg bg-teal/20 text-teal border border-teal hover:bg-teal hover:text-navy-dark transition"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  How to Play
                 </button>
+
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setShowGameMenu((v) => !v)}
+                    aria-label="Menu"
+                    className="p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
+                  >
+                    <Menu size={16} />
+                  </button>
+                  {showGameMenu && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowGameMenu(false)} />
+                      <div className="absolute right-0 mt-2 w-40 bg-navy-light border border-navy-dark rounded-lg shadow-lg z-50 overflow-hidden">
+                        <button
+                          onClick={() => { setShowArchive(true); setShowGameMenu(false); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
+                        >
+                          <Calendar size={16} className="text-teal" /> Archive
+                        </button>
+                        <button
+                          onClick={() => { setShowPlayerStats(true); setShowGameMenu(false); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
+                        >
+                          <BarChart3 size={16} className="text-teal" /> Stats
+                        </button>
+                        <button
+                          onClick={() => { setShowSettings(true); setShowGameMenu(false); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
+                        >
+                          <Settings size={16} className="text-teal" /> Settings
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
-                <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
-                  <div className="text-base font-bold text-coral">{gameState.gameState.moves}</div>
-                  <div className="text-[9px] text-teal">Moves</div>
+              <div className="grid grid-cols-4 gap-1.5">
+                <div className="text-center bg-navy-light rounded-lg py-1 border border-navy-dark">
+                  <div className="text-sm font-bold text-coral leading-tight">{gameState.gameState.moves}</div>
+                  <div className="text-[8px] text-teal leading-tight">Moves</div>
                 </div>
-                <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
-                  <div className="text-base font-bold text-coral">{gameState.gameState.undos}</div>
-                  <div className="text-[9px] text-teal">Undos</div>
+                <div className="text-center bg-navy-light rounded-lg py-1 border border-navy-dark">
+                  <div className="text-sm font-bold text-coral leading-tight">{gameState.gameState.undos}</div>
+                  <div className="text-[8px] text-teal leading-tight">Undos</div>
                 </div>
-                <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
-                  <div className="text-base font-bold font-mono text-coral">{formatTime(gameState.gameState.currentTime)}</div>
-                  <div className="text-[9px] text-teal">Time</div>
+                <div className="text-center bg-navy-light rounded-lg py-1 border border-navy-dark">
+                  <div className="text-sm font-bold font-mono text-coral leading-tight">{formatTime(gameState.gameState.currentTime)}</div>
+                  <div className="text-[8px] text-teal leading-tight">Time</div>
                 </div>
-                <div className="text-center bg-navy-light rounded-lg py-1.5 border border-navy-dark">
-                  <div className="text-base font-bold text-teal">{Math.round((gameState.gameState.matchingEdges.size / 12) * 100)}%</div>
-                  <div className="text-[9px] text-teal">Complete</div>
+                <div className="text-center bg-navy-light rounded-lg py-1 border border-navy-dark">
+                  <div className="text-sm font-bold text-teal leading-tight">{Math.round((gameState.gameState.matchingEdges.size / 12) * 100)}%</div>
+                  <div className="text-[8px] text-teal leading-tight">Complete</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 flex items-center justify-center py-2">
+          <div className="flex-1 min-h-0 flex items-center justify-center py-2">
             <GameBoard
               tiles={gameState.gameState.tiles}
               selectedTile={gameState.gameState.selectedTile}
@@ -974,32 +1063,6 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                     Restart
                   </button>
                 </div>
-              </div>
-
-              <div className="flex justify-center gap-6 pt-2 border-t border-navy-dark/50">
-                <button
-                  onClick={() => setShowArchive(true)}
-                  className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
-                >
-                  <Calendar size={20} />
-                  <span className="text-[12px]">Archive</span>
-                </button>
-
-                <button
-                  onClick={() => setShowPlayerStats(true)}
-                  className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
-                >
-                  <BarChart3 size={20} />
-                  <span className="text-[12px]">Stats</span>
-                </button>
-
-                <button
-                  onClick={() => setShowSettings(true)}
-                  className="flex flex-col items-center gap-0.5 text-teal hover:text-coral transition"
-                >
-                  <Settings size={20} />
-                  <span className="text-[12px]">Settings</span>
-                </button>
               </div>
             </div>
           </div>

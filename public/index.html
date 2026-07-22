@@ -3,7 +3,7 @@
   <head>
   <meta charset="utf-8" />
   <link rel="icon" href="%PUBLIC_URL%/icon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0D1B2A" />
   
   <!-- Optimized SEO Meta Tags -->
@@ -120,6 +120,22 @@
     body.show-banner #puzzle-banner {
       display: block;
     }
+
+    /* Toggled by App.tsx while a puzzle is actually being played -- the
+       nav header is marketing chrome for the landing pages, not the
+       in-game screen, and its variable height (the nav wraps to extra
+       lines on narrow screens) was throwing off the game board's
+       available space differently per device. */
+    body.hide-site-chrome #site-header {
+      display: none;
+    }
+
+    /* Toggled by App.tsx on every screen except the very first splash
+       screen -- the SEO footer (sitemap links, copyright) belongs on a
+       landing page, not on the daily-puzzle menu or in active gameplay. */
+    body.hide-site-footer footer {
+      display: none;
+    }
   </style>
   </head>
   <body>
@@ -129,7 +145,7 @@
     <div id="app-loader">Loading TileSwappy...</div>
     
     <!-- SITE HEADER -->
-<header style="background: linear-gradient(135deg, rgb(var(--color-navy)) 0%, rgb(var(--color-navy-light)) 100%); border-bottom: 2px solid rgb(var(--color-teal-dark) / 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
+<header id="site-header" style="background: linear-gradient(135deg, rgb(var(--color-navy)) 0%, rgb(var(--color-navy-light)) 100%); border-bottom: 2px solid rgb(var(--color-teal-dark) / 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
     <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
         <a href="/index.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
             <div
