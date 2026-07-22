@@ -1,6 +1,7 @@
 // src/components/game/GameBoard.tsx
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { GameLogicService } from '../../services/GameLogicService';
+import { useTileDragGesture } from '../../hooks/useTileDragGesture';
 
 export type Rotation = 0 | 90 | 180 | 270;
 
@@ -20,7 +21,9 @@ interface GameBoardProps {
   tiles: Tile[];
   selectedTile: string | null;
   matchingEdges: Set<string>;
-  onTileInteraction: (tileId: string, deltaX: number, deltaY: number) => void;
+  onSelectTile: (tileId: string) => void;
+  onRotateTile: (tileId: string, direction: 1 | -1) => void;
+  onSwapTiles: (tileId1: string, tileId2: string) => void;
   onUndo: () => void;
   onShuffle: () => void;
   onPause: () => void;
@@ -32,16 +35,13 @@ interface GameBoardProps {
   onZoomOut?: () => void;
 }
 
-type Point = {
-  x: number;
-  y: number;
-};
-
 export const GameBoard: React.FC<GameBoardProps> = ({
   tiles,
   selectedTile,
   matchingEdges,
-  onTileInteraction,
+  onSelectTile,
+  onRotateTile,
+  onSwapTiles,
   onUndo,
   onShuffle,
   onPause,
@@ -52,76 +52,17 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   onZoomIn,
   onZoomOut
 }) => {
-  const [swipeStart, setSwipeStart] = useState<{ x: number; y: number; tileId: string } | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
 
-  const getPoint = (e: React.MouseEvent | React.TouchEvent): Point => {
-    if ('changedTouches' in e && e.changedTouches && e.changedTouches.length > 0) {
-      return {
-        x: e.changedTouches[0].clientX,
-        y: e.changedTouches[0].clientY
-      };
+  const { dragState, hoverTargetId, getTileHandlers, tileAttr } = useTileDragGesture({
+    onTap: onSelectTile,
+    onRotate: onRotateTile,
+    onDrop: (draggedTileId, targetTileId) => {
+      if (targetTileId) {
+        onSwapTiles(draggedTileId, targetTileId);
+      }
     }
-    // MouseEvent
-    const me = e as React.MouseEvent;
-    return {
-      x: me.clientX,
-      y: me.clientY
-    };
-  };
-
-  // --- copy start: handleDown ---
-  const handleDown = (
-    e: React.MouseEvent | React.TouchEvent,
-    tileId: string
-  ) => {
-    // Prevent default to avoid page scrolling on touch devices
-    e.preventDefault();
-
-    const p = getPoint(e);
-
-    setSwipeStart({
-      x: p.x,
-      y: p.y,
-      tileId
-    });
-  };
-  // --- copy end: handleDown ---
-
-  // --- copy start: handleUp ---
-  const handleUp = (
-    e: React.MouseEvent | React.TouchEvent,
-    tileId: string
-  ) => {
-    e.preventDefault();
-
-    const p = getPoint(e);
-
-    if (!swipeStart) {
-      // No start point recorded; treat as a tap (zero delta)
-      onTileInteraction(tileId, 0, 0);
-      return;
-    }
-
-    // Only proceed if the tileId matches the one that started the swipe.
-    // If not, still compute delta relative to the start point.
-    const deltaX = p.x - swipeStart.x;
-    const deltaY = p.y - swipeStart.y;
-
-    // Clear swipe start
-    setSwipeStart(null);
-
-    // Delegate to parent handler
-    onTileInteraction(tileId, deltaX, deltaY);
-  };
-  // --- copy end: handleUp ---
-
-  const handleMove = (e: React.TouchEvent | React.MouseEvent) => {
-    // Prevent default while dragging on touch devices to avoid scrolling
-    if ('changedTouches' in e) {
-      e.preventDefault();
-    }
-  };
+  });
 
   // Tiles must be explicitly placed by tile.row/tile.col (below) rather
   // than relying on array order + CSS auto-flow -- swapTiles/rotateTile
@@ -178,8 +119,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     }
   }
 
-  // Render a simple grid of tiles. Keep markup minimal so this file is easy to drop in.
-  // The visual styling is expected to be provided by the app's CSS/Tailwind.
+  // The tile currently being dragged, rendered as a separate floating
+  // overlay (same reasoning as the seam bars above: a per-tile-child
+  // "lifted" copy would inherit the tile's own rotation transform and
+  // get clipped by its neighbor's overflow-hidden). Positioned with the
+  // same fractional-percentage math the seam bars use, then offset by
+  // the live pointer delta.
+  const draggedTile = dragState ? tiles.find(t => t.id === dragState.tileId) : null;
+
   return (
     <div
       ref={boardRef}
@@ -189,19 +136,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       <div className="tiles-grid grid gap-1 relative" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: 'min(900px, 95%)' }}>
         {tiles.map((tile) => {
           const isSelected = selectedTile === tile.id;
+          const isBeingDragged = dragState?.tileId === tile.id;
+          const isHoverTarget = hoverTargetId === tile.id;
 
           return (
             <div
               key={tile.id}
               role="button"
               tabIndex={0}
-              onMouseDown={(e) => handleDown(e, tile.id)}
-              onMouseUp={(e) => handleUp(e, tile.id)}
-              onTouchStart={(e) => handleDown(e, tile.id)}
-              onTouchEnd={(e) => handleUp(e, tile.id)}
-              onTouchMove={handleMove}
-              onMouseMove={handleMove}
-              className={`tile relative select-none bg-navy-dark border border-navy rounded-md overflow-hidden flex items-center justify-center cursor-pointer`}
+              {...{ [tileAttr]: tile.id }}
+              {...getTileHandlers(tile.id)}
+              className={`tile relative select-none touch-none bg-navy-dark border rounded-md overflow-hidden flex items-center justify-center cursor-pointer transition-opacity ${
+                isHoverTarget ? 'border-teal ring-2 ring-teal' : 'border-navy'
+              } ${isBeingDragged ? 'opacity-30' : ''}`}
               style={{
                 gridColumn: tile.col + 1,
                 gridRow: tile.row + 1,
@@ -213,7 +160,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               aria-pressed={isSelected}
             >
               {tile.imageData ? (
-                <img src={tile.imageData} alt={`tile-${tile.id}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <img src={tile.imageData} alt={`tile-${tile.id}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} draggable={false} />
               ) : (
                 <div className="text-xs text-offwhite font-mono">{tile.id}</div>
               )}
@@ -221,6 +168,36 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           );
         })}
         <div className="absolute inset-0 pointer-events-none z-20">{seamBars}</div>
+
+        {draggedTile && dragState && (
+          <div
+            className="absolute pointer-events-none z-30"
+            style={{
+              left: `${(draggedTile.col / gridSize) * 100}%`,
+              top: `${(draggedTile.row / gridSize) * 100}%`,
+              width: `${(1 / gridSize) * 100}%`,
+              height: `${(1 / gridSize) * 100}%`,
+              padding: '2px',
+              transform: `translate(${dragState.dx}px, ${dragState.dy}px)`
+            }}
+          >
+            <div
+              className="w-full h-full rounded-md overflow-hidden shadow-2xl ring-2 ring-teal"
+              style={{
+                transform: `rotate(${draggedTile.rotation ?? 0}deg) scale(1.08)`,
+                boxShadow: '0 12px 24px rgba(0,0,0,0.5)'
+              }}
+            >
+              {draggedTile.imageData ? (
+                <img src={draggedTile.imageData} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} draggable={false} />
+              ) : (
+                <div className="w-full h-full bg-navy-dark flex items-center justify-center text-xs text-offwhite font-mono">
+                  {draggedTile.id}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Controls fallback for accessibility / quick actions */}

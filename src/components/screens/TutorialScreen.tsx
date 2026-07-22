@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Move } from 'lucide-react';
+import { useTileDragGesture } from '../../hooks/useTileDragGesture';
 
 interface Tile {
   id: string;
@@ -14,11 +15,14 @@ interface TutorialScreenProps {
   onComplete: () => void;
 }
 
+// Steps where the mini board actually responds to input -- everything
+// else (welcome, success messages, static info) leaves gestures inert.
+const INTERACTIVE_STEPS = new Set([1, 3, 5]);
+
 export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) => {
   const [step, setStep] = useState(0);
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [selectedTile, setSelectedTile] = useState<string | null>(null);
-  const [swipeStart, setSwipeStart] = useState({ x: 0, y: 0, tileId: '' });
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
 
@@ -77,54 +81,39 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
     }
   }, []);
 
-  const handlePointerDown = (e: React.MouseEvent | React.TouchEvent, tileId: string) => {
-    if (step !== 1 && step !== 3) return; // Only allow interaction on specific steps
-    
-    e.preventDefault();
-    const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    setSwipeStart({ x, y, tileId });
-  };
-
-  const handlePointerUp = (e: React.MouseEvent | React.TouchEvent, tileId: string) => {
-    if (step !== 1 && step !== 3) return;
-    
-    e.preventDefault();
-    const x = 'changedTouches' in e ? e.changedTouches[0].clientX : e.clientX;
-    const y = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY;
-    
-    if (swipeStart.tileId === tileId) {
-      const deltaX = x - swipeStart.x;
-      const deltaY = y - swipeStart.y;
-      
-      // Step 1: Rotate tile 5 (center)
-      if (step === 1 && tileId === '1-1') {
-        if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
-          const direction = deltaX > 0 ? -1 : 1;
-          rotateTile(tileId, direction);
-          markStepComplete(1);
+  // Same gesture recognition the real GameBoard uses (via the shared
+  // useTileDragGesture hook) -- flick to rotate, tap to select/swap,
+  // hold-and-move to drag-and-drop -- so the tutorial actually teaches
+  // the controls players will use, instead of a second implementation
+  // that could quietly drift out of sync with the real game.
+  const { dragState, hoverTargetId, getTileHandlers, tileAttr } = useTileDragGesture({
+    onTap: (tileId) => {
+      if (step !== 3) return;
+      if (selectedTile === null && (tileId === '0-0' || tileId === '0-2')) {
+        setSelectedTile(tileId);
+      } else if (selectedTile && selectedTile !== tileId) {
+        if ((selectedTile === '0-0' && tileId === '0-2') || (selectedTile === '0-2' && tileId === '0-0')) {
+          swapTiles(selectedTile, tileId);
+          markStepComplete(3);
         }
+        setSelectedTile(null);
+      } else if (selectedTile === tileId) {
+        setSelectedTile(null);
       }
-      
-      // Step 3: Swap tiles
-      if (step === 3) {
-        if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
-          if (selectedTile === null && (tileId === '0-0' || tileId === '0-2')) {
-            setSelectedTile(tileId);
-          } else if (selectedTile && selectedTile !== tileId) {
-            if ((selectedTile === '0-0' && tileId === '0-2') || (selectedTile === '0-2' && tileId === '0-0')) {
-              swapTiles(selectedTile, tileId);
-              markStepComplete(3);
-            }
-            setSelectedTile(null);
-          } else if (selectedTile === tileId) {
-            setSelectedTile(null);
-          }
-        }
+    },
+    onRotate: (tileId, direction) => {
+      if (step !== 1 || tileId !== '1-1') return;
+      rotateTile(tileId, direction);
+      markStepComplete(1);
+    },
+    onDrop: (draggedTileId, targetTileId) => {
+      if (step !== 5 || !targetTileId) return;
+      if ((draggedTileId === '2-0' && targetTileId === '2-2') || (draggedTileId === '2-2' && targetTileId === '2-0')) {
+        swapTiles(draggedTileId, targetTileId);
+        markStepComplete(5);
       }
     }
-    setSwipeStart({ x: 0, y: 0, tileId: '' });
-  };
+  });
 
   const rotateTile = (tileId: string, direction: number) => {
     setTiles(prev => prev.map(t =>
@@ -172,8 +161,8 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
     },
     {
       title: 'Rotate Tiles',
-      description: 'Drag the center tile (5) left or right to rotate it.',
-      action: 'Try rotating tile 5 now!',
+      description: 'Quickly flick the center tile (5) left or right to rotate it. A fast flick — not a slow drag.',
+      action: 'Try flicking tile 5 now!',
       highlight: '1-1'
     },
     {
@@ -195,6 +184,18 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
       highlight: null
     },
     {
+      title: 'Drag & Drop',
+      description: 'Prefer dragging? Press and hold tile 7, then drag it onto tile 9 to swap them the same way.',
+      action: 'Try dragging tile 7 onto tile 9!',
+      highlight: ['2-0', '2-2']
+    },
+    {
+      title: 'Nice Move! 🖐️',
+      description: "Tap-to-swap and drag-and-drop both work everywhere — use whichever feels faster in the moment.",
+      action: 'Tap "Next" to continue',
+      highlight: null
+    },
+    {
       title: 'Match the Edges',
       description: 'In the real game, make edges match between tiles. When they match correctly, a green glow appears!',
       action: 'Tap "Next" to continue',
@@ -202,7 +203,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
     },
     {
       title: "You're Ready! 🚀",
-      description: 'Combine rotating and swapping to solve puzzles. Match all edges to win!',
+      description: 'Combine flicking, tapping, and dragging to solve puzzles. Match all edges to win!',
       action: 'Start playing',
       highlight: null
     }
@@ -254,13 +255,13 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
           </div>
 
           {/* Interactive Game Board */}
-          {step >= 1 && step <= 4 && (
+          {step >= 1 && step <= 6 && (
             <div className="flex justify-center mb-6">
               <div className="relative">
-                <div 
-                  className="grid grid-cols-3 gap-1 bg-navy-light backdrop-blur-sm p-1.5 rounded-xl border-2 border-navy-dark"
-                  style={{ 
-                    width: 'min(80vw, 400px)', 
+                <div
+                  className="grid grid-cols-3 gap-1 bg-navy-light backdrop-blur-sm p-1.5 rounded-xl border-2 border-navy-dark relative"
+                  style={{
+                    width: 'min(80vw, 400px)',
                     height: 'min(80vw, 400px)',
                   }}
                 >
@@ -268,47 +269,79 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                     if (a.row !== b.row) return a.row - b.row;
                     return a.col - b.col;
                   }).map((tile) => {
-                    const isHighlighted = Array.isArray(currentStep.highlight) 
+                    const isHighlighted = Array.isArray(currentStep.highlight)
                       ? currentStep.highlight.includes(tile.id)
                       : currentStep.highlight === tile.id;
                     const isSelected = selectedTile === tile.id;
+                    const isBeingDragged = INTERACTIVE_STEPS.has(step) && dragState?.tileId === tile.id;
+                    const isHoverTarget = INTERACTIVE_STEPS.has(step) && hoverTargetId === tile.id;
 
                     return (
                       <div key={tile.id} className="relative aspect-square">
                         <div
-                          onMouseDown={(e) => handlePointerDown(e, tile.id)}
-                          onMouseUp={(e) => handlePointerUp(e, tile.id)}
-                          onTouchStart={(e) => handlePointerDown(e, tile.id)}
-                          onTouchEnd={(e) => handlePointerUp(e, tile.id)}
+                          {...(INTERACTIVE_STEPS.has(step) ? { [tileAttr]: tile.id, ...getTileHandlers(tile.id) } : {})}
                           className={`w-full h-full rounded-lg overflow-hidden cursor-pointer touch-none transition-all duration-300 ${
                             isSelected
-                              ? 'border-4 border-coral shadow-coral-glow scale-105' 
+                              ? 'border-4 border-coral shadow-coral-glow scale-105'
+                              : isHoverTarget
+                              ? 'border-4 border-teal shadow-teal-glow'
                               : isHighlighted
                               ? 'border-4 border-teal shadow-teal-glow animate-pulse'
                               : 'border-2 border-navy-dark'
-                          }`}
-                          style={{ 
-                            transform: `rotate(${tile.rotation * 90}deg) ${isSelected || isHighlighted ? 'scale(1.05)' : ''}`, 
-                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)' 
+                          } ${isBeingDragged ? 'opacity-30' : ''}`}
+                          style={{
+                            transform: `rotate(${tile.rotation * 90}deg) ${isSelected || isHighlighted ? 'scale(1.05)' : ''}`,
+                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                           }}
                         >
-                          <img 
-                            src={tile.imageData} 
-                            alt={`Tile ${tile.number}`} 
-                            className="w-full h-full object-cover" 
-                            draggable={false} 
+                          <img
+                            src={tile.imageData}
+                            alt={`Tile ${tile.number}`}
+                            className="w-full h-full object-cover"
+                            draggable={false}
                           />
                         </div>
 
                         {/* Pointer indicator for highlighted tiles */}
                         {isHighlighted && (
                           <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-                            <div className="text-3xl">👇</div>
+                            <div className="text-3xl">{step === 5 ? '✋' : '👇'}</div>
                           </div>
                         )}
                       </div>
                     );
                   })}
+
+                  {/* Floating drag preview -- mirrors GameBoard's own
+                      overlay so the tutorial demonstrates the exact
+                      visual the real drag-and-drop gesture produces. */}
+                  {dragState && (() => {
+                    const dragged = tiles.find(t => t.id === dragState.tileId);
+                    if (!dragged) return null;
+                    return (
+                      <div
+                        className="absolute pointer-events-none z-30"
+                        style={{
+                          left: `${(dragged.col / 3) * 100}%`,
+                          top: `${(dragged.row / 3) * 100}%`,
+                          width: `${(1 / 3) * 100}%`,
+                          height: `${(1 / 3) * 100}%`,
+                          padding: '2px',
+                          transform: `translate(${dragState.dx}px, ${dragState.dy}px)`
+                        }}
+                      >
+                        <div
+                          className="w-full h-full rounded-lg overflow-hidden ring-2 ring-teal"
+                          style={{
+                            transform: `rotate(${dragged.rotation * 90}deg) scale(1.08)`,
+                            boxShadow: '0 12px 24px rgba(0,0,0,0.5)'
+                          }}
+                        >
+                          <img src={dragged.imageData} alt="" className="w-full h-full object-cover" draggable={false} />
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Visual cues for actions */}
@@ -318,14 +351,20 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                     <div className="text-4xl animate-pulse">→</div>
                   </div>
                 )}
+                {step === 5 && (
+                  <div className="absolute -bottom-10 left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
+                    <Move size={18} className="text-teal animate-pulse" />
+                    <span className="text-teal text-xs font-semibold">Press, hold, then drag</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Info Cards for Steps 5-6 */}
-          {(step === 5 || step === 6) && (
+          {/* Info Cards for Steps 7-8 */}
+          {(step === 7 || step === 8) && (
             <div key={step} className="tutorial-step-enter space-y-4 mb-6">
-              {step === 5 && (
+              {step === 7 && (
                 <div className="bg-navy-light/90 rounded-xl p-4 border border-match/30">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-12 h-12 bg-match/20 rounded-lg flex items-center justify-center">
@@ -334,13 +373,13 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                     <h3 className="text-lg font-bold text-match">Matching Edges</h3>
                   </div>
                   <p className="text-offwhite text-sm leading-relaxed">
-                    When two tiles' edges match, you'll see a bright green glow between them. 
+                    When two tiles' edges match, you'll see a bright green glow between them.
                     Your goal is to get all 12 edges glowing green!
                   </p>
                 </div>
               )}
 
-              {step === 6 && (
+              {step === 8 && (
                 <div className="bg-gradient-to-br from-coral/20 to-teal/20 rounded-xl p-6 border-2 border-teal/40">
                   <div className="text-center space-y-3">
                     <div className="text-5xl mb-2">🎯</div>
@@ -406,7 +445,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
 
           {/* Navigation Buttons */}
           <div className="space-y-3">
-            {(step === 0 || step === 2 || step === 4 || step === 5) && (
+            {(step === 0 || step === 2 || step === 4 || step === 6 || step === 7) && (
               <button
                 onClick={() => setStep(step + 1)}
                 className="w-full bg-gradient-to-r from-teal to-teal-dark hover:from-teal-dark hover:to-teal text-navy font-bold py-4 px-6 rounded-xl transition-all shadow-lg transform hover:scale-105 text-lg"
@@ -415,7 +454,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
               </button>
             )}
 
-            {step === 6 && (
+            {step === 8 && (
               <>
                 <label className="flex items-center justify-center gap-3 cursor-pointer mb-2">
                   <input
@@ -438,7 +477,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
               </>
             )}
 
-            {step > 0 && step < 6 && (
+            {step > 0 && step < 8 && (
               <button
                 onClick={() => setStep(Math.max(0, step - 1))}
                 className="w-full bg-navy-light/50 text-offwhite font-semibold py-3 px-6 rounded-xl hover:bg-navy-light transition-all"

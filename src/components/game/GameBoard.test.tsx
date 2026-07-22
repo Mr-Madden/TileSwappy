@@ -34,7 +34,9 @@ function renderBoard(tiles: Tile[], matchingEdges: Set<string>) {
       tiles={tiles}
       selectedTile={null}
       matchingEdges={matchingEdges}
-      onTileInteraction={noop}
+      onSelectTile={noop}
+      onRotateTile={noop}
+      onSwapTiles={noop}
       onUndo={noop}
       onShuffle={noop}
       onPause={noop}

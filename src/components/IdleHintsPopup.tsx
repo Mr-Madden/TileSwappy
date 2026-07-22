@@ -102,6 +102,14 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
           </span>
         </div>
 
+        {/* Controls reminder -- surfaces the drag-and-drop gesture since
+            it's easy to miss if you only ever played with tap-to-swap. */}
+        <div className="bg-navy-dark/50 border border-teal/20 rounded-xl p-3 mb-4">
+          <p className="text-offwhite/80 text-xs leading-relaxed">
+            <span className="font-semibold text-teal">Controls:</span> tap a tile then tap another to swap, or press-and-drag one tile onto another. Flick a tile left/right to rotate it.
+          </p>
+        </div>
+
         <p className="text-offwhite/80 text-sm mb-5">
           Looking for something to play? Try these:
         </p>

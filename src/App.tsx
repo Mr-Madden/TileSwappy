@@ -313,19 +313,38 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
 
 
-  const handleTileInteraction = (tileId: string, deltaX: number, deltaY: number) => {
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
-      const direction = deltaX > 0 ? -1 : 1;
-      gameState.rotateTile(tileId, direction > 0 ? 270 : 90);
-    } else if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
-      if (gameState.gameState.selectedTile === null) {
-        gameState.selectTile(tileId);
-      } else if (gameState.gameState.selectedTile === tileId) {
-        gameState.selectTile(null);
-      } else {
-        gameState.swapTiles(gameState.gameState.selectedTile, tileId);
-      }
+  // navigator.vibrate is Android/Chrome only -- iOS Safari has no
+  // Vibration API at all, so this is a graceful no-op there rather than
+  // a feature every platform gets.
+  const triggerHaptic = (pattern: number | number[]) => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(pattern);
     }
+  };
+
+  const handleSelectTile = (tileId: string) => {
+    if (gameState.gameState.selectedTile === null) {
+      gameState.selectTile(tileId);
+      triggerHaptic(10);
+    } else if (gameState.gameState.selectedTile === tileId) {
+      gameState.selectTile(null);
+    } else {
+      gameState.swapTiles(gameState.gameState.selectedTile, tileId);
+      triggerHaptic(20);
+    }
+  };
+
+  const handleRotateTile = (tileId: string, direction: 1 | -1) => {
+    gameState.rotateTile(tileId, direction > 0 ? 270 : 90);
+    triggerHaptic(10);
+  };
+
+  const handleSwapTiles = (tileId1: string, tileId2: string) => {
+    gameState.swapTiles(tileId1, tileId2);
+    if (gameState.gameState.selectedTile) {
+      gameState.selectTile(null);
+    }
+    triggerHaptic(20);
   };
 
   const handleToggleFavorite = (puzzleId: string) => {
@@ -381,7 +400,8 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       setHasProcessedCompletion(true);
       setShowCompletionAnimation(true);
       setTotalGamesPlayed(prev => prev + 1);
-      
+      triggerHaptic([15, 60, 15, 60, 30]);
+
       const puzzleKey = currentPuzzle?.date || currentPuzzleDate || 'today';
       const puzzleTitle = currentPuzzle?.title || null;
       // Captured once per puzzle (same keep-existing-if-already-set
@@ -831,7 +851,9 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               tiles={gameState.gameState.tiles}
               selectedTile={gameState.gameState.selectedTile}
               matchingEdges={gameState.gameState.matchingEdges}
-              onTileInteraction={handleTileInteraction}
+              onSelectTile={handleSelectTile}
+              onRotateTile={handleRotateTile}
+              onSwapTiles={handleSwapTiles}
               onUndo={gameState.undoLastMove}
               onShuffle={gameState.shuffleAll}
               onPause={gameState.gameState.isPaused ? gameState.resumeGame : gameState.pauseGame}
