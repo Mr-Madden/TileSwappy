@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GameLogicService } from '../../services/GameLogicService';
 import { useTileDragGesture } from '../../hooks/useTileDragGesture';
+import { Tooltip } from '../common/Tooltip';
 
 export type Rotation = 0 | 90 | 180 | 270;
 
@@ -247,9 +248,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           buttons floating on the right" bug. */}
       {onZoomIn && onZoomOut && (
         <div className="flex items-center gap-2">
-          <button onClick={onZoomOut} className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">-</button>
+          <Tooltip label="Zoom out" position="top">
+            <button onClick={onZoomOut} aria-label="Zoom out" className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">-</button>
+          </Tooltip>
           <div className="px-2 py-1 rounded bg-navy text-offwhite text-xs">{Math.round(zoomLevel * 100)}%</div>
-          <button onClick={onZoomIn} className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">+</button>
+          <Tooltip label="Zoom in" position="top">
+            <button onClick={onZoomIn} aria-label="Zoom in" className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">+</button>
+          </Tooltip>
         </div>
       )}
     </div>

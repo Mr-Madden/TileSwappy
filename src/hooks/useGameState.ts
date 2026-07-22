@@ -386,6 +386,14 @@ export const useGameState = () => {
         return {
           ...prev,
           tiles,
+          // A swap is also a move -- `moves` is the total-actions count
+          // shown live during play (App.tsx's top stat bar), while `swaps`
+          // is a separate, more specific sub-count only ever shown on the
+          // post-solve screen. Previously only rotateTile incremented
+          // `moves`, so a player who only ever dragged tiles (the primary
+          // interaction) saw the live Moves counter stay at 0 the whole
+          // game.
+          moves: prev.moves + 1,
           swaps: prev.swaps + 1,
           selectedTile: null,
           moveHistory: [

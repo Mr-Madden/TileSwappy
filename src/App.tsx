@@ -6,6 +6,7 @@ import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
 import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
 import { ThemeBackground } from './components/common/ThemeBackground';
+import { Tooltip } from './components/common/Tooltip';
 import { THEMES, DEFAULT_THEME } from './theme/themes';
 import { getCurrentDate } from './utils/helpers';
 
@@ -195,7 +196,17 @@ const App: React.FC = () => {
   useEffect(() => {
     const status = gameState.gameState.status;
     const isPlaying = status === 'playing' || status === 'solved';
-    document.body.classList.toggle('hide-site-chrome', isPlaying);
+
+    // The header's z-index (1000, set in index.html) sits above every
+    // modal's own overlay (Tailwind z-50) -- so on the start/home screens,
+    // where the header isn't already hidden by isPlaying, opening a modal
+    // left the sticky nav rendering (and staying clickable) right on top
+    // of it instead of being covered like a real modal takeover.
+    const isModalOpen =
+      showArchive || showSettings || showPlayerStats ||
+      showStreak || showTutorialOverlay || showCompletionAnimation;
+
+    document.body.classList.toggle('hide-site-chrome', isPlaying || isModalOpen);
     // The SEO footer (sitemap links, copyright) only earns its keep on
     // the very first splash screen -- it just adds scroll weight on the
     // daily-puzzle menu and obviously has no place during actual play.
@@ -204,7 +215,15 @@ const App: React.FC = () => {
       document.body.classList.remove('hide-site-chrome');
       document.body.classList.remove('hide-site-footer');
     };
-  }, [gameState.gameState.status]);
+  }, [
+    gameState.gameState.status,
+    showArchive,
+    showSettings,
+    showPlayerStats,
+    showStreak,
+    showTutorialOverlay,
+    showCompletionAnimation
+  ]);
 
   useEffect(() => {
     const themeId = settings.theme || DEFAULT_THEME;
@@ -856,13 +875,15 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   which was the single biggest chunk of space taken away from
                   the board itself. */}
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <button
-                  onClick={handleQuitToHome}
-                  aria-label="Quit to home"
-                  className="flex-shrink-0 p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
-                >
-                  <Home size={16} />
-                </button>
+                <Tooltip label="Quit to home">
+                  <button
+                    onClick={() => { triggerHaptic(15); handleQuitToHome(); }}
+                    aria-label="Quit to home"
+                    className="flex-shrink-0 p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
+                  >
+                    <Home size={16} />
+                  </button>
+                </Tooltip>
 
                 <div className="flex-1 min-w-0 flex items-baseline justify-center gap-1.5">
                   <h1 className="text-sm font-bold text-offwhite truncate">
@@ -873,42 +894,46 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   </span>
                 </div>
 
-                <button
-                  onClick={() => setShowTutorialOverlay(true)}
-                  aria-label="How to play"
-                  className="flex-shrink-0 p-1.5 rounded-lg bg-teal/20 text-teal border border-teal hover:bg-teal hover:text-navy-dark transition"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
+                <Tooltip label="How to play">
+                  <button
+                    onClick={() => { triggerHaptic(10); setShowTutorialOverlay(true); }}
+                    aria-label="How to play"
+                    className="flex-shrink-0 p-1.5 rounded-lg bg-teal/20 text-teal border border-teal hover:bg-teal hover:text-navy-dark transition"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+                </Tooltip>
 
                 <div className="relative flex-shrink-0">
-                  <button
-                    onClick={() => setShowGameMenu((v) => !v)}
-                    aria-label="Menu"
-                    className="p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
-                  >
-                    <Menu size={16} />
-                  </button>
+                  <Tooltip label="Menu">
+                    <button
+                      onClick={() => { triggerHaptic(10); setShowGameMenu((v) => !v); }}
+                      aria-label="Menu"
+                      className="p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
+                    >
+                      <Menu size={16} />
+                    </button>
+                  </Tooltip>
                   {showGameMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowGameMenu(false)} />
                       <div className="absolute right-0 mt-2 w-40 bg-navy-light border border-navy-dark rounded-lg shadow-lg z-50 overflow-hidden">
                         <button
-                          onClick={() => { setShowArchive(true); setShowGameMenu(false); }}
+                          onClick={() => { triggerHaptic(10); setShowArchive(true); setShowGameMenu(false); }}
                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
                         >
                           <Calendar size={16} className="text-teal" /> Archive
                         </button>
                         <button
-                          onClick={() => { setShowPlayerStats(true); setShowGameMenu(false); }}
+                          onClick={() => { triggerHaptic(10); setShowPlayerStats(true); setShowGameMenu(false); }}
                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
                         >
                           <BarChart3 size={16} className="text-teal" /> Stats
                         </button>
                         <button
-                          onClick={() => { setShowSettings(true); setShowGameMenu(false); }}
+                          onClick={() => { triggerHaptic(10); setShowSettings(true); setShowGameMenu(false); }}
                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
                         >
                           <Settings size={16} className="text-teal" /> Settings
@@ -955,8 +980,8 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               canUndo={gameState.gameState.moveHistory.length > 0}
               isPaused={gameState.gameState.isPaused}
               zoomLevel={gameState.zoomLevel}
-              onZoomIn={gameState.zoomIn}
-              onZoomOut={gameState.zoomOut}
+              onZoomIn={() => { triggerHaptic(10); gameState.zoomIn(); }}
+              onZoomOut={() => { triggerHaptic(10); gameState.zoomOut(); }}
             />
           </div>
 
@@ -995,7 +1020,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   </div>
 
                   <button
-                    onClick={gameState.resumeGame}
+                    onClick={() => { triggerHaptic(10); gameState.resumeGame(); }}
                     className="w-full bg-teal hover:bg-teal-dark text-navy font-bold py-4 px-6 rounded-xl mb-3 transition"
                   >
                     Resume Game
@@ -1003,6 +1028,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
                   <button
                     onClick={() => {
+                      triggerHaptic(15);
                       setHasProcessedCompletion(false);
                       setShowCompletionAnimation(false);
                       gameState.resumeGame();
@@ -1022,7 +1048,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               <div className="space-y-2 mb-2">
                 <div className="flex justify-center gap-2">
                   <button
-                    onClick={gameState.undoLastMove}
+                    onClick={() => { triggerHaptic(15); gameState.undoLastMove(); }}
                     disabled={gameState.gameState.moveHistory.length === 0}
                     className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                       gameState.gameState.moveHistory.length === 0
@@ -1032,17 +1058,20 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   >
                     Undo
                   </button>
-                  
+
                   <div className="flex justify-center gap-2">
                   <button
-                    onClick={gameState.shuffleAll}
+                    onClick={() => { triggerHaptic([10, 40, 10]); gameState.shuffleAll(); }}
                     className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium"
                   >
                     Shuffle
                   </button>
-                  
+
                   <button
-                    onClick={gameState.gameState.isPaused ? gameState.resumeGame : gameState.pauseGame}
+                    onClick={() => {
+                      triggerHaptic(10);
+                      if (gameState.gameState.isPaused) gameState.resumeGame(); else gameState.pauseGame();
+                    }}
                     className="flex-1 max-w-[120px] px-3 py-1.5 bg-offwhite text-navy-lightest rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
                   >
                     {gameState.gameState.isPaused ? 'Resume' : 'Pause'}
@@ -1051,12 +1080,14 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   <button
                     onClick={() => {
                       if (gameState.gameState.status === 'solved') {
+                        triggerHaptic(15);
                         setCurrentPuzzle(null);
                         setHasProcessedCompletion(false);
                         setShowCompletionAnimation(false);
                         gameState.resetGame();
                       } else {
                         if (window.confirm('Restart this puzzle? Your progress will be lost.')) {
+                          triggerHaptic(20);
                           setHasProcessedCompletion(false);
                           setShowCompletionAnimation(false);
                           gameState.startGame(currentPuzzle);
