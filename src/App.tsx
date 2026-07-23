@@ -89,6 +89,13 @@ const App: React.FC = () => {
   const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
+  // Whether the currently-open tutorial is the auto-shown one gating a
+  // fresh puzzle start, vs. the player manually reopening "How to Play"
+  // mid-game -- only the former should chain into the pre-match reveal
+  // when it closes; the latter should just resume the puzzle as normal.
+  const [tutorialIsForFreshStart, setTutorialIsForFreshStart] = useState(false);
+  const [showPreMatchReveal, setShowPreMatchReveal] = useState(false);
+  const [countdownValue, setCountdownValue] = useState(3);
   
   const [completedPuzzleIds, setCompletedPuzzleIds] = useState<Set<string>>(() => 
     new Set(loadFromStorage<string[]>(STORAGE_KEYS.COMPLETED_PUZZLES, []))
@@ -189,41 +196,29 @@ const App: React.FC = () => {
   // (nav links, SEO footer) wrap every screen including live gameplay.
   // Their height isn't fixed -- the nav wraps to extra lines on narrow
   // screens -- so it silently ate into the "playing" screen's available
-  // height differently per device, which is what made the board/toolbar
-  // look misaligned/cramped depending on screen size. index.html's
-  // <style> block defines the CSS these classes react to (same pattern
-  // already used there for #puzzle-banner).
+  // height differently per device. The header used to only hide during
+  // play/modals, but it turned out to look better hidden on the
+  // start/home screens too -- at that point there's no app screen left
+  // where it should show, so it's unconditional for as long as the React
+  // app is mounted. index.html's <style> block defines the CSS this
+  // class reacts to (same pattern already used there for #puzzle-banner).
+  useEffect(() => {
+    document.body.classList.add('hide-site-chrome');
+    return () => {
+      document.body.classList.remove('hide-site-chrome');
+    };
+  }, []);
+
   useEffect(() => {
     const status = gameState.gameState.status;
-    const isPlaying = status === 'playing' || status === 'solved';
-
-    // The header's z-index (1000, set in index.html) sits above every
-    // modal's own overlay (Tailwind z-50) -- so on the start/home screens,
-    // where the header isn't already hidden by isPlaying, opening a modal
-    // left the sticky nav rendering (and staying clickable) right on top
-    // of it instead of being covered like a real modal takeover.
-    const isModalOpen =
-      showArchive || showSettings || showPlayerStats ||
-      showStreak || showTutorialOverlay || showCompletionAnimation;
-
-    document.body.classList.toggle('hide-site-chrome', isPlaying || isModalOpen);
     // The SEO footer (sitemap links, copyright) only earns its keep on
     // the very first splash screen -- it just adds scroll weight on the
     // daily-puzzle menu and obviously has no place during actual play.
     document.body.classList.toggle('hide-site-footer', status !== 'start');
     return () => {
-      document.body.classList.remove('hide-site-chrome');
       document.body.classList.remove('hide-site-footer');
     };
-  }, [
-    gameState.gameState.status,
-    showArchive,
-    showSettings,
-    showPlayerStats,
-    showStreak,
-    showTutorialOverlay,
-    showCompletionAnimation
-  ]);
+  }, [gameState.gameState.status]);
 
   useEffect(() => {
     const themeId = settings.theme || DEFAULT_THEME;
@@ -278,23 +273,59 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const currentStatus = gameState.gameState.status;
-    
+
     if (currentStatus === 'playing' && !hasShownTutorialForCurrentPuzzle) {
       const tutorialCompleted = localStorage.getItem('tutorialCompleted');
-      
+
+      // Every fresh puzzle start is paused here -- either the tutorial
+      // shows first (first time only), or straight into the pre-match
+      // reveal+countdown (every time), and either way the puzzle timer
+      // doesn't actually start until resumeGame() fires at the end of
+      // whichever gate applies.
+      gameState.pauseGame();
+
       if (!tutorialCompleted) {
-        gameState.pauseGame();
+        setTutorialIsForFreshStart(true);
         setShowTutorialOverlay(true);
+      } else {
+        beginPreMatchReveal();
       }
-      
+
       setHasShownTutorialForCurrentPuzzle(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.gameState.status, hasShownTutorialForCurrentPuzzle]);
 
+  const beginPreMatchReveal = () => {
+    setCountdownValue(3);
+    setShowPreMatchReveal(true);
+  };
+
+  useEffect(() => {
+    if (!showPreMatchReveal) return;
+
+    if (countdownValue <= 0) {
+      setShowPreMatchReveal(false);
+      gameState.resumeGame();
+      return;
+    }
+
+    const timer = setTimeout(() => setCountdownValue(v => v - 1), 1000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPreMatchReveal, countdownValue]);
+
   const handleTutorialComplete = () => {
     setShowTutorialOverlay(false);
-    gameState.resumeGame();
+    if (tutorialIsForFreshStart) {
+      // The auto-shown tutorial gating a fresh puzzle start -- chain into
+      // the pre-match reveal instead of resuming immediately.
+      setTutorialIsForFreshStart(false);
+      beginPreMatchReveal();
+    } else {
+      // Reopened manually mid-game via "How to Play" -- just resume.
+      gameState.resumeGame();
+    }
   };
 
   // Same reset as the pause modal's "Quit to Home" -- but reachable
@@ -643,6 +674,52 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
         </Suspense>
       )}
 
+      {showPreMatchReveal && (
+        <div className="fixed inset-0 bg-navy z-[100] flex flex-col items-center justify-center p-4">
+          <p className="text-teal text-lg font-semibold mb-4 tracking-wide uppercase">Get Ready</p>
+          <div
+            className="rounded-2xl overflow-hidden border-4 border-coral shadow-coral-glow mb-8"
+            style={{ width: 'min(75vw, 420px)', height: 'min(75vw, 420px)' }}
+          >
+            {currentPuzzle?.imageUrl || currentPuzzle?.image_url ? (
+              <img
+                src={currentPuzzle.imageUrl || currentPuzzle.image_url}
+                alt="Completed puzzle preview"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-full h-full"
+                style={{
+                  background: `linear-gradient(135deg, ${(currentPuzzle?.gradient ?? ['#ff6b6b', '#4ecdc4', '#45b7d1']).join(', ')})`
+                }}
+              />
+            )}
+          </div>
+          <div key={countdownValue} className="text-8xl font-extrabold text-coral pre-match-countdown-pop">
+            {countdownValue}
+          </div>
+
+          <style>{`
+            @keyframes pre-match-countdown-pop {
+              0% { transform: scale(0.4); opacity: 0; }
+              60% { transform: scale(1.15); opacity: 1; }
+              100% { transform: scale(1); opacity: 1; }
+            }
+
+            .pre-match-countdown-pop {
+              animation: pre-match-countdown-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              .pre-match-countdown-pop {
+                animation: none;
+              }
+            }
+          `}</style>
+        </div>
+      )}
+
       {showCompletionAnimation && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 pointer-events-none">
@@ -896,7 +973,17 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
                 <Tooltip label="How to play">
                   <button
-                    onClick={() => { triggerHaptic(10); setShowTutorialOverlay(true); }}
+                    onClick={() => {
+                      triggerHaptic(10);
+                      // The auto-shown first-time tutorial already pauses via
+                      // the effect below -- this button opens the same
+                      // overlay mid-game (to review it again), and needs the
+                      // same pause or the puzzle timer keeps running the
+                      // whole time it's open. handleTutorialComplete's
+                      // resumeGame() is a safe no-op if this is a repeat call.
+                      gameState.pauseGame();
+                      setShowTutorialOverlay(true);
+                    }}
                     aria-label="How to play"
                     className="flex-shrink-0 p-1.5 rounded-lg bg-teal/20 text-teal border border-teal hover:bg-teal hover:text-navy-dark transition"
                   >
@@ -985,7 +1072,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             />
           </div>
 
-          {gameState.gameState.isPaused && !showTutorialOverlay && (
+          {gameState.gameState.isPaused && !showTutorialOverlay && !showPreMatchReveal && (
             <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
               <div className="bg-navy-light rounded-2xl p-8 max-w-sm w-full border-2 border-navy-dark">
                 <div className="text-center">
@@ -1052,8 +1139,8 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                     disabled={gameState.gameState.moveHistory.length === 0}
                     className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                       gameState.gameState.moveHistory.length === 0
-                        ? 'bg-navy-dark/80 text-gray-500 cursor-not-allowed border border-navy-dark'
-                        : 'bg-offwhite text-navy-lightest border border-navy-dark hover:border-teal'
+                        ? 'bg-navy-dark/80 text-offwhite/40 cursor-not-allowed border border-navy-dark'
+                        : 'bg-offwhite text-navy border border-navy-dark hover:border-teal'
                     }`}
                   >
                     Undo
@@ -1072,7 +1159,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                       triggerHaptic(10);
                       if (gameState.gameState.isPaused) gameState.resumeGame(); else gameState.pauseGame();
                     }}
-                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-offwhite text-navy-lightest rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
+                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-offwhite text-navy rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
                   >
                     {gameState.gameState.isPaused ? 'Resume' : 'Pause'}
                   </button>
@@ -1090,11 +1177,21 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                           triggerHaptic(20);
                           setHasProcessedCompletion(false);
                           setShowCompletionAnimation(false);
+                          // Restarting reuses the same puzzle object directly
+                          // (not handleStartPuzzle), so this flag never got
+                          // reset -- the auto-trigger effect's
+                          // !hasShownTutorialForCurrentPuzzle guard silently
+                          // skipped the pause+reveal+countdown on restart.
+                          // Resetting it here lets that same effect fire
+                          // again (tutorial's already done, so it goes
+                          // straight to the reveal) once status flips back
+                          // to 'playing'.
+                          setHasShownTutorialForCurrentPuzzle(false);
                           gameState.startGame(currentPuzzle);
                         }
                       }
                     }}
-                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-white transition-all duration-200 text-xs font-medium"
+                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-navy-dark transition-all duration-200 text-xs font-medium"
                   >
                     Restart
                   </button>

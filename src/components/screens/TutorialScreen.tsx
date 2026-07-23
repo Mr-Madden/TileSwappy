@@ -16,8 +16,31 @@ interface TutorialScreenProps {
 }
 
 // Steps where the mini board actually responds to input -- everything
-// else (welcome, success messages, static info) leaves gestures inert.
-const INTERACTIVE_STEPS = new Set([1, 3, 5]);
+// else (welcome, static info) leaves gestures inert.
+const INTERACTIVE_STEPS = new Set([1, 2, 3]);
+
+// Brief auto-advancing toast after each interactive step succeeds, instead
+// of a whole separate "Great Job!"/"Excellent!"/"Nice Move!" step the
+// player had to tap "Next" on -- same information, half the taps. Keyed by
+// the step index that was just completed.
+const TOAST_MESSAGES: Record<number, string> = {
+  1: 'Great job! 🎉 Tiles can face any direction.',
+  2: 'Excellent! ✨ Use this to rearrange the puzzle.',
+  3: 'Nice move! 🖐️ Works everywhere — use whichever feels faster.'
+};
+
+// Small celebratory burst for the final step -- theme-variable colors so it
+// re-themes correctly, same reasoning as the mock solved-puzzle grid below.
+const TUTORIAL_CONFETTI = [
+  { left: '20%', size: 7, delay: '0s', color: 'rgb(var(--color-coral))' },
+  { left: '32%', size: 5, delay: '0.08s', color: 'rgb(var(--color-teal))' },
+  { left: '44%', size: 6, delay: '0.03s', color: 'rgb(var(--color-gold))' },
+  { left: '56%', size: 5, delay: '0.12s', color: 'rgb(var(--color-violet))' },
+  { left: '68%', size: 7, delay: '0.05s', color: 'rgb(var(--color-coral))' },
+  { left: '80%', size: 6, delay: '0.1s', color: 'rgb(var(--color-teal))' },
+  { left: '26%', size: 5, delay: '0.16s', color: 'rgb(var(--color-gold))' },
+  { left: '74%', size: 5, delay: '0.14s', color: 'rgb(var(--color-violet))' }
+];
 
 export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) => {
   const [step, setStep] = useState(0);
@@ -25,6 +48,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
   const [selectedTile, setSelectedTile] = useState<string | null>(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   // Initialize tutorial tiles with numbered gradient tiles
   useEffect(() => {
@@ -88,13 +112,13 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
   // that could quietly drift out of sync with the real game.
   const { dragState, hoverTargetId, getTileHandlers, tileAttr } = useTileDragGesture({
     onTap: (tileId) => {
-      if (step !== 3) return;
+      if (step !== 2) return;
       if (selectedTile === null && (tileId === '0-0' || tileId === '0-2')) {
         setSelectedTile(tileId);
       } else if (selectedTile && selectedTile !== tileId) {
         if ((selectedTile === '0-0' && tileId === '0-2') || (selectedTile === '0-2' && tileId === '0-0')) {
           swapTiles(selectedTile, tileId);
-          markStepComplete(3);
+          markStepComplete(2);
         }
         setSelectedTile(null);
       } else if (selectedTile === tileId) {
@@ -107,10 +131,10 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
       markStepComplete(1);
     },
     onDrop: (draggedTileId, targetTileId) => {
-      if (step !== 5 || !targetTileId) return;
+      if (step !== 3 || !targetTileId) return;
       if ((draggedTileId === '2-0' && targetTileId === '2-2') || (draggedTileId === '2-2' && targetTileId === '2-0')) {
         swapTiles(draggedTileId, targetTileId);
-        markStepComplete(5);
+        markStepComplete(3);
       }
     }
   });
@@ -136,9 +160,11 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
   };
 
   const markStepComplete = (stepNum: number) => {
+    setToast(TOAST_MESSAGES[stepNum] ?? null);
     setTimeout(() => {
+      setToast(null);
       setStep(stepNum + 1);
-    }, 800);
+    }, 1400);
   };
 
   const handleComplete = () => {
@@ -166,34 +192,16 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
       highlight: '1-1'
     },
     {
-      title: 'Great Job! 🎉',
-      description: 'You rotated the tile! Tiles can face any direction.',
-      action: 'Tap "Next" to continue',
-      highlight: null
-    },
-    {
       title: 'Swap Tiles',
       description: 'Tap tile 1, then tap tile 3 to swap their positions.',
       action: 'Try swapping tiles 1 and 3!',
       highlight: ['0-0', '0-2']
     },
     {
-      title: 'Excellent! ✨',
-      description: 'You swapped the tiles! Use this to rearrange the puzzle.',
-      action: 'Tap "Next" to continue',
-      highlight: null
-    },
-    {
       title: 'Drag & Drop',
       description: 'Prefer dragging? Press and hold tile 7, then drag it onto tile 9 to swap them the same way.',
       action: 'Try dragging tile 7 onto tile 9!',
       highlight: ['2-0', '2-2']
-    },
-    {
-      title: 'Nice Move! 🖐️',
-      description: "Tap-to-swap and drag-and-drop both work everywhere — use whichever feels faster in the moment.",
-      action: 'Tap "Next" to continue',
-      highlight: null
     },
     {
       title: 'Match the Edges',
@@ -213,6 +221,14 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
 
   return (
     <div className="fixed inset-0 bg-navy overflow-y-auto z-[100]">
+      {toast && (
+        <div
+          key={toast}
+          className="fixed top-6 left-1/2 z-[120] bg-navy-light border-2 border-teal shadow-2xl rounded-xl px-6 py-3 max-w-[90vw] tutorial-toast"
+        >
+          <p className="text-teal font-bold text-center text-sm md:text-base">{toast}</p>
+        </div>
+      )}
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="max-w-2xl w-full">
           {/* Progress Bar */}
@@ -255,7 +271,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
           </div>
 
           {/* Interactive Game Board */}
-          {step >= 1 && step <= 6 && (
+          {step >= 1 && step <= 3 && (
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <div
@@ -305,7 +321,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                         {/* Pointer indicator for highlighted tiles */}
                         {isHighlighted && (
                           <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-                            <div className="text-3xl">{step === 5 ? '✋' : '👇'}</div>
+                            <div className="text-3xl">{step === 3 ? '✋' : '👇'}</div>
                           </div>
                         )}
                       </div>
@@ -351,7 +367,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                     <div className="text-4xl animate-pulse">→</div>
                   </div>
                 )}
-                {step === 5 && (
+                {step === 3 && (
                   <div className="absolute -bottom-10 left-0 right-0 flex items-center justify-center gap-2 pointer-events-none">
                     <Move size={18} className="text-teal animate-pulse" />
                     <span className="text-teal text-xs font-semibold">Press, hold, then drag</span>
@@ -361,10 +377,10 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
             </div>
           )}
 
-          {/* Info Cards for Steps 7-8 */}
-          {(step === 7 || step === 8) && (
+          {/* Info Cards for Steps 4-5 */}
+          {(step === 4 || step === 5) && (
             <div key={step} className="tutorial-step-enter space-y-4 mb-6">
-              {step === 7 && (
+              {step === 4 && (
                 <div className="bg-navy-light/90 rounded-xl p-4 border border-match/30">
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-12 h-12 bg-match/20 rounded-lg flex items-center justify-center">
@@ -379,30 +395,55 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                 </div>
               )}
 
-              {step === 8 && (
+              {step === 5 && (
                 <div className="bg-gradient-to-br from-coral/20 to-teal/20 rounded-xl p-6 border-2 border-teal/40">
                   <div className="text-center space-y-3">
-                    <div className="text-5xl mb-2">🎯</div>
-                    <h3 className="text-xl font-bold text-teal">Completed Puzzle Example</h3>
-                    
-                    {/* Mini solved puzzle visualization */}
+                    <div className="relative inline-block mb-2">
+                      {/* Small celebratory burst -- plays once per entry into
+                          this step (remounts with the step===5 block itself,
+                          same key={step} pattern the surrounding card already
+                          uses). Deliberately lighter than the real game's
+                          full completion overlay (App.tsx): this is a screen
+                          most players click past quickly, not the actual win
+                          moment. */}
+                      <div className="absolute inset-0 pointer-events-none">
+                        {TUTORIAL_CONFETTI.map((c, i) => (
+                          <div
+                            key={i}
+                            className="absolute rounded-full tutorial-confetti"
+                            style={{
+                              left: c.left, top: '50%', width: c.size, height: c.size,
+                              background: c.color, animationDelay: c.delay
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <div className="text-5xl tutorial-bounce-in">🎯</div>
+                    </div>
+                    <h3 className="text-xl font-bold text-teal">This Is What Solved Looks Like</h3>
+
+                    {/* Mini solved puzzle visualization -- uses the app's own
+                        theme variables (violet/coral/teal/gold, darkening
+                        toward the top row) instead of arbitrary purple/blue/
+                        green, so it actually re-themes along with everything
+                        else instead of looking stuck on one fixed palette. */}
                     <div className="bg-navy-dark/50 rounded-lg p-4 mb-3">
                       <div className="relative w-48 h-48 mx-auto">
                         <div className="grid grid-cols-3 gap-1 w-full h-full">
-                          {/* Row 1 */}
-                          <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-tl border border-navy-dark"></div>
-                          <div className="bg-gradient-to-br from-blue-600 to-teal-600 border border-navy-dark"></div>
-                          <div className="bg-gradient-to-br from-teal-600 to-green-600 rounded-tr border border-navy-dark"></div>
-                          {/* Row 2 */}
-                          <div className="bg-gradient-to-br from-purple-500 to-blue-500 border border-navy-dark"></div>
-                          <div className="bg-gradient-to-br from-blue-500 to-teal-500 border border-navy-dark"></div>
-                          <div className="bg-gradient-to-br from-teal-500 to-green-500 border border-navy-dark"></div>
-                          {/* Row 3 */}
-                          <div className="bg-gradient-to-br from-purple-400 to-blue-400 rounded-bl border border-navy-dark"></div>
-                          <div className="bg-gradient-to-br from-blue-400 to-teal-400 border border-navy-dark"></div>
-                          <div className="bg-gradient-to-br from-teal-400 to-green-400 rounded-br border border-navy-dark"></div>
+                          {/* Row 1 -- dark variant */}
+                          <div className="rounded-tl border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-violet-dark)), rgb(var(--color-coral-dark)))' }}></div>
+                          <div className="border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-coral-dark)), rgb(var(--color-teal-dark)))' }}></div>
+                          <div className="rounded-tr border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-teal-dark)), rgb(var(--color-gold-dark)))' }}></div>
+                          {/* Row 2 -- default variant */}
+                          <div className="border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-violet)), rgb(var(--color-coral)))' }}></div>
+                          <div className="border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-coral)), rgb(var(--color-teal)))' }}></div>
+                          <div className="border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-teal)), rgb(var(--color-gold)))' }}></div>
+                          {/* Row 3 -- light variant */}
+                          <div className="rounded-bl border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-violet-light)), rgb(var(--color-coral-light)))' }}></div>
+                          <div className="border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-coral-light)), rgb(var(--color-teal-light)))' }}></div>
+                          <div className="rounded-br border border-navy-dark" style={{ background: 'linear-gradient(135deg, rgb(var(--color-teal-light)), rgb(var(--color-gold-light)))' }}></div>
                         </div>
-                        
+
                         {/* Match-glow edges - Vertical lines */}
                         <div className="absolute top-0 left-[33%] w-1 h-full bg-match animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
                         <div className="absolute top-0 left-[66%] w-1 h-full bg-match animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
@@ -410,11 +451,6 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                         {/* Match-glow edges - Horizontal lines */}
                         <div className="absolute top-[33%] left-0 w-full h-1 bg-match animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
                         <div className="absolute top-[66%] left-0 w-full h-1 bg-match animate-pulse" style={{boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'}}></div>
-                      </div>
-                      <div className="mt-3 flex items-center justify-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-match animate-pulse"></div>
-                        <p className="text-match text-xs font-semibold">All 12 edges glowing green!</p>
-                        <div className="w-2 h-2 rounded-full bg-match animate-pulse"></div>
                       </div>
                     </div>
 
@@ -445,7 +481,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
 
           {/* Navigation Buttons */}
           <div className="space-y-3">
-            {(step === 0 || step === 2 || step === 4 || step === 6 || step === 7) && (
+            {(step === 0 || step === 4) && (
               <button
                 onClick={() => setStep(step + 1)}
                 className="w-full bg-gradient-to-r from-teal to-teal-dark hover:from-teal-dark hover:to-teal text-navy font-bold py-4 px-6 rounded-xl transition-all shadow-lg transform hover:scale-105 text-lg"
@@ -454,7 +490,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
               </button>
             )}
 
-            {step === 8 && (
+            {step === 5 && (
               <>
                 <label className="flex items-center justify-center gap-3 cursor-pointer mb-2">
                   <input
@@ -477,7 +513,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
               </>
             )}
 
-            {step > 0 && step < 8 && (
+            {step > 0 && step < 5 && (
               <button
                 onClick={() => setStep(Math.max(0, step - 1))}
                 className="w-full bg-navy-light/50 text-offwhite font-semibold py-3 px-6 rounded-xl hover:bg-navy-light transition-all"
@@ -533,8 +569,43 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
           animation: tutorial-step-enter 0.3s ease-out;
         }
 
+        @keyframes tutorial-confetti-burst {
+          0% { transform: translate(-50%, 0) scale(0.6); opacity: 1; }
+          100% { transform: translate(-50%, -60px) scale(1); opacity: 0; }
+        }
+
+        .tutorial-confetti {
+          animation: tutorial-confetti-burst 0.9s ease-out forwards;
+        }
+
+        @keyframes tutorial-bounce-in {
+          0% { transform: scale(0.3); opacity: 0; }
+          60% { transform: scale(1.15); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+
+        .tutorial-bounce-in {
+          animation: tutorial-bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        /* Pop in, hold, fade out -- matches markStepComplete's 1400ms timer
+           so the toast disappears right as the step advances underneath it. */
+        @keyframes tutorial-toast-inout {
+          0% { opacity: 0; transform: translate(-50%, -12px) scale(0.9); }
+          12% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+          82% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+          100% { opacity: 0; transform: translate(-50%, -8px) scale(0.95); }
+        }
+
+        .tutorial-toast {
+          animation: tutorial-toast-inout 1.4s ease-in-out forwards;
+        }
+
         @media (prefers-reduced-motion: reduce) {
-          .tutorial-step-enter {
+          .tutorial-step-enter,
+          .tutorial-confetti,
+          .tutorial-bounce-in,
+          .tutorial-toast {
             animation: none;
           }
         }

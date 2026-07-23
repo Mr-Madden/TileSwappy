@@ -9,7 +9,7 @@ export interface ThemeOption {
 // theme's actual src/styles/themes.css values -- kept in sync so the
 // picker preview always matches what selecting it really does.
 export const THEMES: ThemeOption[] = [
-  { id: 'current', name: 'Current', swatch: ['#0d1b2a', '#ff4c4c', '#2ec4b6'] },
+  { id: 'current', name: 'Original', swatch: ['#0d1b2a', '#ff4c4c', '#2ec4b6'] },
   { id: 'cosmic', name: 'Cosmic', swatch: ['#121a2b', '#fb7185', '#22d3ee'] },
   { id: 'arcade', name: 'Arcade', swatch: ['#1b1140', '#ff3d81', '#35c1ff'] },
   { id: 'neon', name: 'Neon', swatch: ['#0d1417', '#ff2d6e', '#00f5d4'] },

@@ -352,40 +352,40 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-black/20 rounded-xl p-4 text-center">
                   <div className="text-3xl font-bold text-teal mb-1">{totalGamesPlayed}</div>
-                  <div className="text-xs text-white/60">Total Games</div>
+                  <div className="text-xs text-offwhite/60">Total Games</div>
                 </div>
                 <div className="bg-black/20 rounded-xl p-4 text-center">
                   <div className="text-3xl font-bold text-coral mb-1">{completedPuzzles}</div>
-                  <div className="text-xs text-white/60">Puzzles Solved</div>
+                  <div className="text-xs text-offwhite/60">Puzzles Solved</div>
                 </div>
                 <div className="bg-black/20 rounded-xl p-4 text-center">
                   <div className="text-3xl font-bold text-teal mb-1">{averageMoves}</div>
-                  <div className="text-xs text-white/60">Avg Moves</div>
+                  <div className="text-xs text-offwhite/60">Avg Moves</div>
                 </div>
                 <div className="bg-black/20 rounded-xl p-4 text-center">
                   <div className="text-2xl font-bold font-mono text-coral mb-1">
                     {formatTime(averageTime)}
                   </div>
-                  <div className="text-xs text-white/60">Avg Time</div>
+                  <div className="text-xs text-offwhite/60">Avg Time</div>
                 </div>
               </div>
 
               {/* Personal Bests */}
               <div className="bg-black/20 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-offwhite mb-3 flex items-center gap-2">
                   <Target className="text-coral" size={20} />
                   Personal Bests
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-navy-dark/50 rounded-lg p-3">
                     <div className="text-xs text-teal mb-1">Fastest Time</div>
-                    <div className="text-xl font-bold font-mono text-white">
+                    <div className="text-xl font-bold font-mono text-offwhite">
                       {bestTime !== Infinity ? formatTime(bestTime) : '--'}
                     </div>
                   </div>
                   <div className="bg-navy-dark/50 rounded-lg p-3">
                     <div className="text-xs text-teal mb-1">Fewest Moves</div>
-                    <div className="text-xl font-bold text-white">
+                    <div className="text-xl font-bold text-offwhite">
                       {bestMoves !== Infinity ? bestMoves : '--'}
                     </div>
                   </div>
@@ -395,7 +395,7 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
               {/* Activity Trend */}
               <div className="bg-black/20 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-offwhite flex items-center gap-2">
                     <Activity className="text-teal" size={20} />
                     Activity Trend
                   </h3>
@@ -418,12 +418,12 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                       ))}
                     </div>
                     <div className="flex justify-between mt-1">
-                      <span className="text-[10px] text-white/40">14 days ago</span>
-                      <span className="text-[10px] text-white/40">Today</span>
+                      <span className="text-[10px] text-offwhite/40">14 days ago</span>
+                      <span className="text-[10px] text-offwhite/40">Today</span>
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-4 text-white/40 text-sm">
+                  <div className="text-center py-4 text-offwhite/40 text-sm">
                     Play a few puzzles to see your activity trend
                   </div>
                 )}
@@ -431,7 +431,7 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
 
               {/* Top Performances */}
               <div className="bg-black/20 rounded-xl p-4">
-                <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-offwhite mb-3 flex items-center gap-2">
                   <TrendingUp className="text-teal" size={20} />
                   Top Performances
                 </h3>
@@ -445,8 +445,8 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${
                           index === 0 ? 'bg-gold text-navy' :
                           index === 1 ? 'bg-silver text-navy' :
-                          index === 2 ? 'bg-bronze text-white' :
-                          'bg-navy-light text-white/60'
+                          index === 2 ? 'bg-bronze text-offwhite' :
+                          'bg-navy-light text-offwhite/60'
                         }`}>
                           {index + 1}
                         </div>
@@ -454,10 +454,10 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                           {renderPuzzleThumbnail(stats)}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-white truncate">
+                          <div className="text-sm font-semibold text-offwhite truncate">
                             {getPuzzleTitle(puzzleId, stats)}
                           </div>
-                          <div className="text-xs text-white/60">
+                          <div className="text-xs text-offwhite/60">
                             {stats.bestMoves} moves
                           </div>
                         </div>
@@ -466,14 +466,14 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                         <div className="text-sm font-mono font-bold text-coral">
                           {formatTime(stats.bestTime)}
                         </div>
-                        <div className="text-xs text-white/60">
+                        <div className="text-xs text-offwhite/60">
                           {stats.attempts}x played
                         </div>
                       </div>
                     </div>
                   ))}
                   {sortedByTime.length === 0 && (
-                    <div className="text-center py-8 text-white/40">
+                    <div className="text-center py-8 text-offwhite/40">
                       <Clock size={32} className="mx-auto mb-2 opacity-50" />
                       <p className="text-sm">No puzzles completed yet</p>
                       <p className="text-xs mt-1">Start solving to see your stats!</p>
@@ -485,14 +485,14 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
               {/* Share Your Stats */}
               {completedPuzzles > 0 && (
                 <div className="bg-black/20 rounded-xl p-4">
-                  <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-offwhite mb-3 flex items-center gap-2">
                     <Share2 className="text-coral" size={20} />
                     Share Your Stats
                   </h3>
                   <div className="rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-navy to-navy-dark p-6 text-center">
                     <div className="flex items-center justify-center gap-2 mb-4">
                       <TileSwappyLogo size={28} />
-                      <span className="text-white font-bold text-lg">TileSwappy</span>
+                      <span className="text-offwhite font-bold text-lg">TileSwappy</span>
                     </div>
                     {currentStreak > 0 && (
                       <div className="mb-4">
@@ -500,7 +500,7 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                           <Flame size={32} className="text-coral" />
                           {currentStreak}
                         </div>
-                        <div className="text-xs text-white/60 font-semibold uppercase tracking-wide">
+                        <div className="text-xs text-offwhite/60 font-semibold uppercase tracking-wide">
                           Day Streak
                         </div>
                       </div>
@@ -508,31 +508,31 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-white/5 rounded-lg p-2">
                         <div className="text-lg font-bold text-teal">{totalGamesPlayed}</div>
-                        <div className="text-[10px] text-white/60">Total Games</div>
+                        <div className="text-[10px] text-offwhite/60">Total Games</div>
                       </div>
                       <div className="bg-white/5 rounded-lg p-2">
                         <div className="text-lg font-bold text-coral">{completedPuzzles}</div>
-                        <div className="text-[10px] text-white/60">Puzzles Solved</div>
+                        <div className="text-[10px] text-offwhite/60">Puzzles Solved</div>
                       </div>
                       <div className="bg-white/5 rounded-lg p-2">
-                        <div className="text-lg font-mono font-bold text-white">
+                        <div className="text-lg font-mono font-bold text-offwhite">
                           {bestTime !== Infinity ? formatTime(bestTime) : '--'}
                         </div>
-                        <div className="text-[10px] text-white/60">Best Time</div>
+                        <div className="text-[10px] text-offwhite/60">Best Time</div>
                       </div>
                       <div className="bg-white/5 rounded-lg p-2">
-                        <div className="text-lg font-bold text-white">
+                        <div className="text-lg font-bold text-offwhite">
                           {bestMoves !== Infinity ? bestMoves : '--'}
                         </div>
-                        <div className="text-[10px] text-white/60">Best Moves</div>
+                        <div className="text-[10px] text-offwhite/60">Best Moves</div>
                       </div>
                     </div>
-                    <div className="text-[10px] text-white/30 mt-4">tileswappy.com</div>
+                    <div className="text-[10px] text-offwhite/30 mt-4">tileswappy.com</div>
                   </div>
                   <button
                     onClick={handleShareCard}
                     disabled={shareStatus === 'sharing'}
-                    className="w-full mt-3 bg-gradient-to-r from-coral to-teal hover:from-coral-dark hover:to-teal-dark text-white font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full mt-3 bg-gradient-to-r from-coral to-teal hover:from-coral-dark hover:to-teal-dark text-offwhite font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     <Share2 size={16} />
                     {shareStatus === 'sharing'
@@ -549,7 +549,7 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
           ) : (
             <div className="space-y-3">
               {Object.entries(puzzleStats).length === 0 ? (
-                <div className="text-center py-12 text-white/40">
+                <div className="text-center py-12 text-offwhite/40">
                   <Trophy size={48} className="mx-auto mb-3 opacity-50" />
                   <p className="text-lg font-semibold mb-1">No puzzles completed yet</p>
                   <p className="text-sm">Complete your first puzzle to see detailed statistics!</p>
@@ -573,10 +573,10 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                             {renderPuzzleThumbnail(stats)}
                           </div>
                           <div className="min-w-0">
-                            <h4 className="text-lg font-bold text-white truncate">
+                            <h4 className="text-lg font-bold text-offwhite truncate">
                               {getPuzzleTitle(puzzleId, stats)}
                             </h4>
-                            <p className="text-xs text-white/60">
+                            <p className="text-xs text-offwhite/60">
                               Played {stats.attempts} {stats.attempts === 1 ? 'time' : 'times'}
                             </p>
                           </div>
@@ -591,27 +591,27 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
 
                       <div className="grid grid-cols-3 gap-3">
                         <div className="bg-navy-dark/50 rounded-lg p-2 text-center">
-                          <div className="text-xs text-white/60 mb-1">Best Moves</div>
+                          <div className="text-xs text-offwhite/60 mb-1">Best Moves</div>
                           <div className="text-lg font-bold text-teal">{stats.bestMoves}</div>
                         </div>
                         <div className="bg-navy-dark/50 rounded-lg p-2 text-center">
-                          <div className="text-xs text-white/60 mb-1">Best Swaps</div>
+                          <div className="text-xs text-offwhite/60 mb-1">Best Swaps</div>
                           <div className="text-lg font-bold text-teal">{stats.bestSwaps}</div>
                         </div>
                         <div className="bg-navy-dark/50 rounded-lg p-2 text-center">
-                          <div className="text-xs text-white/60 mb-1">Attempts</div>
+                          <div className="text-xs text-offwhite/60 mb-1">Attempts</div>
                           <div className="text-lg font-bold text-teal">{stats.attempts}</div>
                         </div>
                       </div>
 
                       {stats.lastPlayedTime && (
                         <div className="mt-3 pt-3 border-t border-white/10">
-                          <div className="text-xs text-white/60 mb-2">Last Played</div>
+                          <div className="text-xs text-offwhite/60 mb-2">Last Played</div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-white/80">
+                            <span className="text-offwhite/80">
                               {formatTime(stats.lastPlayedTime)}
                             </span>
-                            <span className="text-white/60">
+                            <span className="text-offwhite/60">
                               {stats.lastPlayedMoves} moves • {stats.lastPlayedSwaps} swaps
                             </span>
                           </div>

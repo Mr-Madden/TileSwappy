@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { HelpCircle, Settings, Check, Lock, LayoutGrid, Flame, BarChart2 } from 'lucide-react';
 import { getCurrentDate, formatDisplayDate, addDays, getRelativeDayLabel } from '../../utils/helpers';
 import { getWeekPuzzles } from '../../services/supabase';
@@ -28,6 +28,35 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [isLoadingPuzzles, setIsLoadingPuzzles] = useState(true);
   const [showIdleHints] = useState(true);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+
+  // The carousel's card widths/positions used to be fixed pixel constants
+  // tuned for the old max-w-md (~416px usable) container -- widening the
+  // container on desktop alone would've just left the same small cards
+  // floating in more empty space instead of actually filling it. Measuring
+  // the carousel's real width and scaling every constant relative to that
+  // 416px baseline keeps the exact proportions/spacing that were already
+  // tuned, just applied fluidly to however wide the container actually is.
+  const CAROUSEL_BASELINE_WIDTH = 416;
+  const [carouselWidth, setCarouselWidth] = useState(CAROUSEL_BASELINE_WIDTH);
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      setCarouselWidth(entry.contentRect.width);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Capped both directions -- floor keeps cards legible on very narrow
+  // phones, ceiling keeps them from ballooning to an odd size on
+  // ultra-wide desktop windows.
+  const carouselScale = Math.min(1.8, Math.max(0.85, carouselWidth / CAROUSEL_BASELINE_WIDTH));
 
   // Factory puzzles can publish up to 3 difficulty tiers for the same
   // date (db/migrations/0006_puzzle_calendar_per_difficulty.sql); a
@@ -146,7 +175,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-navy overflow-hidden">
+    <div className="min-h-screen bg-navy overflow-hidden flex items-center justify-center p-4">
       {/* Tutorial Button - Top Left */}
       <button
         onClick={onOpenTutorial}
@@ -167,8 +196,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <span className="text-offwhite text-[9px] font-semibold">Settings</span>
       </button>
 
-      <div className="flex items-center justify-center p-4">
-        <div className="max-w-md w-full py-4">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl w-full py-4">
           {/* Logo and Title */}
           <div className="text-center mb-4">
             <div className="inline-block mb-2 rounded-2xl shadow-2xl">
@@ -184,7 +212,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <h2 className="text-offwhite text-base font-semibold mb-2 text-center">Daily Puzzles</h2>
 
               <div
-                className="relative h-80 mb-3 overflow-hidden rounded-xl"
+                ref={carouselRef}
+                className="relative mb-3 overflow-hidden rounded-xl"
+                // Cards are square-based (aspect-square + a text footer),
+                // so a wider card is also a taller one -- this used to be
+                // a fixed h-80 (320px) regardless of carouselScale, which
+                // is exactly why a scaled-up desktop card ended up taller
+                // than its own container and got clipped top/bottom. 320px
+                // was the baseline height tuned for carouselScale === 1,
+                // so it needs to scale right along with the cards.
+                style={{ height: 320 * carouselScale }}
                 onTouchStart={(e) => handleCarouselSwipeStart(e.touches[0].clientX, e.touches[0].clientY)}
                 onTouchEnd={(e) => handleCarouselSwipeEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY)}
                 onMouseDown={(e) => handleCarouselSwipeStart(e.clientX, e.clientY)}
@@ -203,36 +240,38 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     {dailyPuzzles.map((day, index) => {
                       const centerOffset = (index - 3 - carouselOffset + 7) % 7;
                       const adjustedOffset = centerOffset > 3 ? centerOffset - 7 : centerOffset;
-                      // Carousel container grew from h-64 to h-80 (1.25x) --
-                      // every size/position number here is scaled by the
-                      // same 1.25x so cards fill the bigger box in the same
-                      // proportions instead of just floating in more padding.
-                      const xPos = adjustedOffset * 119;
-                      const yPos = Math.abs(adjustedOffset) * 7.5;
+                      // Every size/position constant below is tuned for
+                      // CAROUSEL_BASELINE_WIDTH and scaled by carouselScale
+                      // (the carousel's actual measured width relative to
+                      // that baseline), so cards fill however wide the
+                      // container really is instead of just floating in
+                      // extra empty space on a wider desktop screen.
+                      const xPos = adjustedOffset * 119 * carouselScale;
+                      const yPos = Math.abs(adjustedOffset) * 7.5 * carouselScale;
 
                       let scale = 1;
-                      let width = 225;
+                      let width = 225 * carouselScale;
                       let opacity = 1;
 
                       if (adjustedOffset === 0) {
                         scale = 1.3;
-                        width = 150;
+                        width = 150 * carouselScale;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 1) {
                         scale = 0.85;
-                        width = 131;
+                        width = 131 * carouselScale;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 2) {
                         scale = 0.65;
-                        width = 113;
+                        width = 113 * carouselScale;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 3) {
                         scale = 0.5;
-                        width = 94;
+                        width = 94 * carouselScale;
                         opacity = 1;
                       } else {
                         scale = 0.3;
-                        width = 63;
+                        width = 63 * carouselScale;
                         opacity = 1;
                       }
 
@@ -280,7 +319,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                                   <div className="aspect-square relative overflow-hidden">
                                     {day.imageUrl ? (
                                       <>
-                                        <img src={day.imageUrl} alt={day.title} className="absolute inset-0 w-full h-full object-cover blur-sm opacity-70" />
+                                        {/* The image itself always renders at full opacity --
+                                            dimming comes from the dark scrim on top instead
+                                            (its own opacity is the "transparency" amount), so
+                                            solving today's puzzle is still the first time you
+                                            see the actual picture clearly. */}
+                                        <img src={day.imageUrl} alt={day.title} className="absolute inset-0 w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-navy" style={{ opacity: 0.5 }} />
                                         <div className="absolute inset-0 bg-gradient-to-br from-teal/30 to-coral/30" />
                                       </>
                                     ) : (
@@ -321,19 +366,38 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                             <div className="aspect-square relative overflow-hidden">
                               {day.imageUrl ? (
                                 <>
-                                  <img src={day.imageUrl} alt={day.title} className="absolute inset-0 w-full h-full object-cover blur-md opacity-60" />
-                                  <div className="absolute inset-0 bg-navy/60" />
+                                  {/* The image itself always renders at full opacity --
+                                      dimming comes from the dark scrim on top instead
+                                      (its own opacity is the "transparency" amount).
+                                      Already-completed puzzles have nothing left to
+                                      spoil, so they get no scrim at all. Today's
+                                      puzzle stays scrimmed here too, not just in its
+                                      own centered/isToday render above -- this branch
+                                      also renders today's card once it's swiped off
+                                      center, and status stays 'today' regardless of
+                                      carousel position. */}
+                                  <img
+                                    src={day.imageUrl}
+                                    alt={day.title}
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                  />
+                                  {day.status !== 'past' && (
+                                    <div
+                                      className="absolute inset-0 bg-navy"
+                                      style={{ opacity: day.status === 'today' ? 0.5 : 0.75 }}
+                                    />
+                                  )}
                                 </>
                               ) : (
                                 <div className="w-full h-full bg-navy-light" />
                               )}
                               {day.status === 'past' && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-navy/40">
-                                  <Check size={24} strokeWidth={3} className="text-teal" />
+                                <div className="absolute top-1.5 right-1.5 bg-teal rounded-full p-1 shadow">
+                                  <Check size={14} strokeWidth={3} className="text-navy-dark" />
                                 </div>
                               )}
                               {day.status === 'future' && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-navy/60">
+                                <div className="absolute inset-0 flex items-center justify-center">
                                   <Lock size={24} className="text-coral" />
                                 </div>
                               )}
@@ -414,7 +478,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
             </div>
           </div>
-        </div>
       </div>
 
       {/* Idle Hints Popup */}
