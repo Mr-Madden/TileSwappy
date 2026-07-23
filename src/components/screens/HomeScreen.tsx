@@ -276,6 +276,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       }
 
                       const isToday = day.status === 'today';
+                      const isPast = day.status === 'past';
+                      // Locked (future) days stay non-selectable; today and
+                      // any already-completed past day can both be opened
+                      // to play/replay once centered.
+                      const isSelectable = isToday || isPast;
                       const isCentered = adjustedOffset === 0;
                       const hasPuzzleData = !!day.realPuzzleData;
 
@@ -288,21 +293,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         width: `${width}px`,
                         opacity: opacity,
                         zIndex: 10 - Math.abs(adjustedOffset),
-                        pointerEvents: (isCentered && isToday && hasPuzzleData ? 'auto' : 'none')
+                        pointerEvents: (isCentered && isSelectable && hasPuzzleData ? 'auto' : 'none')
                       };
 
-                      if (isToday && isCentered) {
+                      if (isSelectable && isCentered) {
                         return (
                           <div key={day.id} style={cardStyle}>
                             {hasPuzzleData ? (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  const variant = getVariantForDifficulty(day.realPuzzleData, selectedDifficulty);
+                                  // The difficulty-tier picker only applies to
+                                  // today's puzzle -- a past day replays with
+                                  // whatever difficulty it actually was.
+                                  const variant = isToday
+                                    ? getVariantForDifficulty(day.realPuzzleData, selectedDifficulty)
+                                    : day.realPuzzleData;
                                   const puzzleData = {
                                     id: day.id,
                                     title: day.title,
-                                    difficulty: day.realPuzzleData?.difficultyVariants ? selectedDifficulty : day.difficulty,
+                                    difficulty: (isToday && day.realPuzzleData?.difficultyVariants) ? selectedDifficulty : day.difficulty,
                                     gradient: day.gradient.match(/#[a-fA-F0-9]{6}/g) || ['#FF4C4C', '#2EC4B6'],
                                     imageUrl: variant?.image_url ?? day.imageUrl,
                                     tiles: variant?.tiles,
@@ -315,25 +325,31 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                                 }}
                                 className="w-full transform hover:scale-105 transition-all"
                               >
-                                <div className="rounded-2xl overflow-hidden border-4 border-coral shadow-coral-glow">
+                                <div className={`rounded-2xl overflow-hidden border-4 shadow-coral-glow ${isToday ? 'border-coral' : 'border-teal'}`}>
                                   <div className="aspect-square relative overflow-hidden">
                                     {day.imageUrl ? (
                                       <>
                                         {/* The image itself always renders at full opacity --
                                             dimming comes from the dark scrim on top instead
-                                            (its own opacity is the "transparency" amount), so
-                                            solving today's puzzle is still the first time you
-                                            see the actual picture clearly. */}
+                                            (its own opacity is the "transparency" amount).
+                                            Only today gets scrimmed -- a past day has nothing
+                                            left to spoil, so it's shown clearly here too. */}
                                         <img src={day.imageUrl} alt={day.title} className="absolute inset-0 w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-navy" style={{ opacity: 0.5 }} />
-                                        <div className="absolute inset-0 bg-gradient-to-br from-teal/30 to-coral/30" />
+                                        {isToday && (
+                                          <>
+                                            <div className="absolute inset-0 bg-navy" style={{ opacity: 0.5 }} />
+                                            <div className="absolute inset-0 bg-gradient-to-br from-teal/30 to-coral/30" />
+                                          </>
+                                        )}
                                       </>
                                     ) : (
                                       <div className="w-full h-full bg-gradient-to-br from-teal to-coral" />
                                     )}
-                                    <div className="absolute top-2 right-2 bg-coral text-offwhite text-xs font-bold px-2 py-1 rounded-full">TODAY</div>
+                                    <div className={`absolute top-2 right-2 text-offwhite text-xs font-bold px-2 py-1 rounded-full ${isToday ? 'bg-coral' : 'bg-teal'}`}>
+                                      {isToday ? 'TODAY' : 'COMPLETED'}
+                                    </div>
                                   </div>
-                                  <div className="p-3 text-center bg-gradient-to-b from-coral/20 to-transparent">
+                                  <div className={`p-3 text-center bg-gradient-to-b to-transparent ${isToday ? 'from-coral/20' : 'from-teal/20'}`}>
                                     <div className="text-offwhite text-sm font-bold">{day.label}</div>
                                     <div className="text-teal text-xs">{day.date}</div>
                                   </div>
@@ -346,7 +362,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                                     <div className="text-center p-4">
                                       <div className="text-3xl mb-2">😔</div>
                                       <div className="text-offwhite text-xs font-semibold mb-1">No Puzzle</div>
-                                      <div className="text-teal text-[10px]">Check back later</div>
+                                      <div className="text-teal text-[10px]">{isToday ? 'Check back later' : 'Not available'}</div>
                                     </div>
                                   </div>
                                   <div className="p-3 text-center bg-gradient-to-b from-navy-light/20 to-transparent">

@@ -11,8 +11,13 @@ function edge(matchId: string): EdgeData {
   return { hash: matchId, matchId };
 }
 
-function blank(): EdgeData {
-  return edge('outer-unused');
+// Unique per tile+side, matching real production code's boundary-edge
+// convention (factoryEdgeMatchIds' `boundary-${position}-${side}`) --
+// a single shared 'outer-unused' constant would let two boundary edges
+// coincidentally "match" each other after tiles are moved around, a
+// false positive that can never happen with real generated puzzle data.
+function blank(index: number, side: string): EdgeData {
+  return edge(`boundary-${index}-${side}`);
 }
 
 function buildSolvedTiles(): Tile[] {
@@ -73,10 +78,10 @@ function buildSolvedTiles(): Tile[] {
         rotation: 0,
         tileSize: 100,
         edgeHashes: {
-          top: built.top ?? blank(),
-          right: built.right ?? blank(),
-          bottom: built.bottom ?? blank(),
-          left: built.left ?? blank()
+          top: built.top ?? blank(index, 'top'),
+          right: built.right ?? blank(index, 'right'),
+          bottom: built.bottom ?? blank(index, 'bottom'),
+          left: built.left ?? blank(index, 'left')
         }
       });
     }
@@ -126,18 +131,20 @@ describe('GameLogicService.isSolved', () => {
     expect(GameLogicService.checkEdgeMatches(tiles).size).toBe(12);
   });
 
-  it('does NOT treat a whole-board rotation as solved, even though every edge still matches', () => {
+  it('treats a whole-board rotation as solved -- every edge still matches, deliberately relaxed', () => {
     const solved = buildSolvedTiles();
     const rotated = rotateWholeBoard(solved);
 
-    // The bug this guards against: rotating a fully-matched picture as
-    // a whole never breaks an internal seam, so edge-match count alone
-    // is still 12/12 here.
+    // Rotating a fully-matched picture as a whole never breaks an
+    // internal seam, so edge-match count is still 12/12 here.
     expect(GameLogicService.checkEdgeMatches(rotated).size).toBe(12);
 
-    // But no tile is at its true original position/rotation, so this
-    // must NOT register as a win.
-    expect(GameLogicService.isSolved(rotated)).toBe(false);
+    // No tile is at its original position/rotation, but the win
+    // condition is purely edge-matching now (see isSolved's own
+    // comment): a player reaching this state solved the picture's true
+    // relative arrangement, just not facing the one "upright" rotation,
+    // and previously got silent rejection with zero feedback for it.
+    expect(GameLogicService.isSolved(rotated)).toBe(true);
   });
 
   it('does not treat an arbitrary scrambled arrangement as solved', () => {

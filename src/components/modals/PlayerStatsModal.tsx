@@ -33,6 +33,32 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
 }) => {
   const [selectedTab, setSelectedTab] = useState<'overview' | 'details'>('overview');
   const [shareStatus, setShareStatus] = useState<'idle' | 'sharing' | 'done' | 'error'>('idle');
+  const [detailsSortBy, setDetailsSortBy] = useState<
+    'lastPlayed' | 'fastestTime' | 'slowestTime' | 'bestMoves' | 'bestSwaps' | 'attempts'
+  >('lastPlayed');
+
+  const sortPuzzleEntries = (entries: [string, any][]): [string, any][] => {
+    const sorted = [...entries];
+    switch (detailsSortBy) {
+      case 'fastestTime':
+        return sorted.sort((a, b) => (a[1].bestTime ?? Infinity) - (b[1].bestTime ?? Infinity));
+      case 'slowestTime':
+        return sorted.sort((a, b) => (b[1].bestTime ?? -Infinity) - (a[1].bestTime ?? -Infinity));
+      case 'bestMoves':
+        return sorted.sort((a, b) => (a[1].bestMoves ?? Infinity) - (b[1].bestMoves ?? Infinity));
+      case 'bestSwaps':
+        return sorted.sort((a, b) => (a[1].bestSwaps ?? Infinity) - (b[1].bestSwaps ?? Infinity));
+      case 'attempts':
+        return sorted.sort((a, b) => (b[1].attempts ?? 0) - (a[1].attempts ?? 0));
+      case 'lastPlayed':
+      default:
+        return sorted.sort((a, b) => {
+          const aLastDate = a[1].completionDates?.[a[1].completionDates.length - 1] || '';
+          const bLastDate = b[1].completionDates?.[b[1].completionDates.length - 1] || '';
+          return bLastDate.localeCompare(aLastDate);
+        });
+    }
+  };
 
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -555,14 +581,23 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                   <p className="text-sm">Complete your first puzzle to see detailed statistics!</p>
                 </div>
               ) : (
-                Object.entries(puzzleStats)
-                  .sort((a, b) => {
-                    // Sort by most recent completion
-                    const aLastDate = a[1].completionDates?.[a[1].completionDates.length - 1] || '';
-                    const bLastDate = b[1].completionDates?.[b[1].completionDates.length - 1] || '';
-                    return bLastDate.localeCompare(aLastDate);
-                  })
-                  .map(([puzzleId, stats]) => (
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-offwhite/60 font-semibold uppercase tracking-wide">Sort by</span>
+                    <select
+                      value={detailsSortBy}
+                      onChange={(e) => setDetailsSortBy(e.target.value as typeof detailsSortBy)}
+                      className="bg-navy-dark text-offwhite text-sm rounded-lg border border-navy-light px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal"
+                    >
+                      <option value="lastPlayed">Last Played</option>
+                      <option value="fastestTime">Fastest Time</option>
+                      <option value="slowestTime">Slowest Time</option>
+                      <option value="bestMoves">Best Moves</option>
+                      <option value="bestSwaps">Best Swaps</option>
+                      <option value="attempts">Most Attempts</option>
+                    </select>
+                  </div>
+                  {sortPuzzleEntries(Object.entries(puzzleStats)).map(([puzzleId, stats]) => (
                     <div
                       key={puzzleId}
                       className="bg-black/20 rounded-xl p-4 hover:bg-black/30 transition"
@@ -618,7 +653,8 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
                         </div>
                       )}
                     </div>
-                  ))
+                  ))}
+                </>
               )}
             </div>
           )}

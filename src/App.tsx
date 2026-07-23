@@ -1166,30 +1166,34 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                 </div>
                   <button
                     onClick={() => {
-                      if (gameState.gameState.status === 'solved') {
-                        triggerHaptic(15);
-                        setCurrentPuzzle(null);
-                        setHasProcessedCompletion(false);
-                        setShowCompletionAnimation(false);
-                        gameState.resetGame();
-                      } else {
-                        if (window.confirm('Restart this puzzle? Your progress will be lost.')) {
-                          triggerHaptic(20);
-                          setHasProcessedCompletion(false);
-                          setShowCompletionAnimation(false);
-                          // Restarting reuses the same puzzle object directly
-                          // (not handleStartPuzzle), so this flag never got
-                          // reset -- the auto-trigger effect's
-                          // !hasShownTutorialForCurrentPuzzle guard silently
-                          // skipped the pause+reveal+countdown on restart.
-                          // Resetting it here lets that same effect fire
-                          // again (tutorial's already done, so it goes
-                          // straight to the reveal) once status flips back
-                          // to 'playing'.
-                          setHasShownTutorialForCurrentPuzzle(false);
-                          gameState.startGame(currentPuzzle);
-                        }
+                      // Restart always replays the SAME puzzle in place --
+                      // this used to send an already-solved puzzle back to
+                      // the home screen instead (via resetGame() +
+                      // setCurrentPuzzle(null)), which was the actual bug:
+                      // "restart" silently meant "go home" once you'd
+                      // already won, discarding the puzzle instead of
+                      // replaying it. A solved puzzle has no progress left
+                      // to lose, so it skips the confirm a mid-game restart
+                      // still needs.
+                      const alreadySolved = gameState.gameState.status === 'solved';
+                      if (!alreadySolved && !window.confirm('Restart this puzzle? Your progress will be lost.')) {
+                        return;
                       }
+
+                      triggerHaptic(alreadySolved ? 15 : 20);
+                      setHasProcessedCompletion(false);
+                      setShowCompletionAnimation(false);
+                      // Restarting reuses the same puzzle object directly
+                      // (not handleStartPuzzle), so this flag never got
+                      // reset -- the auto-trigger effect's
+                      // !hasShownTutorialForCurrentPuzzle guard silently
+                      // skipped the pause+reveal+countdown on restart.
+                      // Resetting it here lets that same effect fire
+                      // again (tutorial's already done, so it goes
+                      // straight to the reveal) once status flips back
+                      // to 'playing'.
+                      setHasShownTutorialForCurrentPuzzle(false);
+                      gameState.startGame(currentPuzzle);
                     }}
                     className="flex-1 max-w-[120px] px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-navy-dark transition-all duration-200 text-xs font-medium"
                   >

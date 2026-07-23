@@ -188,23 +188,27 @@ export class GameLogicService {
   static isSolved(
     tiles: Tile[]
   ): boolean {
-    // Every tile back at the grid position it was cut from, at its
-    // as-cut rotation, is the one true solved state -- and the only
-    // state that can satisfy this check, since originalRow/originalCol
-    // is a bijection assigned once per tile at generation time.
+    // A win is now purely "every edge matches" -- deliberately relaxed
+    // from the stricter "every tile back at its exact original position
+    // and rotation" check this used to be. That stricter version silently
+    // rejected a real, reachable player state: for artwork without an
+    // obvious "up" (abstract patterns, space/nebula themes -- this game's
+    // actual catalog leans heavily this way), a player can easily land on
+    // the whole assembled picture rotated 90/180/270 as a unit. Every
+    // edge glows, the picture looks completely coherent, and the old
+    // check rejected it with zero feedback -- reported as "nothing
+    // happens when I finish," every time, not a rare edge case.
     //
-    // A live edge-match count is NOT a safe substitute for this: a
-    // gradient-based surface's edges still all match each other if the
-    // whole assembled board is rotated 90/180/270 as a unit (rotating a
-    // fully-matched picture as a whole never breaks an internal seam),
-    // so an edge-count-only check would register that as a win even
-    // though no tile is actually where it belongs.
-    return tiles.every(
-      tile =>
-        tile.row === tile.originalRow &&
-        tile.col === tile.originalCol &&
-        tile.rotation === 0
-    );
+    // This is safe from false positives: matchId is unique per true
+    // adjacent pair (assigned once at generation time from real grid
+    // adjacency), so a tile's edge can only satisfy this via a genuinely
+    // correct neighbor -- never a coincidental match with an unrelated
+    // tile. Reaching every seam matched still requires having solved the
+    // picture's true relative arrangement; only the requirement that it
+    // also face the one specific "upright" rotation is now dropped.
+    const gridSize = Math.round(Math.sqrt(tiles.length)) || 1;
+    const totalInternalSeams = 2 * gridSize * (gridSize - 1);
+    return this.checkEdgeMatches(tiles).size === totalInternalSeams;
   }
 
   static undoMove(
