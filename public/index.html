@@ -2,6 +2,23 @@
 <html lang="en">
   <head>
   <meta charset="utf-8" />
+  <script>
+    // Applies the player's saved theme before first paint -- without this,
+    // the page always paints with the default (Original) theme colors for
+    // one frame, then visibly snaps to whatever theme was actually saved,
+    // since the CSS below only defines per-theme colors under a
+    // [data-theme="..."] attribute that React doesn't set until its first
+    // effect runs post-mount.
+    (function () {
+      try {
+        var raw = localStorage.getItem('tileswappy_settings');
+        var theme = raw && JSON.parse(raw).theme;
+        document.documentElement.setAttribute('data-theme', theme || 'current');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'current');
+      }
+    })();
+  </script>
   <link rel="icon" href="%PUBLIC_URL%/icon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0D1B2A" />
@@ -78,13 +95,16 @@
       min-height: 100vh;
     }
 
-    /* Loading spinner for initial load */
+    /* Loading spinner for initial load -- uses the same theme variable
+       the early inline script above already set on <html>, so the
+       spinner matches whichever theme the player last had selected
+       instead of always being the Original theme's teal. */
     #app-loader {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: #1FA39A;
+      color: rgb(var(--color-teal-dark, 31 163 154));
       font-size: 1.5rem;
       z-index: 9999;
     }
@@ -95,7 +115,7 @@
       width: 40px;
       height: 40px;
       margin: 20px auto;
-      border: 4px solid #1FA39A;
+      border: 4px solid rgb(var(--color-teal-dark, 31 163 154));
       border-radius: 50%;
       border-top-color: transparent;
       animation: spin 1s linear infinite;
@@ -104,31 +124,6 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    
-    #site-header {
-      position: relative;
-      background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%);
-      border-bottom: 2px solid rgba(31, 163, 154, 0.3);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-      z-index: 10;
-    }
-    
-    #puzzle-banner {
-      display: none;
-    }
-    
-    body.show-banner #puzzle-banner {
-      display: block;
-    }
-
-    /* Toggled by App.tsx while a puzzle is actually being played -- the
-       nav header is marketing chrome for the landing pages, not the
-       in-game screen, and its variable height (the nav wraps to extra
-       lines on narrow screens) was throwing off the game board's
-       available space differently per device. */
-    body.hide-site-chrome #site-header {
-      display: none;
-    }
 
     /* Toggled by App.tsx on every screen except the very first splash
        screen -- the SEO footer (sitemap links, copyright) belongs on a
@@ -136,130 +131,176 @@
     body.hide-site-footer footer {
       display: none;
     }
+
+    /* Universal footer -- shown only on the start/landing screen */
+    .site-footer {
+      background: linear-gradient(135deg, rgb(var(--color-navy)) 0%, rgb(var(--color-navy-light)) 100%);
+      border-top: 2px solid rgb(var(--color-teal-dark) / 0.3);
+    }
+    .site-footer__content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem 0;
+    }
+    .site-footer__top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 2.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .site-footer__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      max-width: 300px;
+    }
+    .site-footer__logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgb(var(--color-navy-dark));
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 3px;
+      padding: 4px;
+      flex-shrink: 0;
+    }
+    .site-footer__logo span {
+      background: rgb(var(--color-offwhite));
+      border-radius: 3px;
+    }
+    .site-footer__logo span.accent {
+      background: rgb(var(--color-coral));
+      transform: rotate(-12deg);
+    }
+    .site-footer__name {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: rgb(var(--color-offwhite));
+    }
+    .site-footer__tagline {
+      margin: 0.2rem 0 0;
+      font-size: 0.8rem;
+      color: rgb(var(--color-offwhite) / 0.5);
+    }
+    .site-footer__columns {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(130px, 1fr));
+      gap: 2rem;
+      flex: 1 1 380px;
+    }
+    .site-footer__columns h4 {
+      margin: 0 0 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgb(var(--color-teal-dark));
+    }
+    .site-footer__columns ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .site-footer__columns li {
+      margin-bottom: 0.55rem;
+    }
+    .site-footer a {
+      color: rgb(var(--color-offwhite) / 0.55);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.15s ease;
+    }
+    .site-footer a:hover {
+      color: rgb(var(--color-teal-dark));
+    }
+    .site-footer__bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 2rem;
+      border-top: 1px solid rgb(var(--color-teal-dark) / 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .site-footer__bottom p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: rgb(var(--color-offwhite) / 0.35);
+    }
+    .site-footer__legal {
+      display: flex;
+      gap: 1.25rem;
+    }
+    .site-footer__legal a {
+      font-size: 0.8rem;
+    }
   </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    
+
     <!-- Loading indicator -->
     <div id="app-loader">Loading TileSwappy...</div>
-    
-    <!-- SITE HEADER -->
-<header id="site-header" style="background: linear-gradient(135deg, rgb(var(--color-navy)) 0%, rgb(var(--color-navy-light)) 100%); border-bottom: 2px solid rgb(var(--color-teal-dark) / 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <a href="/index.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
-            <div
-                role="img"
-                aria-label="TileSwappy Logo"
-                style="width: 40px; height: 40px; border-radius: 8px; background: rgb(var(--color-navy-dark)); display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; padding: 4px; flex-shrink: 0;"
-            >
-                <div style="background: rgb(var(--color-offwhite)); border-radius: 3px;"></div>
-                <div style="background: rgb(var(--color-offwhite)); border-radius: 3px;"></div>
-                <div style="background: rgb(var(--color-offwhite)); border-radius: 3px;"></div>
-                <div style="background: rgb(var(--color-coral)); border-radius: 3px; transform: rotate(-12deg);"></div>
-            </div>
-            <span style="font-size: 1.75rem; font-weight: bold; color: rgb(var(--color-offwhite));">
-                TileSwappy
-            </span>
-        </a>
-
-        <nav style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <a href="/index.html" style="padding: 0.5rem 1rem; color: rgb(var(--color-offwhite)); text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Play</a>
-            <a href="/how-to-play.html" style="padding: 0.5rem 1rem; color: rgb(var(--color-offwhite)); text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">How to Play</a>
-            <a href="/faq.html" style="padding: 0.5rem 1rem; color: rgb(var(--color-offwhite)); text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">FAQ</a>
-            <a href="/blog/5-strategies.html" style="padding: 0.5rem 1rem; color: rgb(var(--color-offwhite)); text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Blog</a>
-            <a href="/about.html" style="padding: 0.5rem 1rem; color: rgb(var(--color-offwhite)); text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">About</a>
-            <a href="/support.html" style="padding: 0.5rem 1rem; color: rgb(var(--color-offwhite)); text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Support</a>
-        </nav>
-    </div>
-</header>
-
-    <!-- PUZZLE INFO BANNER (Optional - hidden by default) -->
-    <div id="puzzle-banner" style="background: linear-gradient(135deg, rgb(var(--color-teal-dark) / 0.1) 0%, rgb(var(--color-coral-dark) / 0.1) 100%); border-bottom: 1px solid rgb(var(--color-teal-dark) / 0.2); padding: 1rem 2rem;">
-        <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 2rem;">
-            <div style="text-align: center;">
-                <div style="font-size: 0.75rem; color: rgb(var(--color-teal-dark)); font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Today's Puzzle</div>
-                <div id="puzzleNumber" style="font-size: 1.5rem; font-weight: bold; color: rgb(var(--color-offwhite));">#---</div>
-                <div id="puzzleDate" style="font-size: 0.875rem; color: rgb(var(--color-offwhite) / 0.5);">Loading...</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: 0.75rem; color: rgb(var(--color-coral-dark)); font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">Next Puzzle In</div>
-                <div id="countdown" style="font-size: 1.25rem; font-weight: bold; color: rgb(var(--color-offwhite)); font-family: monospace;">--:--:--</div>
-                <div style="font-size: 0.875rem; color: rgb(var(--color-offwhite) / 0.5);">New puzzle at midnight</div>
-            </div>
-        </div>
-    </div>
 
     <!-- YOUR REACT APP RENDERS HERE -->
     <div id="root"></div>
 
-    <!-- UNIVERSAL FOOTER -->
-<footer style="background: linear-gradient(135deg, rgb(var(--color-navy)) 0%, rgb(var(--color-navy-light)) 100%); border-top: 2px solid rgb(var(--color-teal-dark) / 0.3);">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
-            <div>
-                <h4 style="color: rgb(var(--color-teal-dark)); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Play</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;">
-                        <a 
-                            href="/index.html#calendar" 
-                            onclick="handleCalendarLink(event);"
-                            style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
-                            onmouseover="this.style.color='rgb(var(--color-teal-dark))'"
-                            onmouseout="this.style.color='rgb(var(--color-offwhite) / 0.5)'"
-                        >
-                            🎮 Today's Puzzle
-                        </a>
-                    </li>
-                    <li style="margin-bottom: 0.5rem;">
-                        <a 
-                            href="/index.html#archive" 
-                            onclick="handleArchiveLink(event);"
-                            style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
-                            onmouseover="this.style.color='rgb(var(--color-teal-dark))'"
-                            onmouseout="this.style.color='rgb(var(--color-offwhite) / 0.5)'"
-                        >
-                            📚 Puzzle Archive
-                        </a>
-                    </li>
-                </ul>
+    <!-- UNIVERSAL FOOTER (start/landing screen only) -->
+<footer class="site-footer">
+    <div class="site-footer__content">
+        <div class="site-footer__top">
+            <div class="site-footer__brand">
+                <div class="site-footer__logo" aria-hidden="true">
+                    <span></span><span></span><span></span><span class="accent"></span>
+                </div>
+                <div>
+                    <p class="site-footer__name">TileSwappy</p>
+                    <p class="site-footer__tagline">One puzzle a day. No accounts, no ads.</p>
+                </div>
             </div>
 
-            <div>
-                <h4 style="color: rgb(var(--color-teal-dark)); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Learn</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/how-to-play.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem;">📖 How to Play</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/faq.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem;">❓ FAQ</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/support.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem;">💡 Support</a></li>
-                </ul>
-            </div>
+            <div class="site-footer__columns">
+                <div>
+                    <h4>Play</h4>
+                    <ul>
+                        <li><a href="/index.html#calendar" onclick="handleCalendarLink(event);">Today's Puzzle</a></li>
+                        <li><a href="/index.html#archive" onclick="handleArchiveLink(event);">Puzzle Archive</a></li>
+                    </ul>
+                </div>
 
-            <div>
-                <h4 style="color: rgb(var(--color-teal-dark)); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Blog</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/blog/5-strategies.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem;">🎯 5 Winning Strategies</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/blog/gradient-science.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem;">🔬 Science of Gradients</a></li>
-                </ul>
-            </div>
+                <div>
+                    <h4>Learn</h4>
+                    <ul>
+                        <li><a href="/how-to-play.html">How to Play</a></li>
+                        <li><a href="/faq.html">FAQ</a></li>
+                        <li><a href="/blog/5-strategies.html">5 Winning Strategies</a></li>
+                        <li><a href="/blog/gradient-science.html">Science of Gradients</a></li>
+                    </ul>
+                </div>
 
-            <div>
-                <h4 style="color: rgb(var(--color-teal-dark)); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">About</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/about.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem;">ℹ️ About TileSwappy</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/privacy.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem;">🔒 Privacy Policy</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/terms.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.9rem;">📋 Terms of Service</a></li>
-                </ul>
+                <div>
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="/about.html">About TileSwappy</a></li>
+                        <li><a href="/support.html">Support</a></li>
+                        <li><a href="https://www.tiktok.com/@tileswappy" target="_blank" rel="noopener">TikTok</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div style="border-top: 1px solid rgb(var(--color-teal-dark) / 0.2); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-            <p style="color: rgb(var(--color-offwhite) / 0.35); font-size: 0.875rem; margin: 0;">© 2025 Mad_Den Gaming Co. All rights reserved.</p>
-            <div style="display: flex; gap: 1rem;">
-                <a href="/privacy.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.875rem;">Privacy</a>
-                <a href="/terms.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.875rem;">Terms</a>
-                <a href="/support.html" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.875rem;">Support</a>
-                <a href="https://www.tiktok.com/@tileswappy" target="_blank" rel="noopener" style="color: rgb(var(--color-offwhite) / 0.5); text-decoration: none; font-size: 0.875rem;">TikTok</a>
-            </div>
+    <div class="site-footer__bottom">
+        <p>© 2025 Mad_Den Gaming Co. All rights reserved.</p>
+        <div class="site-footer__legal">
+            <a href="/privacy.html">Privacy</a>
+            <a href="/terms.html">Terms</a>
         </div>
     </div>
 </footer>

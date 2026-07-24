@@ -264,13 +264,15 @@ export interface GameState {
 // =====================
 
 export interface AppSettings {
-  selectedLanguage: string;
-
   notificationsEnabled: boolean;
 
   vibrateEnabled: boolean;
 
   soundEnabled?: boolean;
+
+  soundStyle?: 'bowl' | 'wood' | 'glass' | 'arcade';
+
+  soundVolume?: number;
 
   theme?: string;
 }

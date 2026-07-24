@@ -1,44 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 
 export const DailyPuzzleNotifications: React.FC = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission>('default');
 
-  useEffect(() => {
-    // Check if notifications are supported
-    if ('Notification' in window) {
-      setPermission(Notification.permission);
-      
-      // Check if user has enabled notifications
-      const enabled = localStorage.getItem('dailyPuzzleNotifications') === 'true';
-      setNotificationsEnabled(enabled);
-
-      // Check for new puzzle on load
-      checkForNewPuzzle();
-    }
-  }, []);
-
-  const checkForNewPuzzle = () => {
+  const checkForNewPuzzle = useCallback(() => {
     const lastPuzzleDate = localStorage.getItem('lastPuzzleDate');
     const today = new Date().toDateString();
 
-    if (lastPuzzleDate !== today) {
-      // New puzzle available!
-      if (notificationsEnabled && Notification.permission === 'granted') {
-        new Notification('🎨 New TileSwappy Puzzle!', {
-          body: 'A fresh puzzle is waiting for you today!',
-          icon: '/logo192.png',
-          badge: '/logo192.png',
-          tag: 'daily-puzzle',
-          requireInteraction: false
-        });
-      }
-      
-      // Update last puzzle date (set this when user completes or starts today's puzzle)
-      // localStorage.setItem('lastPuzzleDate', today);
+    if (lastPuzzleDate !== today && notificationsEnabled && Notification.permission === 'granted') {
+      new Notification('🎨 New TileSwappy Puzzle!', {
+        body: 'A fresh puzzle is waiting for you today!',
+        icon: '/logo192.png',
+        badge: '/logo192.png',
+        tag: 'daily-puzzle',
+        requireInteraction: false
+      });
     }
-  };
+    // Update last puzzle date (set this when user completes or starts today's puzzle)
+    // localStorage.setItem('lastPuzzleDate', today);
+  }, [notificationsEnabled]);
+
+  useEffect(() => {
+    if (!('Notification' in window)) return;
+    const enabled = localStorage.getItem('dailyPuzzleNotifications') === 'true';
+    setNotificationsEnabled(enabled);
+  }, []);
+
+  // Re-checks on mount (once notificationsEnabled has loaded from storage)
+  // and hourly thereafter while the app stays open, in case midnight
+  // passes during the session -- cleared whenever notifications are
+  // disabled or the component unmounts, so it never runs forever in
+  // the background.
+  useEffect(() => {
+    checkForNewPuzzle();
+    if (!notificationsEnabled) return;
+    const interval = setInterval(checkForNewPuzzle, 3600000);
+    return () => clearInterval(interval);
+  }, [notificationsEnabled, checkForNewPuzzle]);
 
   const requestNotificationPermission = async () => {
     if (!('Notification' in window)) {
@@ -47,33 +46,22 @@ export const DailyPuzzleNotifications: React.FC = () => {
     }
 
     const permission = await Notification.requestPermission();
-    setPermission(permission);
 
     if (permission === 'granted') {
       setNotificationsEnabled(true);
       localStorage.setItem('dailyPuzzleNotifications', 'true');
-      
+
       // Show test notification
       new Notification('🎉 Notifications Enabled!', {
         body: "You'll be notified when new puzzles are available",
         icon: '/logo192.png'
       });
-
-      // Set up daily check (this runs when app is open)
-      setupDailyCheck();
     }
   };
 
   const disableNotifications = () => {
     setNotificationsEnabled(false);
     localStorage.setItem('dailyPuzzleNotifications', 'false');
-  };
-
-  const setupDailyCheck = () => {
-    // Check every hour if user has the app open
-    setInterval(() => {
-      checkForNewPuzzle();
-    }, 3600000); // 1 hour
   };
 
   const toggleNotifications = () => {

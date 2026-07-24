@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Calendar, Settings, BarChart3, Home, Menu } from 'lucide-react';
 import { useGameState } from './hooks/useGameState';
+import { useSoundEffects, SoundStyle } from './hooks/useSoundEffects';
 import { StartScreen } from './components/screens/StartScreen';
 import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
@@ -129,11 +130,11 @@ const App: React.FC = () => {
   );
   const [settings, setSettings] = useState(() => 
     loadFromStorage(STORAGE_KEYS.SETTINGS, {
-      selectedLanguage: 'English',
-      language: 'English',
       notificationsEnabled: true,
       vibrateEnabled: true,
       soundEnabled: true,
+      soundStyle: 'wood' as SoundStyle,
+      soundVolume: 0.8,
       theme: DEFAULT_THEME
     })
   );
@@ -142,6 +143,11 @@ const App: React.FC = () => {
   );
   
   const gameState = useGameState();
+  const playSound = useSoundEffects(
+    settings.soundEnabled ?? true,
+    settings.soundStyle ?? 'wood',
+    settings.soundVolume ?? 0.8
+  );
 
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.COMPLETED_PUZZLES, Array.from(completedPuzzleIds));
@@ -191,23 +197,6 @@ const App: React.FC = () => {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.SETTINGS, settings);
   }, [settings]);
-
-  // The sticky marketing header + footer baked into public/index.html
-  // (nav links, SEO footer) wrap every screen including live gameplay.
-  // Their height isn't fixed -- the nav wraps to extra lines on narrow
-  // screens -- so it silently ate into the "playing" screen's available
-  // height differently per device. The header used to only hide during
-  // play/modals, but it turned out to look better hidden on the
-  // start/home screens too -- at that point there's no app screen left
-  // where it should show, so it's unconditional for as long as the React
-  // app is mounted. index.html's <style> block defines the CSS this
-  // class reacts to (same pattern already used there for #puzzle-banner).
-  useEffect(() => {
-    document.body.classList.add('hide-site-chrome');
-    return () => {
-      document.body.classList.remove('hide-site-chrome');
-    };
-  }, []);
 
   useEffect(() => {
     const status = gameState.gameState.status;
@@ -305,11 +294,13 @@ const App: React.FC = () => {
     if (!showPreMatchReveal) return;
 
     if (countdownValue <= 0) {
+      playSound('countdownGo');
       setShowPreMatchReveal(false);
       gameState.resumeGame();
       return;
     }
 
+    playSound('countdownTick');
     const timer = setTimeout(() => setCountdownValue(v => v - 1), 1000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -405,6 +396,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
   // Vibration API at all, so this is a graceful no-op there rather than
   // a feature every platform gets.
   const triggerHaptic = (pattern: number | number[]) => {
+    if (settings.vibrateEnabled === false) return;
     if ('vibrate' in navigator) {
       navigator.vibrate(pattern);
     }
@@ -414,11 +406,13 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
     if (gameState.gameState.selectedTile === null) {
       gameState.selectTile(tileId);
       triggerHaptic(10);
+      playSound('tap');
     } else if (gameState.gameState.selectedTile === tileId) {
       gameState.selectTile(null);
     } else {
       gameState.swapTiles(gameState.gameState.selectedTile, tileId);
       triggerHaptic(20);
+      playSound('swap');
     }
   };
 
@@ -430,6 +424,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
     // rotated the opposite way in real gameplay.
     gameState.rotateTile(tileId, direction > 0 ? 90 : 270);
     triggerHaptic(10);
+    playSound('rotate');
   };
 
   const handleSwapTiles = (tileId1: string, tileId2: string) => {
@@ -438,6 +433,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       gameState.selectTile(null);
     }
     triggerHaptic(20);
+    playSound('swap');
   };
 
   const handleToggleFavorite = (puzzleId: string) => {
@@ -494,6 +490,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       setShowCompletionAnimation(true);
       setTotalGamesPlayed(prev => prev + 1);
       triggerHaptic([15, 60, 15, 60, 30]);
+      playSound('solved');
 
       const puzzleKey = currentPuzzle?.date || currentPuzzleDate || 'today';
       const puzzleTitle = currentPuzzle?.title || null;
@@ -574,6 +571,20 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       }, 4000);
     }
   }, [gameState.gameState.status, gameState.gameState.solveTime, gameState.gameState.moves, gameState.gameState.swaps, hasProcessedCompletion, currentPuzzle, currentPuzzleDate]);
+
+  // A small reward chime whenever a swap/rotate causes a NEW edge to
+  // start glowing -- only on increases, so undoing a match (or a swap
+  // that breaks one) stays silent instead of also "celebrating". Layers
+  // on top of the swap/rotate sound that triggered it rather than
+  // replacing it, same as a combo sound in other games.
+  const prevMatchCountRef = useRef(0);
+  useEffect(() => {
+    const currentCount = gameState.gameState.matchingEdges.size;
+    if (currentCount > prevMatchCountRef.current) {
+      playSound('match');
+    }
+    prevMatchCountRef.current = currentCount;
+  }, [gameState.gameState.matchingEdges, playSound]);
 
   useEffect(() => {
     const cleanupOldStats = () => {
@@ -954,7 +965,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               <div className="flex items-center justify-between gap-2 mb-1.5">
                 <Tooltip label="Quit to home">
                   <button
-                    onClick={() => { triggerHaptic(15); handleQuitToHome(); }}
+                    onClick={() => { triggerHaptic(15); playSound('click'); handleQuitToHome(); }}
                     aria-label="Quit to home"
                     className="flex-shrink-0 p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
                   >
@@ -975,6 +986,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   <button
                     onClick={() => {
                       triggerHaptic(10);
+                      playSound('click');
                       // The auto-shown first-time tutorial already pauses via
                       // the effect below -- this button opens the same
                       // overlay mid-game (to review it again), and needs the
@@ -996,7 +1008,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                 <div className="relative flex-shrink-0">
                   <Tooltip label="Menu">
                     <button
-                      onClick={() => { triggerHaptic(10); setShowGameMenu((v) => !v); }}
+                      onClick={() => { triggerHaptic(10); playSound('click'); setShowGameMenu((v) => !v); }}
                       aria-label="Menu"
                       className="p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
                     >
@@ -1008,19 +1020,19 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                       <div className="fixed inset-0 z-40" onClick={() => setShowGameMenu(false)} />
                       <div className="absolute right-0 mt-2 w-40 bg-navy-light border border-navy-dark rounded-lg shadow-lg z-50 overflow-hidden">
                         <button
-                          onClick={() => { triggerHaptic(10); setShowArchive(true); setShowGameMenu(false); }}
+                          onClick={() => { triggerHaptic(10); playSound('click'); setShowArchive(true); setShowGameMenu(false); }}
                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
                         >
                           <Calendar size={16} className="text-teal" /> Archive
                         </button>
                         <button
-                          onClick={() => { triggerHaptic(10); setShowPlayerStats(true); setShowGameMenu(false); }}
+                          onClick={() => { triggerHaptic(10); playSound('click'); setShowPlayerStats(true); setShowGameMenu(false); }}
                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
                         >
                           <BarChart3 size={16} className="text-teal" /> Stats
                         </button>
                         <button
-                          onClick={() => { triggerHaptic(10); setShowSettings(true); setShowGameMenu(false); }}
+                          onClick={() => { triggerHaptic(10); playSound('click'); setShowSettings(true); setShowGameMenu(false); }}
                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
                         >
                           <Settings size={16} className="text-teal" /> Settings
@@ -1067,8 +1079,8 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               canUndo={gameState.gameState.moveHistory.length > 0}
               isPaused={gameState.gameState.isPaused}
               zoomLevel={gameState.zoomLevel}
-              onZoomIn={() => { triggerHaptic(10); gameState.zoomIn(); }}
-              onZoomOut={() => { triggerHaptic(10); gameState.zoomOut(); }}
+              onZoomIn={() => { triggerHaptic(10); playSound('click'); gameState.zoomIn(); }}
+              onZoomOut={() => { triggerHaptic(10); playSound('click'); gameState.zoomOut(); }}
             />
           </div>
 
@@ -1107,7 +1119,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   </div>
 
                   <button
-                    onClick={() => { triggerHaptic(10); gameState.resumeGame(); }}
+                    onClick={() => { triggerHaptic(10); playSound('click'); gameState.resumeGame(); }}
                     className="w-full bg-teal hover:bg-teal-dark text-navy font-bold py-4 px-6 rounded-xl mb-3 transition"
                   >
                     Resume Game
@@ -1116,6 +1128,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   <button
                     onClick={() => {
                       triggerHaptic(15);
+                      playSound('click');
                       setHasProcessedCompletion(false);
                       setShowCompletionAnimation(false);
                       gameState.resumeGame();
@@ -1135,7 +1148,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               <div className="space-y-2 mb-2">
                 <div className="flex justify-center gap-2">
                   <button
-                    onClick={() => { triggerHaptic(15); gameState.undoLastMove(); }}
+                    onClick={() => { triggerHaptic(15); playSound('click'); gameState.undoLastMove(); }}
                     disabled={gameState.gameState.moveHistory.length === 0}
                     className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                       gameState.gameState.moveHistory.length === 0
@@ -1148,7 +1161,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
                   <div className="flex justify-center gap-2">
                   <button
-                    onClick={() => { triggerHaptic([10, 40, 10]); gameState.shuffleAll(); }}
+                    onClick={() => { triggerHaptic([10, 40, 10]); playSound('click'); gameState.shuffleAll(); }}
                     className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium"
                   >
                     Shuffle
@@ -1157,6 +1170,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   <button
                     onClick={() => {
                       triggerHaptic(10);
+                      playSound('click');
                       if (gameState.gameState.isPaused) gameState.resumeGame(); else gameState.pauseGame();
                     }}
                     className="flex-1 max-w-[120px] px-3 py-1.5 bg-offwhite text-navy rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
@@ -1181,6 +1195,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                       }
 
                       triggerHaptic(alreadySolved ? 15 : 20);
+                      playSound('click');
                       setHasProcessedCompletion(false);
                       setShowCompletionAnimation(false);
                       // Restarting reuses the same puzzle object directly
