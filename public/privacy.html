@@ -1,427 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3568015124939970" crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy for TileSwappy - what data we collect, how Google AdSense is used, and your privacy choices.">
     <link rel="canonical" href="https://www.tileswappy.com/privacy.html" />
     <title>Privacy Policy - TileSwappy</title>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.tileswappy.com/privacy.html" />
+    <meta property="og:title" content="Privacy Policy - TileSwappy" />
+    <meta property="og:description" content="Privacy Policy for TileSwappy - what data we collect, how Google AdSense is used, and your privacy choices." />
+    <meta property="og:image" content="https://www.tileswappy.com/logo2.png" />
+    <meta property="og:site_name" content="TileSwappy" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://www.tileswappy.com/privacy.html" />
+    <meta name="twitter:title" content="Privacy Policy - TileSwappy" />
+    <meta name="twitter:description" content="Privacy Policy for TileSwappy - what data we collect, how Google AdSense is used, and your privacy choices." />
+    <meta name="twitter:image" content="https://www.tileswappy.com/logo2.png" />
+    <meta name="twitter:creator" content="@Mr._Madden" />
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('tileswappy_settings');
+          var theme = raw && JSON.parse(raw).theme;
+          document.documentElement.setAttribute('data-theme', theme || 'current');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'current');
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="/site-chrome.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0D1B2A 0%, #0D1B2A 100%);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
         .container {
-            max-width: 900px;
-            margin: 2rem auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
         }
-
-        .header {
-            background: linear-gradient(135deg, #E63946 0%, #E63946 100%);
-            color: white;
+        .banner {
+            background: rgb(var(--color-coral));
+            color: rgb(var(--color-ink-on-accent));
             padding: 40px;
+            margin: -2.5rem -2.5rem 2rem;
             text-align: center;
         }
-
-        .header h1 {
-            font-size: 2.5em;
+        .banner h1 {
+            color: rgb(var(--color-ink-on-accent));
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
-
-        .header .tagline {
+        .banner .tagline {
             font-size: 1.1em;
-            opacity: 0.9;
+            opacity: 0.85;
         }
-
-        .content {
-            padding: 40px;
-            color: #333;
-        }
-
-        .last-updated {
-            font-style: italic;
-            color: #666;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        h2 {
-            color: #1FA39A;
-            margin-top: 40px;
-            margin-bottom: 15px;
-            font-size: 1.8em;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #0D1B2A;
-        }
-
-        h2:first-of-type {
-            margin-top: 0;
-        }
-
-        p {
-            margin-bottom: 15px;
-            color: #555;
-        }
-
-        ul {
-            margin: 15px 0 15px 30px;
-            color: #555;
-        }
-
-        li {
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-
-        strong {
-            color: #1FA39A;
-        }
-
-        a {
-            color: #1FA39A;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        a:hover {
-            color: #0D1B2A;
-            text-decoration: underline;
-        }
-
-        .highlight-box {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-            border-left: 4px solid #1FA39A;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-        }
-
-        .contact-section {
-            background: linear-gradient(135deg, #1FA39A 0%, #1FA39A 100%);
-            color: white;
-            padding: 30px 40px;
-            margin-top: 40px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .contact-section h2 {
-            color: white;
-            border: none;
-            margin: 0 0 15px 0;
-        }
-
-        .contact-section a {
-            color: white;
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                margin: 1rem;
-            }
-
-            .header {
-                padding: 30px 20px;
-            }
-
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .content {
-                padding: 25px;
-            }
-
-            h2 {
-                font-size: 1.5em;
-            }
+        @media (max-width: 640px) {
+            .banner { margin: -1.75rem -1.75rem 2rem; }
         }
     </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to content</a>
+<!-- Drafted to accurately disclose AdSense usage after ads were added to
+     the site. This is not legal advice -- have an actual lawyer review
+     before relying on it, especially the Children's Privacy / COPPA
+     section, since ad-supported sites with an all-ages audience carry
+     real compliance exposure there. -->
 
-<!-- SITE HEADER -->
-<header style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-bottom: 2px solid rgba(31, 163, 154, 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <a href="/index.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
-            <img 
-                src="/icon.png" 
-                alt="TileSwappy Logo" 
-                style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain;"
-            />
-            <span style="font-size: 1.75rem; font-weight: bold; color: #F4F4F4;">
-                TileSwappy
-            </span>
-        </a>
+<div id="site-header"></div>
 
-        <nav style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <a href="/index.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Play</a>
-            <a href="/how-to-play.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">How to Play</a>
-            <a href="/faq.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">FAQ</a>
-            <a href="/blog/5-strategies.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Blog</a>
-            <a href="/about.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">About</a>
-            <a href="/support.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Support</a>
-        </nav>
-    </div>
-</header>
-
-<div class="container">
-    <div class="header">
+<div class="page-shell">
+<div class="page-card container" id="main-content">
+    <div class="banner">
         <h1>🔒 TileSwappy</h1>
         <div class="tagline">Privacy Policy</div>
     </div>
 
-    <div class="content">
-        <p class="last-updated">Last updated: November 19, 2025</p>
+    <p class="last-updated">Last updated: July 25, 2026</p>
 
-        <h2>1. Overview</h2>
-        <p>TileSwappy is committed to protecting your privacy. This policy explains how we handle data in our puzzle game application. We believe in transparency and your right to know exactly what information we do and don't collect.</p>
+    <div class="highlight-box">
+        <strong>Drafting note:</strong> This document was prepared with AI assistance using general legal-drafting conventions and is not a substitute for review by a licensed attorney in your jurisdiction. It has not been reviewed by a lawyer -- treat it as a strong starting point, not a finished, guaranteed-compliant policy.
+    </div>
 
-        <div class="highlight-box">
-            <strong>The Bottom Line:</strong> TileSwappy does not require accounts or login credentials, and therefore does not collect, store, or transmit any personal information about you.
-        </div>
+    <h2>1. Overview</h2>
+    <p>TileSwappy is committed to protecting your privacy. This policy explains how we handle data in our puzzle game application. We believe in transparency and your right to know exactly what information we do and don't collect.</p>
 
-        <h2>2. Information We Do NOT Collect</h2>
-        <p>TileSwappy does not require accounts or login, and therefore we do not collect:</p>
-        <ul>
-            <li><strong>Personal information</strong> - No names, email addresses, phone numbers, or postal addresses</li>
-            <li><strong>Account credentials</strong> - No usernames, passwords, or authentication data</li>
-            <li><strong>Location data</strong> - No GPS coordinates or location tracking</li>
-            <li><strong>Contact information</strong> - No access to your contacts or address book</li>
-            <li><strong>Device identifiers</strong> - No unique device IDs or advertising identifiers</li>
-            <li><strong>Biometric data</strong> - No fingerprints, face scans, or other biometric information</li>
-            <li><strong>Payment information</strong> - No credit cards or financial data (the game is completely free)</li>
-        </ul>
+    <div class="highlight-box">
+        <strong>The Bottom Line:</strong> TileSwappy does not require accounts or login credentials, so we don't collect any personal information directly. We do use Google AdSense to show ads, which means Google and its advertising partners may use cookies and device identifiers to serve and measure those ads. See Section 4 (Analytics &amp; Advertising) for details and how to opt out.
+    </div>
 
-        <h2>3. Local Data Storage</h2>
-        <p>Your game data is stored locally on your device using browser localStorage technology. This includes:</p>
-        <ul>
-            <li><strong>Puzzle completion status</strong> - Which puzzles you've solved</li>
-            <li><strong>Solve times</strong> - How long it took you to complete each puzzle</li>
-            <li><strong>Current streak</strong> - Your consecutive days of puzzle solving</li>
-            <li><strong>Longest streak</strong> - Your best streak achievement</li>
-            <li><strong>Game statistics</strong> - Total puzzles completed, average times, etc.</li>
-            <li><strong>Preference settings</strong> - Any game settings you've configured</li>
-        </ul>
-        
-        <div class="highlight-box">
-            <strong>Important:</strong> This data remains on your device only and is never transmitted to our servers. Clearing your browser data or switching devices will erase your progress, as there is no cloud backup or account system.
-        </div>
+    <h2>2. Information We Do NOT Collect Directly</h2>
+    <p>TileSwappy does not require accounts or login, and we do not directly collect:</p>
+    <ul>
+        <li><strong>Personal information</strong> - No names, email addresses, phone numbers, or postal addresses</li>
+        <li><strong>Account credentials</strong> - No usernames, passwords, or authentication data</li>
+        <li><strong>Location data</strong> - No GPS coordinates or location tracking</li>
+        <li><strong>Contact information</strong> - No access to your contacts or address book</li>
+        <li><strong>Biometric data</strong> - No fingerprints, face scans, or other biometric information</li>
+        <li><strong>Payment information</strong> - No credit cards or financial data (the game is completely free)</li>
+    </ul>
+    <p>Our advertising partner independently collects some device and cookie data to serve ads -- see Section 4 below, which covers exactly what that involves.</p>
 
-        <h2>4. Analytics</h2>
-        <p>We may use basic web analytics to understand general usage patterns such as:</p>
-        <ul>
-            <li>Total number of page views</li>
-            <li>Traffic sources (where visitors come from)</li>
-            <li>General geographic region (country/state level only)</li>
-            <li>Browser and device types</li>
-        </ul>
-        <p>This data is <strong>anonymous and aggregated</strong> - it does not identify individual users and cannot be linked back to you.</p>
+    <h2>3. Local Data Storage</h2>
+    <p>Your game data is stored locally on your device using browser localStorage technology. This includes:</p>
+    <ul>
+        <li><strong>Puzzle completion status</strong> - Which puzzles you've solved</li>
+        <li><strong>Solve times</strong> - How long it took you to complete each puzzle</li>
+        <li><strong>Current streak</strong> - Your consecutive days of puzzle solving</li>
+        <li><strong>Longest streak</strong> - Your best streak achievement</li>
+        <li><strong>Game statistics</strong> - Total puzzles completed, average times, etc.</li>
+        <li><strong>Preference settings</strong> - Any game settings you've configured</li>
+    </ul>
 
-        <h2>5. Cookies</h2>
-        <p>TileSwappy uses minimal cookies and browser storage:</p>
-        <ul>
-            <li><strong>localStorage</strong> - To save your game progress (essential for the game to function)</li>
-        </ul>
-        <p>You can control cookie settings in your browser, but disabling localStorage will prevent the game from saving your progress.</p>
+    <div class="highlight-box">
+        <strong>Important:</strong> This data remains on your device only and is never transmitted to our servers. Clearing your browser data or switching devices will erase your progress, as there is no cloud backup or account system.
+    </div>
 
-        <h2>6. Children's Privacy</h2>
-        <p>TileSwappy does not knowingly collect any personal information from users of any age, as we do not collect personal information at all. The game is suitable for all ages and complies with COPPA (Children's Online Privacy Protection Act) by not collecting any personal data.</p>
-        <p>Parents can feel confident that their children's privacy is protected while playing TileSwappy, as there is no way for personal information to be collected or shared.</p>
+    <h2>4. Analytics &amp; Advertising</h2>
+    <p>We may use basic web analytics to understand general usage patterns such as:</p>
+    <ul>
+        <li>Total number of page views</li>
+        <li>Traffic sources (where visitors come from)</li>
+        <li>General geographic region (country/state level only)</li>
+        <li>Browser and device types</li>
+    </ul>
+    <p>This data is <strong>anonymous and aggregated</strong> - it does not identify individual users and cannot be linked back to you.</p>
 
-        <h2>7. Data Security</h2>
-        <p>Since we do not collect or store personal data on our servers, there is no centralized database of user information that could be compromised in a data breach. Your local game data is only as secure as your device and browser.</p>
-        <p>We recommend:</p>
-        <ul>
-            <li>Using a secure device with up-to-date software</li>
-            <li>Being cautious about clearing browser data if you want to preserve progress</li>
-            <li>Using trusted browsers and keeping them updated</li>
-        </ul>
+    <p><strong>Advertising:</strong> TileSwappy shows ads served by Google AdSense. Google and its advertising partners use cookies and similar technologies (including device and advertising identifiers) to serve ads based on your prior visits to this and other websites, and to measure ad performance. We do not control what Google collects for this purpose or how long it's retained -- that's governed by Google's own policies:</p>
+    <ul>
+        <li><a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">How Google uses information from sites that use its services</a></li>
+        <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a></li>
+    </ul>
+    <p><strong>Your choices:</strong> You can opt out of personalized advertising from Google at <a href="https://adssettings.google.com/" target="_blank" rel="noopener">Google Ad Settings</a>, or opt out of personalized ads from participating third parties generally at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info/choices</a>. Most browsers and mobile operating systems also let you limit ad tracking directly in their privacy settings.</p>
 
-        <h2>8. Your Rights and Choices</h2>
-        <p>Because we don't collect personal data, traditional data rights (access, deletion, portability) don't apply. However, you have complete control:</p>
-        <ul>
-            <li><strong>Local data</strong> - You can clear your game progress at any time by clearing your browser's localStorage</li>
-            <li><strong>Cookies</strong> - You can manage cookie preferences in your browser settings</li>
-        </ul>
+    <h2>5. Cookies</h2>
+    <p>TileSwappy uses cookies and browser storage from two sources:</p>
+    <ul>
+        <li><strong>localStorage</strong> - To save your game progress (essential for the game to function; set by us, never sent to a server)</li>
+        <li><strong>Advertising cookies</strong> - Set by Google AdSense and its partners to serve and measure ads (see Section 4 above)</li>
+    </ul>
+    <p>You can control cookies in your browser settings, but disabling localStorage will prevent the game from saving your progress, and blocking ad cookies may result in less relevant (though not fewer) ads.</p>
 
-        <h2>9. International Users</h2>
-        <p>TileSwappy is accessible worldwide. Since all data is stored locally on your device and we don't collect personal information, there are no international data transfer concerns.</p>
+    <h2>6. Children's Privacy</h2>
+    <p>TileSwappy does not knowingly collect any personal information directly from users of any age, and the game itself is suitable for all ages. However, because the site serves ads through Google AdSense, please note:</p>
+    <ul>
+        <li>We request that Google serve only non-personalized ads, and/or tag ad requests for child-directed treatment, on pages primarily directed at children, in line with COPPA and Google's own publisher policies.</li>
+        <li>If you are a parent or guardian and believe a child under 13 has been served a personalized ad on this site, please contact us using the details below so we can investigate.</li>
+    </ul>
+    <p>We do not knowingly collect personal information from children, and we do not have actual knowledge that any personal information we might otherwise handle belongs to a child under 13.</p>
 
-        <h2>10. Changes to This Policy</h2>
-        <p>We may update this privacy policy from time to time to reflect changes in our practices or legal requirements. The "Last updated" date at the top will reflect any changes. Material changes will be communicated through the app or website.</p>
-        <p>We encourage you to review this policy periodically to stay informed about how we protect your privacy.</p>
+    <h2>7. Data Security</h2>
+    <p>Since we do not collect or store personal data on our servers, there is no centralized database of user information that could be compromised in a data breach. Your local game data is only as secure as your device and browser.</p>
+    <p>We recommend:</p>
+    <ul>
+        <li>Using a secure device with up-to-date software</li>
+        <li>Being cautious about clearing browser data if you want to preserve progress</li>
+        <li>Using trusted browsers and keeping them updated</li>
+    </ul>
 
-        <h2>11. Legal Compliance</h2>
-        <p>TileSwappy complies with applicable privacy laws including:</p>
-        <ul>
-            <li>GDPR (General Data Protection Regulation) - EU</li>
-            <li>CCPA (California Consumer Privacy Act) - California, USA</li>
-            <li>COPPA (Children's Online Privacy Protection Act) - USA</li>
-        </ul>
-        <p>Our no-collection approach means we're inherently compliant with most privacy regulations.</p>
+    <h2>8. Your Rights and Choices</h2>
+    <p>Because we don't collect personal data directly, traditional data rights (access, deletion, portability) largely don't apply to us. However, you have complete control:</p>
+    <ul>
+        <li><strong>Local data</strong> - You can clear your game progress at any time by clearing your browser's localStorage</li>
+        <li><strong>Cookies</strong> - You can manage cookie preferences in your browser settings</li>
+        <li><strong>Advertising</strong> - See Section 4 for how to opt out of personalized ads</li>
+    </ul>
 
-        <div class="contact-section">
-            <h2>📧 Contact Us</h2>
-            <p>If you have questions or concerns about this privacy policy:</p>
-            <p>Email: <a href="mailto:support@tileswappy.com">support@tileswappy.com</a></p>
-            <p style="margin-top: 15px; font-size: 0.9em;">
-                TileSwappy<br>
-                TileSwappy Privacy Team
-            </p>
-        </div>
+    <p><strong>California residents (CCPA/CPRA):</strong> California law gives you the right to know what personal information is collected about you, to delete it, to correct it, to opt out of its "sale" or "sharing" (a term that includes data shared with ad networks like Google AdSense for personalized advertising), and to not be discriminated against for exercising these rights. Because we don't collect or store personal information on our own servers, most of these rights are automatically satisfied -- there is nothing for us to access, correct, or delete on our end. To opt out of the "sharing" that happens through AdSense specifically, use the <a href="https://adssettings.google.com/" target="_blank" rel="noopener">Google Ad Settings</a> link in Section 4, or set the <a href="https://globalprivacycontrol.org/" target="_blank" rel="noopener">Global Privacy Control</a> signal in your browser, which we honor as a valid opt-out request. You can also email <a href="mailto:support@tileswappy.com">support@tileswappy.com</a> with any CCPA request.</p>
+
+    <p><strong>EU/UK residents (GDPR):</strong> Where GDPR applies, our legal basis for the limited processing described in Section 4 (Analytics &amp; Advertising) is your consent, which you can withdraw at any time using the opt-out links above. You also have the right to lodge a complaint with your local data protection authority.</p>
+
+    <h2>9. International Users</h2>
+    <p>TileSwappy is accessible worldwide. All game data is stored locally on your device, so there's no server-side international transfer of that data. However, Google AdSense operates globally, and ad-related data it collects (see Section 4) may be processed in the United States or other countries where Google operates, under Google's own data transfer safeguards.</p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>We may update this privacy policy from time to time to reflect changes in our practices or legal requirements. The "Last updated" date at the top will reflect any changes. Material changes will be communicated through the app or website.</p>
+    <p>We encourage you to review this policy periodically to stay informed about how we protect your privacy.</p>
+
+    <h2>11. Legal Compliance</h2>
+    <p>TileSwappy aims to comply with applicable privacy laws including:</p>
+    <ul>
+        <li>GDPR (General Data Protection Regulation) - EU</li>
+        <li>CCPA (California Consumer Privacy Act) - California, USA</li>
+        <li>COPPA (Children's Online Privacy Protection Act) - USA</li>
+    </ul>
+    <p>We don't collect personal information directly, which limits our own compliance burden considerably -- but because we serve third-party ads through Google AdSense, our advertising partner's data practices (see Section 4) are also part of the overall picture. Google maintains its own compliance programs for these regulations as a certified ad partner.</p>
+
+    <div class="contact-section">
+        <h2>📧 Contact Us</h2>
+        <p>If you have questions or concerns about this privacy policy:</p>
+        <p>Email: <a href="mailto:support@tileswappy.com">support@tileswappy.com</a></p>
+        <p style="margin-top: 15px; font-size: 0.9em;">
+            TileSwappy<br>
+            TileSwappy Privacy Team
+        </p>
     </div>
 </div>
+</div>
 
-<!-- UNIVERSAL FOOTER - Use this footer on ALL pages (index.html, faq.html, about.html, etc.) -->
-<footer style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-top: 2px solid rgba(31, 163, 154, 0.3);">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
-            <!-- Play Section - UPDATED FOR ALL PAGES -->
-            <div>
-                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Play</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;">
-                        <a 
-                            href="/index.html#calendar" 
-                            onclick="handleCalendarLink(event);"
-                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
-                            onmouseover="this.style.color='#1FA39A'" 
-                            onmouseout="this.style.color='#999'"
-                        >
-                            🎮 Today's Puzzle
-                        </a>
-                    </li>
-                    <li style="margin-bottom: 0.5rem;">
-                        <a 
-                            href="/index.html#archive" 
-                            onclick="handleArchiveLink(event);"
-                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
-                            onmouseover="this.style.color='#1FA39A'" 
-                            onmouseout="this.style.color='#999'"
-                        >
-                            📚 Puzzle Archive
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Learn Section -->
-            <div>
-                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Learn</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/how-to-play.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📖 How to Play</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/faq.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">❓ FAQ</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">💡 Support</a></li>
-                </ul>
-            </div>
-
-            <!-- Blog Section -->
-            <div>
-                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Blog</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/blog/5-strategies.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🎯 5 Winning Strategies</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/blog/gradient-science.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔬 Science of Gradients</a></li>
-                </ul>
-            </div>
-
-            <!-- About Section -->
-            <div>
-                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">About</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/about.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">ℹ️ About TileSwappy</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔒 Privacy Policy</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📋 Terms of Service</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div style="border-top: 1px solid rgba(31, 163, 154, 0.2); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-            <p style="color: #666; font-size: 0.875rem; margin: 0;">© 2025 Mad_Den Gaming Co. All rights reserved.</p>
-            <div style="display: flex; gap: 1rem;">
-                <a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Privacy</a>
-                <a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Terms</a>
-                <a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Support</a>
-                <a href="https://www.tiktok.com/@tileswappy" target="_blank" style="color: #999; text-decoration: none; font-size: 0.875rem;">TikTok</a>
-            </div>
-        </div>
-    </div>
-</footer>
-
-<script>
-// Smart link handling for calendar and archive links
-function handleCalendarLink(event) {
-    // Check if we're on the index page and React app is loaded
-    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
-        if (window.openCalendarModal) {
-            event.preventDefault();
-            window.openCalendarModal();
-        } else {
-            // React not loaded yet, wait a bit and try again
-            console.log('⏳ Waiting for React to load...');
-            event.preventDefault();
-            
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-                attempts++;
-                if (window.openCalendarModal) {
-                    clearInterval(checkInterval);
-                    window.openCalendarModal();
-                } else if (attempts > 20) {
-                    // After 2 seconds, fall back to hash navigation
-                    clearInterval(checkInterval);
-                    window.location.hash = '#calendar';
-                }
-            }, 100);
-        }
-    }
-    // If on other pages, let the link navigate to index.html#calendar
-}
-
-function handleArchiveLink(event) {
-    // Check if we're on the index page and React app is loaded
-    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
-        if (window.openArchiveModal) {
-            event.preventDefault();
-            window.openArchiveModal();
-        } else {
-            // React not loaded yet, wait a bit and try again
-            console.log('⏳ Waiting for React to load...');
-            event.preventDefault();
-            
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-                attempts++;
-                if (window.openArchiveModal) {
-                    clearInterval(checkInterval);
-                    window.openArchiveModal();
-                } else if (attempts > 20) {
-                    // After 2 seconds, fall back to hash navigation
-                    clearInterval(checkInterval);
-                    window.location.hash = '#archive';
-                }
-            }, 100);
-        }
-    }
-    // If on other pages, let the link navigate to index.html#archive
-}
-</script>
-
+<div id="site-footer"></div>
+<script src="/site-chrome.js"></script>
+<script src="/cookie-notice.js"></script>
 <script src="/disable-context-menu.js"></script>
 
 </body>

@@ -205,7 +205,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
     },
     {
       title: 'Match the Edges',
-      description: 'In the real game, make edges match between tiles. When they match correctly, a green glow appears!',
+      description: 'In the real game, make edges match between tiles. When they match correctly, a green glow appears! Every puzzle has one correct picture — each tile has exactly one right neighbor.',
       action: 'Tap "Next" to continue',
       highlight: null
     },

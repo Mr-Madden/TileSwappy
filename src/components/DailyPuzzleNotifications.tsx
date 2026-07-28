@@ -11,8 +11,8 @@ export const DailyPuzzleNotifications: React.FC = () => {
     if (lastPuzzleDate !== today && notificationsEnabled && Notification.permission === 'granted') {
       new Notification('🎨 New TileSwappy Puzzle!', {
         body: 'A fresh puzzle is waiting for you today!',
-        icon: '/logo192.png',
-        badge: '/logo192.png',
+        icon: '/icon.png',
+        badge: '/icon.png',
         tag: 'daily-puzzle',
         requireInteraction: false
       });
@@ -54,7 +54,7 @@ export const DailyPuzzleNotifications: React.FC = () => {
       // Show test notification
       new Notification('🎉 Notifications Enabled!', {
         body: "You'll be notified when new puzzles are available",
-        icon: '/logo192.png'
+        icon: '/icon.png'
       });
     }
   };

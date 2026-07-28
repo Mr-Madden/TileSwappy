@@ -366,6 +366,13 @@ export const useGameState = () => {
 
   const swapTiles = useCallback(
     (tile1: string, tile2: string) => {
+      if (
+        gameState.status !== 'playing' ||
+        gameState.isPaused
+      ) {
+        return;
+      }
+
       setGameState(prev => {
         const first =
           prev.tiles.find(t => t.id === tile1);
@@ -416,17 +423,24 @@ export const useGameState = () => {
         };
       });
     },
-    [computeMatchFields]
+    [gameState.status, gameState.isPaused, computeMatchFields]
   );
 
   const selectTile = useCallback(
     (id: string | null) => {
+      if (
+        gameState.status !== 'playing' ||
+        gameState.isPaused
+      ) {
+        return;
+      }
+
       setGameState(prev => ({
         ...prev,
         selectedTile: id
       }));
     },
-    []
+    [gameState.status, gameState.isPaused]
   );
 
   const pauseGame = useCallback(
@@ -525,6 +539,13 @@ export const useGameState = () => {
 
   const undoLastMove = useCallback(
     () => {
+      if (
+        gameState.status !== 'playing' ||
+        gameState.isPaused
+      ) {
+        return;
+      }
+
       setGameState(prev => {
         if (prev.moveHistory.length === 0) {
           return prev;
@@ -552,11 +573,18 @@ export const useGameState = () => {
         };
       });
     },
-    [computeMatchFields]
+    [gameState.status, gameState.isPaused, computeMatchFields]
   );
 
   const shuffleAll = useCallback(
     () => {
+      if (
+        gameState.status !== 'playing' ||
+        gameState.isPaused
+      ) {
+        return;
+      }
+
       setGameState(prev => {
         if (prev.tiles.length === 0) {
           return prev;
@@ -595,7 +623,7 @@ export const useGameState = () => {
         };
       });
     },
-    [computeMatchFields]
+    [gameState.status, gameState.isPaused, computeMatchFields]
   );
 
   return {

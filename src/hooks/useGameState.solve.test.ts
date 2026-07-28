@@ -88,4 +88,77 @@ describe('useGameState full solve', () => {
     expect(result.current.gameState.tiles.every(t => t.row === t.originalRow && t.col === t.originalCol)).toBe(true);
     expect(result.current.gameState.status).toBe('solved');
   });
+
+  it('locks the board once solved -- shuffle/swap/select/undo all become no-ops until restarted', () => {
+    const factoryTiles: FactoryTile[] = Array.from({ length: 9 }, (_, i) => ({
+      tileIndex: i,
+      imageUrl: `tile-${i}.png`,
+      correctPosition: i,
+      correctRotation: 0
+    }));
+
+    const { result } = renderHook(() => useGameState());
+
+    act(() => {
+      result.current.startGame({
+        id: 'test-puzzle-2',
+        title: 'Test',
+        difficulty: 'Easy',
+        gradient: ['#fff', '#000', '#000'],
+        tiles: factoryTiles
+      } as any);
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(300);
+    });
+
+    for (let targetIndex = 0; targetIndex < 9; targetIndex++) {
+      const targetRow = Math.floor(targetIndex / 3);
+      const targetCol = targetIndex % 3;
+
+      const tiles = result.current.gameState.tiles;
+      const tileAlreadyThere = tiles.find(t => t.row === targetRow && t.col === targetCol)!;
+
+      if (tileAlreadyThere.originalRow === targetRow && tileAlreadyThere.originalCol === targetCol) {
+        continue;
+      }
+
+      const correctTile = tiles.find(
+        t => t.originalRow === targetRow && t.originalCol === targetCol
+      )!;
+
+      act(() => {
+        result.current.swapTiles(correctTile.id, tileAlreadyThere.id);
+      });
+    }
+
+    expect(result.current.gameState.status).toBe('solved');
+    const solvedTiles = result.current.gameState.tiles;
+
+    // This is the reported bug: hitting Shuffle (or any other board-
+    // mutating action) after winning used to still work, scrambling an
+    // already-solved board back into an unsolved, movable one.
+    act(() => {
+      result.current.shuffleAll();
+    });
+    expect(result.current.gameState.tiles).toEqual(solvedTiles);
+    expect(result.current.gameState.status).toBe('solved');
+
+    const [tileA, tileB] = solvedTiles;
+    act(() => {
+      result.current.swapTiles(tileA.id, tileB.id);
+    });
+    expect(result.current.gameState.tiles).toEqual(solvedTiles);
+
+    act(() => {
+      result.current.selectTile(tileA.id);
+    });
+    expect(result.current.gameState.selectedTile).toBeNull();
+
+    act(() => {
+      result.current.undoLastMove();
+    });
+    expect(result.current.gameState.tiles).toEqual(solvedTiles);
+  });
 });

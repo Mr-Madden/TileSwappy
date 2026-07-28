@@ -1,105 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3568015124939970" crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Master TileSwappy with our comprehensive guide. Learn strategies, color gradient theory, and expert tips to improve your puzzle-solving skills.">
+    <link rel="canonical" href="https://www.tileswappy.com/how-to-play.html" />
     <title>How to Play TileSwappy - Complete Strategy Guide</title>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.tileswappy.com/how-to-play.html" />
+    <meta property="og:title" content="How to Play TileSwappy - Complete Strategy Guide" />
+    <meta property="og:description" content="Master TileSwappy with our comprehensive guide. Learn strategies, color gradient theory, and expert tips to improve your puzzle-solving skills." />
+    <meta property="og:image" content="https://www.tileswappy.com/logo2.png" />
+    <meta property="og:site_name" content="TileSwappy" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://www.tileswappy.com/how-to-play.html" />
+    <meta name="twitter:title" content="How to Play TileSwappy - Complete Strategy Guide" />
+    <meta name="twitter:description" content="Master TileSwappy with our comprehensive guide. Learn strategies, color gradient theory, and expert tips to improve your puzzle-solving skills." />
+    <meta name="twitter:image" content="https://www.tileswappy.com/logo2.png" />
+    <meta name="twitter:creator" content="@Mr._Madden" />
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('tileswappy_settings');
+          var theme = raw && JSON.parse(raw).theme;
+          document.documentElement.setAttribute('data-theme', theme || 'current');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'current');
+        }
+      })();
+    </script>
+
+    <link rel="stylesheet" href="/site-chrome.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            background: linear-gradient(135deg, #0D1B2A 0%, #0D1B2A 100%);
-            min-height: 100vh;
-        }
-        .content {
-            max-width: 800px;
-            margin: 2rem auto;
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        h1 {
-            color: #E63946;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        h2 {
-            color: #1FA39A;
-            margin-top: 30px;
-            font-size: 1.8em;
-            border-bottom: 2px solid #0D1B2A;
-            padding-bottom: 10px;
-        }
-        h3 {
-            color: #E63946;
-            margin-top: 20px;
-            font-size: 1.3em;
+        .page-card strong {
+            color: rgb(var(--color-coral));
         }
         .tip-box {
-            background: rgba(46, 196, 182, 0.1);
-            border-left: 4px solid #1FA39A;
+            background: rgb(var(--color-teal) / 0.1);
+            border-left: 4px solid rgb(var(--color-teal-dark));
             padding: 15px;
             margin: 20px 0;
             border-radius: 4px;
         }
         .strategy-box {
-            background: rgba(230, 57, 70, 0.1);
-            border-left: 4px solid #E63946;
+            background: rgb(var(--color-coral) / 0.1);
+            border-left: 4px solid rgb(var(--color-coral));
             padding: 15px;
             margin: 20px 0;
             border-radius: 4px;
         }
-        ul, ol {
-            margin: 15px 0;
-            padding-left: 30px;
-        }
-        li {
-            margin: 8px 0;
-        }
-        strong {
-            color: #E63946;
-        }
-        a {
-            color: #1FA39A;
-        }
-        a:hover {
-            color: #E63946;
+        .cta-button {
+            background: rgb(var(--color-coral));
+            color: rgb(var(--color-ink-on-accent));
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Skip to content</a>
 
-<!-- SITE HEADER -->
-<header style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-bottom: 2px solid rgba(31, 163, 154, 0.3); position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-        <a href="/index.html" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
-            <img 
-                src="/icon.png" 
-                alt="TileSwappy Logo" 
-                style="width: 40px; height: 40px; border-radius: 8px; object-fit: contain;"
-            />
-            <span style="font-size: 1.75rem; font-weight: bold; color: #F4F4F4;">
-                TileSwappy
-            </span>
-        </a>
+<div id="site-header"></div>
 
-        <nav style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-            <a href="/index.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Play</a>
-            <a href="/how-to-play.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">How to Play</a>
-            <a href="/faq.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">FAQ</a>
-            <a href="/blog/5-strategies.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Blog</a>
-            <a href="/about.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">About</a>
-            <a href="/support.html" style="padding: 0.5rem 1rem; color: #E0E0E0; text-decoration: none; border-radius: 6px; transition: all 0.2s; font-weight: 500;">Support</a>
-        </nav>
-    </div>
-</header>
-
-<div class="content">
+<div class="page-shell">
+<div class="page-card" id="main-content">
     <h1>How to Play TileSwappy</h1>
     <p><em>Master the art of visual puzzles with our complete strategy guide</em></p>
 
@@ -108,6 +79,7 @@
 
     <h3>The Objective</h3>
     <p>Your goal is to arrange all tiles so that adjacent tiles create seamless transitions. When two tiles are correctly placed next to each other, their touching edges will match perfectly. Complete the entire grid with all edges matching to solve the puzzle and reveal the full image.</p>
+    <p>Every puzzle has exactly one correct picture to rebuild — each tile has exactly one right neighbor on every side, so there's always a genuine solution to find, never a guessing game.</p>
 
     <h3>Core Mechanics</h3>
     <ul>
@@ -282,144 +254,14 @@
     </div>
 
     <p style="margin-top: 40px; text-align: center;">
-        <a href="/index.html" style="background: linear-gradient(135deg, #E63946 0%, #FF4C4C 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Play Today's Puzzle</a>
+        <a href="/index.html" class="cta-button">Play Today's Puzzle</a>
     </p>
 </div>
+</div>
 
-<!-- UNIVERSAL FOOTER - Use this footer on ALL pages (index.html, faq.html, about.html, etc.) -->
-<footer style="background: linear-gradient(135deg, #0D1B2A 0%, #1A2332 100%); border-top: 2px solid rgba(31, 163, 154, 0.3);">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
-            <!-- Play Section - UPDATED FOR ALL PAGES -->
-            <div>
-                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Play</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;">
-                        <a 
-                            href="/index.html#calendar" 
-                            onclick="handleCalendarLink(event);"
-                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
-                            onmouseover="this.style.color='#1FA39A'" 
-                            onmouseout="this.style.color='#999'"
-                        >
-                            🎮 Today's Puzzle
-                        </a>
-                    </li>
-                    <li style="margin-bottom: 0.5rem;">
-                        <a 
-                            href="/index.html#archive" 
-                            onclick="handleArchiveLink(event);"
-                            style="color: #999; text-decoration: none; font-size: 0.9rem; cursor: pointer; transition: color 0.2s;"
-                            onmouseover="this.style.color='#1FA39A'" 
-                            onmouseout="this.style.color='#999'"
-                        >
-                            📚 Puzzle Archive
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Learn Section -->
-            <div>
-                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Learn</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/how-to-play.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📖 How to Play</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/faq.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">❓ FAQ</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">💡 Support</a></li>
-                </ul>
-            </div>
-
-            <!-- Blog Section -->
-            <div>
-                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">Blog</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/blog/5-strategies.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🎯 5 Winning Strategies</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/blog/gradient-science.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔬 Science of Gradients</a></li>
-                </ul>
-            </div>
-
-            <!-- About Section -->
-            <div>
-                <h4 style="color: #1FA39A; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; margin-bottom: 1rem; margin-top: 0;">About</h4>
-                <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 0.5rem;"><a href="/about.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">ℹ️ About TileSwappy</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">🔒 Privacy Policy</a></li>
-                    <li style="margin-bottom: 0.5rem;"><a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.9rem;">📋 Terms of Service</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div style="border-top: 1px solid rgba(31, 163, 154, 0.2); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-            <p style="color: #666; font-size: 0.875rem; margin: 0;">© 2025 Mad_Den Gaming Co. All rights reserved.</p>
-            <div style="display: flex; gap: 1rem;">
-                <a href="/privacy.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Privacy</a>
-                <a href="/terms.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Terms</a>
-                <a href="/support.html" style="color: #999; text-decoration: none; font-size: 0.875rem;">Support</a>
-                <a href="https://www.tiktok.com/@tileswappy" target="_blank" style="color: #999; text-decoration: none; font-size: 0.875rem;">TikTok</a>
-            </div>
-        </div>
-    </div>
-</footer>
-
-<script>
-// Smart link handling for calendar and archive links
-function handleCalendarLink(event) {
-    // Check if we're on the index page and React app is loaded
-    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
-        if (window.openCalendarModal) {
-            event.preventDefault();
-            window.openCalendarModal();
-        } else {
-            // React not loaded yet, wait a bit and try again
-            console.log('⏳ Waiting for React to load...');
-            event.preventDefault();
-            
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-                attempts++;
-                if (window.openCalendarModal) {
-                    clearInterval(checkInterval);
-                    window.openCalendarModal();
-                } else if (attempts > 20) {
-                    // After 2 seconds, fall back to hash navigation
-                    clearInterval(checkInterval);
-                    window.location.hash = '#calendar';
-                }
-            }, 100);
-        }
-    }
-    // If on other pages, let the link navigate to index.html#calendar
-}
-
-function handleArchiveLink(event) {
-    // Check if we're on the index page and React app is loaded
-    if (window.location.pathname === '/index.html' || window.location.pathname === '/') {
-        if (window.openArchiveModal) {
-            event.preventDefault();
-            window.openArchiveModal();
-        } else {
-            // React not loaded yet, wait a bit and try again
-            console.log('⏳ Waiting for React to load...');
-            event.preventDefault();
-            
-            let attempts = 0;
-            const checkInterval = setInterval(() => {
-                attempts++;
-                if (window.openArchiveModal) {
-                    clearInterval(checkInterval);
-                    window.openArchiveModal();
-                } else if (attempts > 20) {
-                    // After 2 seconds, fall back to hash navigation
-                    clearInterval(checkInterval);
-                    window.location.hash = '#archive';
-                }
-            }, 100);
-        }
-    }
-    // If on other pages, let the link navigate to index.html#archive
-}
-</script>
-
+<div id="site-footer"></div>
+<script src="/site-chrome.js"></script>
+<script src="/cookie-notice.js"></script>
 <script src="/disable-context-menu.js"></script>
 
 </body>

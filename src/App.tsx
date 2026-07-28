@@ -75,7 +75,7 @@ const ModalLoader = () => (
 
 const App: React.FC = () => {
   const [currentPuzzle, setCurrentPuzzle] = useState<any>(null);
-  const [currentPuzzleDate, setCurrentPuzzleDate] = useState<string>(() => 
+  const [currentPuzzleDate, setCurrentPuzzleDate] = useState<string>(() =>
     new Date().toISOString().split('T')[0]
   );
   const [showArchive, setShowArchive] = useState(false);
@@ -687,7 +687,8 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
       {showPreMatchReveal && (
         <div className="fixed inset-0 bg-navy z-[100] flex flex-col items-center justify-center p-4">
-          <p className="text-teal text-lg font-semibold mb-4 tracking-wide uppercase">Get Ready</p>
+          <p className="text-teal text-lg font-semibold mb-1 tracking-wide uppercase">Get Ready</p>
+          <p className="text-offwhite/60 text-sm mb-4 text-center max-w-xs">This is the one correct picture — every tile has exactly one right neighbor.</p>
           <div
             className="rounded-2xl overflow-hidden border-4 border-coral shadow-coral-glow mb-8"
             style={{ width: 'min(75vw, 420px)', height: 'min(75vw, 420px)' }}
@@ -1149,9 +1150,9 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                 <div className="flex justify-center gap-2">
                   <button
                     onClick={() => { triggerHaptic(15); playSound('click'); gameState.undoLastMove(); }}
-                    disabled={gameState.gameState.moveHistory.length === 0}
+                    disabled={gameState.gameState.moveHistory.length === 0 || gameState.gameState.status !== 'playing'}
                     className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                      gameState.gameState.moveHistory.length === 0
+                      gameState.gameState.moveHistory.length === 0 || gameState.gameState.status !== 'playing'
                         ? 'bg-navy-dark/80 text-offwhite/40 cursor-not-allowed border border-navy-dark'
                         : 'bg-offwhite text-navy border border-navy-dark hover:border-teal'
                     }`}
@@ -1162,7 +1163,12 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   <div className="flex justify-center gap-2">
                   <button
                     onClick={() => { triggerHaptic([10, 40, 10]); playSound('click'); gameState.shuffleAll(); }}
-                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-teal/20 text-teal rounded-lg border border-teal hover:bg-teal hover:text-navy-dark transition-all duration-200 text-xs font-medium"
+                    disabled={gameState.gameState.status !== 'playing'}
+                    className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg border transition-all duration-200 text-xs font-medium ${
+                      gameState.gameState.status !== 'playing'
+                        ? 'bg-navy-dark/80 text-offwhite/40 cursor-not-allowed border-navy-dark'
+                        : 'bg-teal/20 text-teal border-teal hover:bg-teal hover:text-navy-dark'
+                    }`}
                   >
                     Shuffle
                   </button>

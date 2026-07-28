@@ -1,0 +1,845 @@
+/*
+ * The --color-* variables below mirror src/styles/themes.css so the
+ * static marketing pages (about, faq, how-to-play, support, blog posts,
+ * privacy, terms) can render in whatever theme the player has selected
+ * in-game, without a build step to share code between src/ and public/.
+ *
+ * MAINTENANCE: this block is NOT auto-synced with src/styles/themes.css.
+ * If you add/edit a theme there, copy the same change here too, or the
+ * marketing pages will drift out of sync with the game.
+ *
+ * Each --color-* variable holds a space-separated R G B triplet (no
+ * commas) so `rgb(var(--x) / <alpha>)` keeps opacity modifiers working.
+ */
+
+:root,
+:root[data-theme="current"] {
+  --color-navy: 13 27 42;
+  --color-navy-light: 27 43 58;
+  --color-navy-dark: 10 20 32;
+  --color-coral: 255 76 76;
+  --color-coral-light: 255 107 107;
+  --color-coral-dark: 230 57 70;
+  --color-teal: 46 196 182;
+  --color-teal-light: 79 209 197;
+  --color-teal-dark: 31 163 154;
+  --color-offwhite: 244 244 244;
+  --color-violet: 139 92 246;
+  --color-violet-light: 167 139 250;
+  --color-violet-dark: 124 58 237;
+  --color-gold: 251 191 36;
+  --color-gold-light: 253 230 138;
+  --color-gold-dark: 217 119 6;
+  --color-silver: 156 163 175;
+  --color-bronze: 194 112 61;
+}
+
+:root[data-theme="cosmic"] {
+  --color-navy: 18 26 43;
+  --color-navy-light: 27 38 59;
+  --color-navy-dark: 10 14 26;
+  --color-coral: 251 113 133;
+  --color-coral-light: 253 164 175;
+  --color-coral-dark: 236 72 100;
+  --color-teal: 34 211 238;
+  --color-teal-light: 103 232 249;
+  --color-teal-dark: 8 145 178;
+  --color-offwhite: 238 242 247;
+  --color-violet: 124 92 255;
+  --color-violet-light: 167 148 255;
+  --color-violet-dark: 99 60 220;
+  --color-gold: 252 211 77;
+  --color-gold-light: 253 230 138;
+  --color-gold-dark: 217 160 40;
+  --color-silver: 203 213 225;
+  --color-bronze: 180 130 90;
+}
+
+:root[data-theme="neon"] {
+  --color-navy: 13 20 23;
+  --color-navy-light: 20 30 34;
+  --color-navy-dark: 5 7 10;
+  --color-coral: 255 45 110;
+  --color-coral-light: 255 107 158;
+  --color-coral-dark: 214 20 84;
+  --color-teal: 0 245 212;
+  --color-teal-light: 128 250 232;
+  --color-teal-dark: 0 184 158;
+  --color-offwhite: 215 250 255;
+  --color-violet: 176 38 255;
+  --color-violet-light: 205 128 255;
+  --color-violet-dark: 138 10 214;
+  --color-gold: 255 176 0;
+  --color-gold-light: 255 210 100;
+  --color-gold-dark: 214 140 0;
+  --color-silver: 180 230 230;
+  --color-bronze: 200 90 60;
+}
+
+:root[data-theme="arcade"] {
+  --color-navy: 27 17 64;
+  --color-navy-light: 42 31 92;
+  --color-navy-dark: 18 11 46;
+  --color-coral: 255 61 129;
+  --color-coral-light: 255 122 171;
+  --color-coral-dark: 214 31 102;
+  --color-teal: 53 193 255;
+  --color-teal-light: 125 216 255;
+  --color-teal-dark: 26 143 201;
+  --color-offwhite: 255 250 242;
+  --color-violet: 139 92 246;
+  --color-violet-light: 167 139 250;
+  --color-violet-dark: 124 58 237;
+  --color-gold: 255 201 60;
+  --color-gold-light: 255 224 138;
+  --color-gold-dark: 217 159 0;
+  --color-silver: 201 195 224;
+  --color-bronze: 184 118 63;
+}
+
+:root[data-theme="retro"] {
+  --color-navy: 26 19 16;
+  --color-navy-light: 43 31 25;
+  --color-navy-dark: 18 12 10;
+  --color-coral: 255 122 61;
+  --color-coral-light: 255 168 120;
+  --color-coral-dark: 214 90 31;
+  --color-teal: 255 169 77;
+  --color-teal-light: 255 207 153;
+  --color-teal-dark: 204 122 31;
+  --color-offwhite: 245 230 211;
+  --color-violet: 138 90 61;
+  --color-violet-light: 168 122 92;
+  --color-violet-dark: 107 66 42;
+  --color-gold: 232 163 61;
+  --color-gold-light: 245 200 119;
+  --color-gold-dark: 179 120 31;
+  --color-silver: 168 154 140;
+  --color-bronze: 138 90 47;
+}
+
+:root[data-theme="botanical"] {
+  --color-navy: 22 40 30;
+  --color-navy-light: 31 58 44;
+  --color-navy-dark: 15 26 19;
+  --color-coral: 217 143 78;
+  --color-coral-light: 232 177 132;
+  --color-coral-dark: 181 112 58;
+  --color-teal: 143 174 107;
+  --color-teal-light: 174 203 142;
+  --color-teal-dark: 107 138 74;
+  --color-offwhite: 243 234 217;
+  --color-violet: 122 90 122;
+  --color-violet-light: 155 122 155;
+  --color-violet-dark: 92 66 92;
+  --color-gold: 217 168 61;
+  --color-gold-light: 238 200 122;
+  --color-gold-dark: 179 132 31;
+  --color-silver: 184 196 174;
+  --color-bronze: 138 90 47;
+}
+
+:root[data-theme="zen"] {
+  --color-navy: 238 240 230;
+  --color-navy-light: 255 253 248;
+  --color-navy-dark: 210 216 196;
+  --color-coral: 181 117 74;
+  --color-coral-light: 217 163 123;
+  --color-coral-dark: 143 90 55;
+  --color-teal: 95 122 99;
+  --color-teal-light: 143 166 147;
+  --color-teal-dark: 68 92 72;
+  --color-offwhite: 58 66 56;
+  --color-violet: 107 90 115;
+  --color-violet-light: 155 143 166;
+  --color-violet-dark: 74 61 82;
+  --color-gold: 163 117 47;
+  --color-gold-light: 203 178 121;
+  --color-gold-dark: 122 88 32;
+  --color-silver: 125 133 119;
+  --color-bronze: 138 100 64;
+}
+
+:root[data-theme="ocean"] {
+  --color-navy: 8 74 80;
+  --color-navy-light: 15 110 118;
+  --color-navy-dark: 6 58 63;
+  --color-coral: 255 138 101;
+  --color-coral-light: 255 176 143;
+  --color-coral-dark: 224 101 58;
+  --color-teal: 79 209 197;
+  --color-teal-light: 189 238 226;
+  --color-teal-dark: 13 138 143;
+  --color-offwhite: 234 250 246;
+  --color-violet: 61 90 122;
+  --color-violet-light: 94 125 158;
+  --color-violet-dark: 42 64 92;
+  --color-gold: 224 180 99;
+  --color-gold-light: 240 213 154;
+  --color-gold-dark: 179 135 47;
+  --color-silver: 207 232 226;
+  --color-bronze: 166 106 61;
+}
+
+:root[data-theme="desert"] {
+  --color-navy: 232 201 155;
+  --color-navy-light: 251 241 226;
+  --color-navy-dark: 196 158 102;
+  --color-coral: 181 86 47;
+  --color-coral-light: 207 145 105;
+  --color-coral-dark: 138 61 31;
+  --color-teal: 92 107 68;
+  --color-teal-light: 122 139 94;
+  --color-teal-dark: 70 80 36;
+  --color-offwhite: 90 56 37;
+  --color-violet: 107 74 90;
+  --color-violet-light: 138 106 122;
+  --color-violet-dark: 74 47 58;
+  --color-gold: 163 120 31;
+  --color-gold-light: 218 165 32;
+  --color-gold-dark: 122 92 20;
+  --color-silver: 138 125 110;
+  --color-bronze: 107 68 35;
+}
+
+:root[data-theme="ice"] {
+  --color-navy: 11 31 42;
+  --color-navy-light: 18 49 63;
+  --color-navy-dark: 7 22 32;
+  --color-coral: 216 138 154;
+  --color-coral-light: 232 179 192;
+  --color-coral-dark: 179 89 108;
+  --color-teal: 95 184 220;
+  --color-teal-light: 159 215 236;
+  --color-teal-dark: 47 127 163;
+  --color-offwhite: 234 248 255;
+  --color-violet: 138 154 217;
+  --color-violet-light: 174 186 232;
+  --color-violet-dark: 97 112 179;
+  --color-gold: 217 201 138;
+  --color-gold-light: 235 224 184;
+  --color-gold-dark: 166 147 74;
+  --color-silver: 203 213 225;
+  --color-bronze: 138 106 74;
+}
+
+:root[data-theme="candy"] {
+  --color-navy: 255 214 236;
+  --color-navy-light: 255 245 251;
+  --color-navy-dark: 235 165 205;
+  --color-coral: 214 49 127;
+  --color-coral-light: 255 95 162;
+  --color-coral-dark: 163 34 95;
+  --color-teal: 42 157 111;
+  --color-teal-light: 110 230 179;
+  --color-teal-dark: 31 117 80;
+  --color-offwhite: 91 42 134;
+  --color-violet: 120 87 184;
+  --color-violet-light: 217 198 255;
+  --color-violet-dark: 90 61 143;
+  --color-gold: 184 144 31;
+  --color-gold-light: 240 201 74;
+  --color-gold-dark: 138 106 23;
+  --color-silver: 154 138 168;
+  --color-bronze: 181 122 90;
+}
+
+:root[data-theme="autumn"] {
+  --color-navy: 74 30 30;
+  --color-navy-light: 96 58 42;
+  --color-navy-dark: 46 20 20;
+  --color-coral: 224 122 63;
+  --color-coral-light: 239 157 110;
+  --color-coral-dark: 184 85 31;
+  --color-teal: 107 122 63;
+  --color-teal-light: 150 166 106;
+  --color-teal-dark: 74 90 38;
+  --color-offwhite: 246 232 216;
+  --color-violet: 107 42 58;
+  --color-violet-light: 148 82 98;
+  --color-violet-dark: 77 21 34;
+  --color-gold: 212 162 76;
+  --color-gold-light: 230 197 131;
+  --color-gold-dark: 166 122 31;
+  --color-silver: 184 168 154;
+  --color-bronze: 138 90 47;
+}
+
+:root[data-theme="deco"] {
+  --color-navy: 13 31 22;
+  --color-navy-light: 22 40 28;
+  --color-navy-dark: 10 20 16;
+  --color-coral: 166 61 74;
+  --color-coral-light: 201 106 118;
+  --color-coral-dark: 122 31 42;
+  --color-teal: 63 107 82;
+  --color-teal-light: 107 150 120;
+  --color-teal-dark: 35 74 54;
+  --color-offwhite: 237 224 189;
+  --color-violet: 107 74 138;
+  --color-violet-light: 148 118 179;
+  --color-violet-dark: 77 50 107;
+  --color-gold: 212 175 106;
+  --color-gold-light: 230 204 154;
+  --color-gold-dark: 166 128 58;
+  --color-silver: 184 176 160;
+  --color-bronze: 138 106 58;
+}
+
+:root[data-theme="mono"] {
+  --color-navy: 12 12 12;
+  --color-navy-light: 26 26 26;
+  --color-navy-dark: 5 5 5;
+  --color-coral: 255 76 76;
+  --color-coral-light: 255 107 107;
+  --color-coral-dark: 230 57 70;
+  --color-teal: 217 217 217;
+  --color-teal-light: 240 240 240;
+  --color-teal-dark: 160 160 160;
+  --color-offwhite: 255 255 255;
+  --color-violet: 138 138 138;
+  --color-violet-light: 170 170 170;
+  --color-violet-dark: 105 105 105;
+  --color-gold: 204 204 204;
+  --color-gold-light: 232 232 232;
+  --color-gold-dark: 153 153 153;
+  --color-silver: 154 154 154;
+  --color-bronze: 122 122 122;
+}
+
+/*
+ * Fixed, deliberately NOT themed -- same reasoning as `match` in
+ * tailwind.config.js. --color-navy is meant as a background/surface
+ * role (page bg, recessed panel); it happens to be dark in 11 of the
+ * 14 themes, but Zen/Desert/Candy are genuine light themes where navy
+ * IS the light background color (see the comment above
+ * [data-theme="zen"] in src/styles/themes.css). Text that was written
+ * as `color: rgb(var(--color-navy))` to read as "dark ink on a bright
+ * coral/teal-dark chip" silently became near-invisible light-on-bright
+ * in those 3 themes. Coral/teal-dark are reliably mid-to-bright accent
+ * colors across every theme by design, so a fixed dark ink color is a
+ * safe, theme-independent choice for this specific "text on an accent
+ * chip" role -- unlike navy or offwhite, which each flip between dark
+ * and light depending on the theme.
+ */
+:root {
+  --color-ink-on-accent: 26 20 16;
+}
+
+/*
+ * Shared header, footer, and base content-page styles for TileSwappy's
+ * static marketing/legal pages (about, faq, how-to-play, support, the
+ * blog posts, privacy, terms). One canonical definition instead of each
+ * page redefining its own copy -- reads the --color-* variables defined
+ * above (mirrored from src/styles/themes.css, see that comment) and the
+ * data-theme attribute the in-game app uses, so these pages match
+ * whichever of the 14 themes the player has selected instead of always
+ * looking like a separate site.
+ *
+ * Each page still keeps its own <style> block for content that's
+ * genuinely unique to it (FAQ accordion behavior, the About page's
+ * feature grid, blog post layout, etc.) -- this file only covers what
+ * every page shares.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: rgb(var(--color-navy));
+  color: rgb(var(--color-offwhite));
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============ Page shell ============ */
+
+.page-shell {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 5rem;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: rgb(var(--color-offwhite) / 0.8);
+  margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+  color: rgb(var(--color-offwhite) / 0.8);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumb a:hover {
+  color: rgb(var(--color-teal-dark));
+  text-decoration: underline;
+}
+
+.breadcrumb span[aria-current="page"] {
+  color: rgb(var(--color-offwhite) / 0.9);
+  font-weight: 600;
+}
+
+.breadcrumb__sep {
+  opacity: 0.4;
+}
+
+.page-card {
+  background: rgb(var(--color-navy-light));
+  border: 1px solid rgb(var(--color-teal-dark) / 0.25);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 640px) {
+  .page-card {
+    padding: 1.75rem;
+  }
+}
+
+.page-card h1 {
+  color: rgb(var(--color-coral));
+  font-size: 2.1em;
+  margin: 0 0 0.25em;
+  line-height: 1.15;
+}
+
+.page-card .page-subtitle {
+  color: rgb(var(--color-offwhite) / 0.8);
+  font-size: 1.05em;
+  margin: 0 0 1.5rem;
+}
+
+.page-card h2 {
+  color: rgb(var(--color-teal-dark));
+  margin: 2.1em 0 0.6em;
+  font-size: 1.45em;
+  padding-bottom: 0.4em;
+  border-bottom: 2px solid rgb(var(--color-teal-dark) / 0.3);
+}
+
+.page-card h2:first-of-type {
+  margin-top: 0;
+}
+
+.page-card h3 {
+  color: rgb(var(--color-coral));
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+}
+
+.page-card p,
+.page-card li {
+  color: rgb(var(--color-offwhite) / 0.85);
+}
+
+.page-card ul,
+.page-card ol {
+  margin: 0.8em 0 0.8em 1.4em;
+  padding: 0;
+}
+
+.page-card li {
+  margin-bottom: 0.5em;
+}
+
+.page-card strong {
+  color: rgb(var(--color-teal-dark));
+}
+
+.page-card a {
+  color: rgb(var(--color-teal-dark));
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.page-card a:hover {
+  color: rgb(var(--color-coral));
+  text-decoration: underline;
+}
+
+.page-card blockquote {
+  border-left: 4px solid rgb(var(--color-coral));
+  padding-left: 1.2em;
+  margin: 1.6em 0;
+  font-style: italic;
+  color: rgb(var(--color-offwhite) / 0.85);
+}
+
+.faq-item {
+  background: rgb(var(--color-navy) / 0.35);
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  border-left: 4px solid rgb(var(--color-teal-dark));
+}
+
+.faq-question {
+  font-weight: 600;
+  color: rgb(var(--color-teal-dark));
+  font-size: 1.1em;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.faq-question::-webkit-details-marker {
+  display: none;
+}
+
+.faq-question::after {
+  content: '+';
+  font-size: 1.3em;
+  color: rgb(var(--color-offwhite) / 0.7);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+details[open] > .faq-question::after {
+  content: '\2212';
+}
+
+.faq-item .faq-answer {
+  color: rgb(var(--color-offwhite) / 0.85);
+  line-height: 1.7;
+  margin-top: 10px;
+}
+
+.faq-answer ul {
+  margin-top: 10px;
+}
+
+.toc {
+  background: rgb(var(--color-navy) / 0.35);
+  border: 1px solid rgb(var(--color-teal-dark) / 0.25);
+  border-radius: 10px;
+  padding: 1.1rem 1.4rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.toc__title {
+  margin: 0 0 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(var(--color-teal-dark));
+}
+
+.toc ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  columns: 2;
+  column-gap: 1.5rem;
+}
+
+.toc li {
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  break-inside: avoid;
+}
+
+.toc a {
+  color: rgb(var(--color-offwhite) / 0.85);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.toc a:hover {
+  color: rgb(var(--color-teal-dark));
+  text-decoration: underline;
+}
+
+@media (max-width: 500px) {
+  .toc ol {
+    columns: 1;
+  }
+}
+
+.highlight-box {
+  background: rgb(var(--color-teal) / 0.12);
+  border-left: 4px solid rgb(var(--color-teal-dark));
+  padding: 1.2rem 1.4rem;
+  margin: 1.2rem 0;
+  border-radius: 8px;
+  color: rgb(var(--color-offwhite) / 0.9);
+}
+
+.last-updated {
+  font-style: italic;
+  color: rgb(var(--color-offwhite) / 0.8);
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 2px solid rgb(var(--color-teal-dark) / 0.15);
+}
+
+.contact-section {
+  background: rgb(var(--color-teal-dark));
+  color: rgb(var(--color-ink-on-accent));
+  padding: 1.75rem 2rem;
+  margin-top: 2.5rem;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.contact-section h2 {
+  color: rgb(var(--color-ink-on-accent));
+  border: none;
+  margin: 0 0 0.6em;
+  padding-bottom: 0;
+}
+
+.contact-section a {
+  color: rgb(var(--color-ink-on-accent));
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+/* ============ Accessibility ============ */
+
+.skip-link {
+  position: absolute;
+  top: -3rem;
+  left: 0.5rem;
+  background: rgb(var(--color-teal-dark));
+  color: rgb(var(--color-ink-on-accent));
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 8px 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  z-index: 10000;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ============ Header ============ */
+
+.site-header {
+  background: linear-gradient(135deg, rgb(var(--color-navy)) 0%, rgb(var(--color-navy-light)) 100%);
+  border-bottom: 2px solid rgb(var(--color-teal-dark) / 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.site-header__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.site-header__logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgb(var(--color-navy-dark));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.site-header__logo span {
+  background: rgb(var(--color-offwhite));
+  border-radius: 3px;
+}
+
+.site-header__logo span.accent {
+  background: rgb(var(--color-coral));
+  transform: rotate(-12deg);
+}
+
+.site-header__name {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: rgb(var(--color-offwhite));
+}
+
+.site-header__nav {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.site-header__nav a {
+  padding: 0.5rem 0.9rem;
+  color: rgb(var(--color-offwhite) / 0.85);
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.site-header__nav a:hover {
+  background: rgb(var(--color-teal) / 0.15);
+  color: rgb(var(--color-offwhite));
+}
+
+.site-header__nav a[aria-current="page"] {
+  background: rgb(var(--color-teal) / 0.18);
+  color: rgb(var(--color-teal-dark));
+}
+
+/* ============ Footer (matches index.html's start-screen footer) ============ */
+
+.site-footer {
+  background: linear-gradient(135deg, rgb(var(--color-navy)) 0%, rgb(var(--color-navy-light)) 100%);
+  border-top: 2px solid rgb(var(--color-teal-dark) / 0.3);
+}
+
+.site-footer__content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem 0;
+}
+
+.site-footer__top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.site-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 300px;
+}
+
+.site-footer__logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgb(var(--color-navy-dark));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.site-footer__logo span {
+  background: rgb(var(--color-offwhite));
+  border-radius: 3px;
+}
+
+.site-footer__logo span.accent {
+  background: rgb(var(--color-coral));
+  transform: rotate(-12deg);
+}
+
+.site-footer__name {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgb(var(--color-offwhite));
+}
+
+.site-footer__tagline {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: rgb(var(--color-offwhite) / 0.8);
+}
+
+.site-footer__columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(130px, 1fr));
+  gap: 2rem;
+  flex: 1 1 380px;
+}
+
+.site-footer__columns h4 {
+  margin: 0 0 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(var(--color-teal-dark));
+}
+
+.site-footer__columns ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-footer__columns li {
+  margin-bottom: 0.55rem;
+}
+
+.site-footer a {
+  color: rgb(var(--color-offwhite) / 0.85);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.15s ease;
+}
+
+.site-footer a:hover {
+  color: rgb(var(--color-teal-dark));
+}
+
+.site-footer__bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 2rem;
+  border-top: 1px solid rgb(var(--color-teal-dark) / 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.site-footer__bottom p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgb(var(--color-offwhite) / 0.8);
+}
+
+.site-footer__legal {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.site-footer__legal a {
+  font-size: 0.8rem;
+}
