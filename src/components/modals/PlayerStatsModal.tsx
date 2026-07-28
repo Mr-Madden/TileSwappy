@@ -4,6 +4,7 @@ import { ModalShell } from '../common/ModalShell';
 import { TileSwappyLogo } from '../TileSwappyLogo/TileSwappyLogo';
 import { calculateCurrentStreak } from '../../utils/streaks';
 import { getCurrentDate } from '../../utils/helpers';
+import { shareOrDownloadImage } from '../../utils/shareImage';
 
 interface PlayerStatsModalProps {
   onClose: () => void;
@@ -296,24 +297,7 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
     setShareStatus('sharing');
     try {
       const canvas = buildStatsCardCanvas();
-      const blob: Blob | null = await new Promise((resolve) => canvas.toBlob((b) => resolve(b), 'image/png'));
-      if (!blob) throw new Error('Could not generate image');
-
-      const file = new File([blob], 'tileswappy-stats.png', { type: 'image/png' });
-      const shareData = { files: [file], title: 'My TileSwappy Stats' };
-
-      if (navigator.share && navigator.canShare?.(shareData)) {
-        await navigator.share(shareData);
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'tileswappy-stats.png';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      }
+      await shareOrDownloadImage(canvas, 'tileswappy-stats.png', 'My TileSwappy Stats');
       setShareStatus('done');
     } catch (err) {
       // The user cancelling the native share sheet isn't a real error.

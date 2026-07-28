@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Calendar, Settings, BarChart3, Home, Menu } from 'lucide-react';
+import { Calendar, Settings, BarChart3, Home, Menu, Share2 } from 'lucide-react';
 import { useGameState } from './hooks/useGameState';
 import { useSoundEffects, SoundStyle } from './hooks/useSoundEffects';
 import { StartScreen } from './components/screens/StartScreen';
@@ -10,6 +10,8 @@ import { ThemeBackground } from './components/common/ThemeBackground';
 import { Tooltip } from './components/common/Tooltip';
 import { THEMES, DEFAULT_THEME } from './theme/themes';
 import { getCurrentDate } from './utils/helpers';
+import { calculateCurrentStreak } from './utils/streaks';
+import { shareOrDownloadImage } from './utils/shareImage';
 
 // Lazy load modals - they're not needed on initial load
 const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
@@ -87,6 +89,7 @@ const App: React.FC = () => {
   const [newBests, setNewBests] = useState<{ time: boolean; moves: boolean; swaps: boolean }>({
     time: false, moves: false, swaps: false
   });
+  const [shareResultStatus, setShareResultStatus] = useState<'idle' | 'sharing' | 'done' | 'error'>('idle');
   const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
@@ -477,11 +480,189 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     const centiseconds = Math.floor((ms % 1000) / 10);
-    
+
     if (minutes > 0) {
       return `${minutes}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
     }
     return `${seconds}.${centiseconds.toString().padStart(2, '0')}s`;
+  };
+
+  // Includes today, since setCompletedDates already ran earlier in the
+  // same completion effect that shows this screen -- so a player who
+  // just solved their first puzzle in a row sees "1 Day Streak", not 0.
+  const currentStreak = calculateCurrentStreak(completedDates, frozenDates, getCurrentDate());
+
+  // A Wordle-style "share what you just solved" card -- separate from
+  // PlayerStatsModal's aggregate stats card, this one is scoped to
+  // today's specific puzzle, shown right at the moment of completion
+  // when a player is most likely to want to brag about it. Deliberately
+  // draws the puzzle's gradient rather than its real photo -- loading a
+  // cross-origin image onto the canvas risks tainting it, which would
+  // silently break canvas.toBlob() below.
+  const buildResultCardCanvas = (): HTMLCanvasElement => {
+    const size = 1080;
+    const height = 1280;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas unavailable');
+
+    const cssColor = (name: string, fallback: string) => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return raw ? `rgb(${raw})` : fallback;
+    };
+
+    const navy = cssColor('--color-navy', '#0d1b2a');
+    const navyDark = cssColor('--color-navy-dark', '#08131d');
+    const coral = cssColor('--color-coral', '#ff4c4c');
+    const teal = cssColor('--color-teal', '#2ec4b6');
+    const gold = cssColor('--color-gold', '#fbbf24');
+    const offwhite = cssColor('--color-offwhite', '#f5f5f0');
+
+    const bgGrad = ctx.createLinearGradient(0, 0, size, height);
+    bgGrad.addColorStop(0, navy);
+    bgGrad.addColorStop(1, navyDark);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, size, height);
+
+    // Wordmark: 2x2 tile mark + "TileSwappy"
+    const mx = 90, my = 90, markSize = 80, mgap = 8;
+    const half = (markSize - mgap) / 2;
+    ctx.fillStyle = offwhite;
+    ctx.fillRect(mx, my, half, half);
+    ctx.fillStyle = coral;
+    ctx.fillRect(mx + half + mgap, my, half, half);
+    ctx.fillStyle = teal;
+    ctx.fillRect(mx, my + half + mgap, half, half);
+    ctx.fillStyle = offwhite;
+    ctx.fillRect(mx + half + mgap, my + half + mgap, half, half);
+
+    ctx.fillStyle = offwhite;
+    ctx.font = '600 52px system-ui, -apple-system, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.fillText('TileSwappy', mx + markSize + 28, my + markSize / 2);
+
+    // Puzzle-colored banner, standing in for the actual photo
+    const bannerX = 90;
+    const bannerY = 240;
+    const bannerW = size - 180;
+    const bannerH = 300;
+    const stops: string[] = currentPuzzle?.gradient?.length ? currentPuzzle.gradient : [coral, teal];
+    const bannerGrad = ctx.createLinearGradient(bannerX, bannerY, bannerX + bannerW, bannerY + bannerH);
+    stops.forEach((c: string, i: number) => bannerGrad.addColorStop(stops.length > 1 ? i / (stops.length - 1) : 0, c));
+    const bRadius = 28;
+    ctx.beginPath();
+    ctx.moveTo(bannerX + bRadius, bannerY);
+    ctx.arcTo(bannerX + bannerW, bannerY, bannerX + bannerW, bannerY + bannerH, bRadius);
+    ctx.arcTo(bannerX + bannerW, bannerY + bannerH, bannerX, bannerY + bannerH, bRadius);
+    ctx.arcTo(bannerX, bannerY + bannerH, bannerX, bannerY, bRadius);
+    ctx.arcTo(bannerX, bannerY, bannerX + bannerW, bannerY, bRadius);
+    ctx.closePath();
+    ctx.fillStyle = bannerGrad;
+    ctx.fill();
+
+    // Same dark-scrim-then-light-text approach HomeScreen's puzzle cards
+    // use over their thumbnails -- plain dark text sat unreadable against
+    // whichever half of the gradient happened to be light.
+    ctx.fillStyle = 'rgba(10, 14, 20, 0.4)';
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = offwhite;
+    ctx.font = '700 42px system-ui, -apple-system, sans-serif';
+    const bannerLabel = (currentPuzzle?.themeName || currentPuzzle?.title || 'Daily Puzzle').toUpperCase();
+    ctx.fillText(bannerLabel, bannerX + bannerW / 2, bannerY + bannerH / 2);
+
+    // Headline + date
+    ctx.fillStyle = offwhite;
+    ctx.font = '800 68px system-ui, -apple-system, sans-serif';
+    ctx.fillText('SOLVED!', size / 2, bannerY + bannerH + 100);
+
+    const dateLabel = new Date(`${currentPuzzleDate}T00:00:00`).toLocaleDateString(undefined, {
+      weekday: 'long', month: 'long', day: 'numeric'
+    });
+    ctx.fillStyle = teal;
+    ctx.font = '600 32px system-ui, -apple-system, sans-serif';
+    ctx.fillText(dateLabel, size / 2, bannerY + bannerH + 155);
+
+    // Stat row: Moves / Swaps / Time
+    const stats: [string, string, boolean][] = [
+      [String(gameState.gameState.moves), 'MOVES', newBests.moves],
+      [String(gameState.gameState.swaps), 'SWAPS', newBests.swaps],
+      [formatTime(gameState.gameState.solveTime || 0), 'TIME', newBests.time]
+    ];
+
+    const gridTop = bannerY + bannerH + 220;
+    const cellGap = 24;
+    const cellW = (bannerW - cellGap * 2) / 3;
+    const cellH = 220;
+
+    stats.forEach(([value, label, isBest], i) => {
+      const x = bannerX + i * (cellW + cellGap);
+      const y = gridTop;
+      const r = 20;
+
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + cellW, y, x + cellW, y + cellH, r);
+      ctx.arcTo(x + cellW, y + cellH, x, y + cellH, r);
+      ctx.arcTo(x, y + cellH, x, y, r);
+      ctx.arcTo(x, y, x + cellW, y, r);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = i === 1 ? teal : coral;
+      ctx.font = '700 54px system-ui, -apple-system, sans-serif';
+      ctx.fillText(value, x + cellW / 2, y + cellH / 2 - 10);
+
+      ctx.fillStyle = offwhite;
+      ctx.globalAlpha = 0.6;
+      ctx.font = '600 24px system-ui, -apple-system, sans-serif';
+      ctx.fillText(label, x + cellW / 2, y + cellH / 2 + 40);
+      ctx.globalAlpha = 1;
+
+      if (isBest) {
+        ctx.fillStyle = gold;
+        ctx.font = '800 22px system-ui, -apple-system, sans-serif';
+        ctx.fillText('★ NEW BEST', x + cellW / 2, y - 18);
+      }
+    });
+
+    if (currentStreak > 0) {
+      ctx.fillStyle = coral;
+      ctx.font = '700 42px system-ui, -apple-system, sans-serif';
+      ctx.fillText(
+        currentStreak === 1 ? '1 Day Streak' : `${currentStreak} Day Streak`,
+        size / 2,
+        gridTop + cellH + 90
+      );
+    }
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = offwhite;
+    ctx.globalAlpha = 0.4;
+    ctx.font = '500 30px system-ui, -apple-system, sans-serif';
+    ctx.fillText('tileswappy.com', size / 2, height - 60);
+    ctx.globalAlpha = 1;
+
+    return canvas;
+  };
+
+  const handleShareResult = async () => {
+    setShareResultStatus('sharing');
+    try {
+      const canvas = buildResultCardCanvas();
+      await shareOrDownloadImage(canvas, 'tileswappy-result.png', 'My TileSwappy Result');
+      setShareResultStatus('done');
+    } catch (err) {
+      setShareResultStatus((err as any)?.name === 'AbortError' ? 'idle' : 'error');
+    } finally {
+      setTimeout(() => setShareResultStatus('idle'), 2500);
+    }
   };
 
   useEffect(() => {
@@ -564,13 +745,17 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           }
         };
       });
-
-      setTimeout(() => {
-        setShowCompletionAnimation(false);
-        setShowStreak(true);
-      }, 4000);
     }
   }, [gameState.gameState.status, gameState.gameState.solveTime, gameState.gameState.moves, gameState.gameState.swaps, hasProcessedCompletion, currentPuzzle, currentPuzzleDate]);
+
+  // The completion screen now stays up until the player dismisses it
+  // (tapping anywhere outside the card) rather than auto-advancing on a
+  // timer -- so it can't vanish out from under someone still reading
+  // their stats or mid-share.
+  const dismissCompletionAnimation = () => {
+    setShowCompletionAnimation(false);
+    setShowStreak(true);
+  };
 
   // A small reward chime whenever a swap/rotate causes a NEW edge to
   // start glowing -- only on increases, so undoing a match (or a swap
@@ -733,7 +918,10 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       )}
 
       {showCompletionAnimation && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center overflow-hidden">
+        <div
+          onClick={dismissCompletionAnimation}
+          className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center overflow-hidden"
+        >
           <div className="absolute inset-0 pointer-events-none">
             {[...Array(newBests.time || newBests.moves || newBests.swaps ? 90 : 55)].map((_, i) => {
               const shape = ['circle', 'square', 'diamond'][i % 3];
@@ -757,7 +945,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             })}
           </div>
 
-          <div className="text-center relative z-10">
+          <div className="text-center relative z-10" onClick={(e) => e.stopPropagation()}>
             <div className="mb-6 animate-bounce-in">
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-teal/30 rounded-full blur-2xl animate-pulse"></div>
@@ -848,6 +1036,27 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                 </p>
               </div>
             )}
+
+            <div className="animate-slide-up mt-5" style={{ animationDelay: '1s' }}>
+              <button
+                onClick={handleShareResult}
+                disabled={shareResultStatus === 'sharing'}
+                className="inline-flex items-center gap-2 bg-navy-light/80 backdrop-blur-sm border-2 border-teal hover:bg-teal hover:text-navy-dark text-teal font-bold px-5 py-2.5 rounded-xl transition shadow-teal-glow disabled:opacity-60"
+              >
+                <Share2 size={16} />
+                {shareResultStatus === 'sharing'
+                  ? 'Preparing…'
+                  : shareResultStatus === 'done'
+                  ? 'Shared!'
+                  : shareResultStatus === 'error'
+                  ? 'Couldn’t share'
+                  : 'Share Result'}
+              </button>
+            </div>
+
+            <div className="animate-slide-up mt-4" style={{ animationDelay: '1.2s' }}>
+              <p className="text-xs text-offwhite/40">Tap anywhere to continue</p>
+            </div>
           </div>
 
           <style>{`
