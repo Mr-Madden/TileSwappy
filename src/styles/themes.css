@@ -295,6 +295,33 @@
   --color-bronze: 138 106 58;
 }
 
+/*
+ * Thunderstorm -- my own pick, added at the maintainer's invitation.
+ * Electric gold standing in for "coral" reads as lightning wherever the
+ * app uses that accent (the TODAY badge, the primary button glow), with
+ * a cool storm-blue "teal" for rain and violet-grey clouds behind it.
+ */
+:root[data-theme="storm"] {
+  --color-navy: 18 20 28;
+  --color-navy-light: 30 34 46;
+  --color-navy-dark: 10 11 16;
+  --color-coral: 255 214 64;
+  --color-coral-light: 255 230 130;
+  --color-coral-dark: 199 158 20;
+  --color-teal: 110 145 190;
+  --color-teal-light: 158 184 216;
+  --color-teal-dark: 72 98 138;
+  --color-offwhite: 224 230 240;
+  --color-violet: 100 80 150;
+  --color-violet-light: 152 132 200;
+  --color-violet-dark: 66 50 104;
+  --color-gold: 255 240 180;
+  --color-gold-light: 255 248 214;
+  --color-gold-dark: 200 182 112;
+  --color-silver: 188 198 212;
+  --color-bronze: 120 100 82;
+}
+
 :root[data-theme="mono"] {
   --color-navy: 12 12 12;
   --color-navy-light: 26 26 26;

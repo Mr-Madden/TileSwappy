@@ -22,6 +22,7 @@ export const THEMES: ThemeOption[] = [
   { id: 'candy', name: 'Candy Shop', swatch: ['#ffd6ec', '#d6317f', '#2a9d6f'] },
   { id: 'autumn', name: 'Autumn', swatch: ['#4a1e1e', '#e07a3f', '#6b7a3f'] },
   { id: 'deco', name: 'Art Deco', swatch: ['#0d1f16', '#a63d4a', '#3f6b52'] },
+  { id: 'storm', name: 'Thunderstorm', swatch: ['#12141c', '#ffd640', '#6e91be'] },
   { id: 'mono', name: 'Monochrome', swatch: ['#0c0c0c', '#ff4c4c', '#d9d9d9'] },
 ];
 

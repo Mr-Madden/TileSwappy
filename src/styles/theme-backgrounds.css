@@ -43,6 +43,38 @@
   background: radial-gradient(ellipse at 50% 100%, rgb(var(--color-offwhite) / 0.14), transparent 65%);
 }
 
+/* Ocean: a single larger bubble that rises up and pops from time to
+   time, distinct from the constant fine bubble field on the canvas
+   below -- most of each animation cycle it sits invisible offscreen. */
+.bg-effect-bigbubble {
+  position: absolute;
+  bottom: -12%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgb(var(--color-offwhite) / 0.55), rgb(var(--color-offwhite) / 0.08) 60%, transparent 75%);
+  border: 1px solid rgb(var(--color-offwhite) / 0.35);
+  opacity: 0;
+  animation: theme-bubble-rise 14s ease-in infinite;
+}
+
+/* Cosmic: an occasional shooting star crossing the sky */
+.bg-effect-shootingstar {
+  position: absolute;
+  top: 12%;
+  left: -10%;
+  width: 130px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgb(var(--color-offwhite) / 0.9));
+  border-radius: 999px;
+  opacity: 0;
+  animation: theme-shooting-star 11s linear infinite;
+}
+.bg-effect-shootingstar.s2 {
+  top: 34%;
+  width: 90px;
+  animation-duration: 15s;
+  animation-delay: -6s;
+}
+
 /* Arcade: blobs */
 .bg-effect-blob {
   position: absolute;
@@ -71,13 +103,58 @@
   animation: theme-scan 6s linear infinite;
 }
 
-/* Retro: scanlines */
+/* Retro: persistent dot-matrix texture, like an old handheld's LCD grid */
+.bg-effect-pixelgrid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+  background-image: radial-gradient(rgb(0 0 0 / 0.55) 1px, transparent 1px);
+  background-size: 5px 5px;
+}
+
+/* Retro: scanlines -- dark CRT lines, not just a faint tint, so the
+   texture actually reads at a glance instead of disappearing into the
+   background. */
 .bg-effect-scanlines {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(180deg, rgb(var(--color-coral) / 0.05) 0px, rgb(var(--color-coral) / 0.05) 1px, transparent 1px, transparent 3px);
+  background: repeating-linear-gradient(180deg, rgb(0 0 0 / 0.4) 0px, rgb(0 0 0 / 0.4) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode: multiply;
   animation: theme-scanline-flicker 3s ease-in-out infinite;
 }
+
+/* Retro: a CRT refresh bar continuously sweeping down the screen --
+   constant motion so the theme doesn't feel static between glitches. */
+.bg-effect-crtsweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18vh;
+  background: linear-gradient(180deg, transparent, rgb(var(--color-offwhite) / 0.16), transparent);
+  mix-blend-mode: screen;
+  animation: theme-crt-sweep 5s linear infinite;
+}
+
+/* Retro: a VHS-tracking jitter, more frequent and bigger than a subtle
+   flourish, plus two colored fringe layers that flash offset during the
+   glitch window for a cheap-but-convincing chromatic-split look. */
+.bg-effect-glitch {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: repeating-linear-gradient(0deg, rgb(var(--color-teal) / 0.18) 0px, transparent 2px, transparent 4px);
+  mix-blend-mode: screen;
+  animation: theme-vhs-glitch 4s steps(1, end) infinite;
+}
+.bg-effect-glitch-fringe {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  mix-blend-mode: screen;
+  animation: theme-vhs-fringe 4s steps(1, end) infinite;
+}
+.bg-effect-glitch-fringe.r { background: rgb(255 40 60 / 0.22); transform: translateX(-6px); }
+.bg-effect-glitch-fringe.b { background: rgb(40 210 255 / 0.2); transform: translateX(6px); }
 
 /* Botanical: sun + leaves */
 .bg-effect-sun {
@@ -99,6 +176,32 @@
 }
 .bg-effect-leaf.l1 { width: 18vw; height: 24vw; max-width: 200px; max-height: 260px; top: -6vw; right: -3vw; animation: theme-leaf-sway 7s ease-in-out infinite; --leaf-rotate: 18deg; }
 .bg-effect-leaf.l2 { width: 12vw; height: 16vw; max-width: 140px; max-height: 180px; bottom: -3vw; left: -4vw; animation: theme-leaf-sway 9s ease-in-out infinite; animation-delay: -2.5s; --leaf-rotate: -25deg; }
+
+/* Botanical: vines growing up from the bottom edge, with buds that
+   sprout partway through each growth cycle instead of all at once. */
+.bg-effect-plant {
+  position: absolute;
+  bottom: -2vh;
+  width: 1.4vh;
+  max-width: 14px;
+  height: 42vh;
+  max-height: 320px;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(180deg, rgb(var(--color-teal-light) / 0.85), rgb(var(--color-teal-dark) / 0.9));
+  transform-origin: bottom center;
+  animation: theme-grow 9s ease-in-out infinite;
+}
+.bg-effect-bud {
+  position: absolute;
+  width: 3.2vh;
+  max-width: 30px;
+  height: 2.4vh;
+  max-height: 22px;
+  background: rgb(var(--color-teal-dark));
+  border-radius: 0% 90% 0% 90%;
+  opacity: 0;
+  animation: theme-bud-sprout 9s ease-in-out infinite;
+}
 
 /* Zen: breathing ripples */
 .bg-effect-ripple {
@@ -132,15 +235,70 @@
   background: rgb(var(--color-coral) / 0.25);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
 }
+/* Desert: a wider, brighter gust sweeping over the dunes on top of the
+   constant blowing-grain canvas -- reads as a stronger wind pulse. */
+.bg-effect-sandgust {
+  position: absolute;
+  top: 38%;
+  left: -45%;
+  width: 70%;
+  height: 22vh;
+  background: linear-gradient(100deg, transparent, rgb(var(--color-coral-light) / 0.22) 45%, transparent 80%);
+  filter: blur(8px);
+  opacity: 0;
+  animation: theme-sand-gust 8s ease-in-out infinite;
+}
+.bg-effect-sandgust.g2 {
+  top: 62%;
+  height: 16vh;
+  animation-duration: 11s;
+  animation-delay: -4s;
+}
 
-/* Ice: crystal facets */
+/* Ice: an overall icy-blue wash, always present -- without this the
+   theme is just a dark background with two small corner facets, which
+   doesn't read as "icy" at a glance. */
+.bg-effect-frostwash {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgb(var(--color-teal-light) / 0.28), transparent 65%),
+    linear-gradient(200deg, rgb(var(--color-teal) / 0.16), transparent 55%),
+    linear-gradient(0deg, rgb(var(--color-teal-dark) / 0.18), transparent 40%);
+  animation: theme-frost-pulse 9s ease-in-out infinite;
+}
+
+/* Ice: crystal facets -- brighter and bluer, with a glow so they read
+   as ice catching light rather than flat translucent panels. */
 .bg-effect-facet {
   position: absolute;
-  background: linear-gradient(160deg, rgb(var(--color-offwhite) / 0.18), rgb(var(--color-offwhite) / 0.03));
-  border: 1px solid rgb(var(--color-offwhite) / 0.2);
+  background: linear-gradient(160deg, rgb(var(--color-teal-light) / 0.4), rgb(var(--color-teal) / 0.08));
+  border: 1px solid rgb(var(--color-teal-light) / 0.55);
+  box-shadow: 0 0 40px rgb(var(--color-teal) / 0.3);
 }
 .bg-effect-facet.f1 { width: 26vw; height: 26vw; max-width: 260px; max-height: 260px; top: -6vw; right: -4vw; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); animation: theme-glacier-drift 22s ease-in-out infinite; }
 .bg-effect-facet.f2 { width: 16vw; height: 16vw; max-width: 160px; max-height: 160px; bottom: 12vh; left: -3vw; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); animation: theme-glacier-drift 27s ease-in-out infinite reverse; animation-delay: -8s; }
+.bg-effect-facet.f3 { width: 11vw; height: 11vw; max-width: 110px; max-height: 110px; top: 38vh; right: 5vw; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); animation: theme-glacier-drift 18s ease-in-out infinite; animation-delay: -4s; }
+
+/* Ice: an occasional glint of light sweeping across the facets -- wider
+   and brighter than the other themes' gusts since it's meant to be the
+   theme's signature "spectacular" moment. */
+.bg-effect-glint {
+  position: absolute;
+  top: -10%;
+  left: -35%;
+  width: 55%;
+  height: 130%;
+  background: linear-gradient(100deg, transparent, rgb(var(--color-offwhite) / 0.55) 50%, transparent 80%);
+  filter: blur(3px);
+  opacity: 0;
+  animation: theme-glint-sweep 8s ease-in-out infinite;
+}
+.bg-effect-glint.g2 {
+  top: 5%;
+  animation-duration: 11s;
+  animation-delay: -4.5s;
+}
 
 /* Candy: dot grid */
 .bg-effect-dotgrid {
@@ -152,13 +310,91 @@
   animation: theme-dot-twinkle 4s ease-in-out infinite;
 }
 
+/* Candy: peppermints, gumdrops, and chocolate squares strung along the
+   borders, each gently bobbing/rotating in place. */
+.bg-effect-candy {
+  position: absolute;
+  animation: theme-candy-bob 5s ease-in-out infinite;
+}
+.bg-effect-candy.peppermint {
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgb(var(--color-navy-light)) 0deg 18deg, rgb(var(--color-coral)) 18deg 36deg);
+  border: 3px solid rgb(var(--color-navy-light) / 0.9);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+}
+.bg-effect-candy.gumdrop {
+  border-radius: 50% 50% 12% 12% / 65% 65% 12% 12%;
+  box-shadow: inset -4px -6px 0 rgb(0 0 0 / 0.12), 0 3px 8px rgb(0 0 0 / 0.25);
+}
+.bg-effect-candy.gumdrop.c1 { background: rgb(var(--color-violet)); }
+.bg-effect-candy.gumdrop.c2 { background: rgb(var(--color-gold)); }
+.bg-effect-candy.chocolate {
+  border-radius: 6px;
+  background: linear-gradient(155deg, #8a5a3b, #5c3a24);
+  box-shadow: inset 0 0 0 2px rgb(0 0 0 / 0.15), 0 3px 8px rgb(0 0 0 / 0.25);
+}
+.bg-effect-candy.chocolate::before {
+  content: '';
+  position: absolute;
+  inset: 20% 0;
+  border-left: 1px solid rgb(0 0 0 / 0.2);
+  border-right: 1px solid rgb(0 0 0 / 0.2);
+}
+
 /* Autumn: falling leaves */
 .bg-effect-leafdrop {
   position: absolute;
   top: -5%;
   opacity: 0.85;
   border-radius: 0% 100% 0% 100%;
-  animation: theme-fall 9s linear infinite;
+  animation: theme-fall 10s linear infinite;
+}
+
+/* Autumn: an occasional visible gust sweeping through, on top of the
+   leaves' own gust-timed sway below. */
+.bg-effect-breeze {
+  position: absolute;
+  top: 22%;
+  left: -35%;
+  width: 65%;
+  height: 16vh;
+  background: linear-gradient(100deg, transparent, rgb(var(--color-offwhite) / 0.12) 45%, transparent 80%);
+  filter: blur(7px);
+  opacity: 0;
+  animation: theme-breeze-gust 9s ease-in-out infinite;
+}
+.bg-effect-breeze.g2 {
+  top: 58%;
+  height: 12vh;
+  animation-duration: 12.5s;
+  animation-delay: -5s;
+}
+
+/* Thunderstorm: slow drifting storm clouds, always present */
+.bg-effect-stormcloud {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgb(var(--color-violet) / 0.55), transparent 70%);
+  filter: blur(18px);
+}
+.bg-effect-stormcloud.c1 { width: 55vw; height: 22vh; max-width: 480px; max-height: 200px; top: -6vh; left: -15vw; animation: theme-cloud-drift 26s ease-in-out infinite; }
+.bg-effect-stormcloud.c2 { width: 45vw; height: 18vh; max-width: 400px; max-height: 170px; top: 4vh; right: -18vw; animation: theme-cloud-drift 32s ease-in-out infinite reverse; animation-delay: -10s; }
+.bg-effect-stormcloud.c3 { width: 35vw; height: 15vh; max-width: 320px; max-height: 140px; top: 14vh; left: 25vw; animation: theme-cloud-drift 21s ease-in-out infinite; animation-delay: -5s; }
+
+/* Thunderstorm: a lightning flash lighting up the whole screen every so
+   often -- the theme's signature spectacular moment, brighter than the
+   other themes' occasional flourishes because that flash is the point. */
+.bg-effect-lightning {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 20%, rgb(var(--color-offwhite) / 0.95), rgb(var(--color-teal-light) / 0.3) 55%, transparent 80%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: theme-lightning-flash 9s ease-out infinite;
+}
+.bg-effect-lightning.s2 {
+  animation-duration: 13s;
+  animation-delay: -6s;
 }
 
 /* Deco: gold sunburst */
@@ -189,8 +425,45 @@
   50% { opacity: 0.5; transform: translateX(-50%) scale(1.05); }
 }
 @keyframes theme-fall {
-  from { transform: translateY(-10vh) rotate(0deg); opacity: 0.9; }
-  to { transform: translateY(110vh) rotate(200deg); opacity: 0.2; }
+  /* Sideways drift isn't monotonic -- it surges around 30% and 68% and
+     eases between -- so leaves read as getting pushed by gusts rather
+     than just sliding at a constant diagonal. */
+  0% { transform: translate(0, -10vh) rotate(0deg); opacity: 0.9; }
+  15% { transform: translate(1vw, 8vh) rotate(30deg); }
+  30% { transform: translate(9vw, 28vh) rotate(70deg); }
+  50% { transform: translate(5vw, 50vh) rotate(150deg); opacity: 0.75; }
+  68% { transform: translate(13vw, 68vh) rotate(210deg); }
+  85% { transform: translate(8vw, 88vh) rotate(270deg); opacity: 0.45; }
+  100% { transform: translate(11vw, 110vh) rotate(330deg); opacity: 0.15; }
+}
+@keyframes theme-breeze-gust {
+  0%, 70% { opacity: 0; transform: translateX(0); }
+  78% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateX(170vw); }
+}
+@keyframes theme-sand-gust {
+  0%, 60% { opacity: 0; transform: translateX(0); }
+  70% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateX(180vw); }
+}
+@keyframes theme-grow {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+@keyframes theme-bud-sprout {
+  0%, 30% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  55%, 90% { opacity: 0.85; transform: scale(1) rotate(var(--bud-rotate, 15deg)); }
+  100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+}
+@keyframes theme-candy-bob {
+  0%, 100% { transform: translateY(0) rotate(var(--candy-rotate, 0deg)); }
+  50% { transform: translateY(-8px) rotate(calc(var(--candy-rotate, 0deg) + 6deg)); }
+}
+@keyframes theme-bubble-rise {
+  0%, 55% { opacity: 0; transform: translateY(0) scale(0.6); }
+  62% { opacity: 0.9; transform: translateY(-10vh) scale(1); }
+  90% { opacity: 0.7; transform: translateY(-95vh) scale(1.15); }
+  100% { opacity: 0; transform: translateY(-110vh) scale(1.2); }
 }
 @keyframes theme-blob-float {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -217,16 +490,72 @@
   from { transform: translateX(-50%) rotate(0deg); }
   to { transform: translateX(-50%) rotate(360deg); }
 }
+@keyframes theme-shooting-star {
+  0%, 70% { opacity: 0; transform: translate(0, 0) rotate(18deg); }
+  72% { opacity: 1; }
+  84% { opacity: 1; transform: translate(120vw, 55vh) rotate(18deg); }
+  85%, 100% { opacity: 0; transform: translate(120vw, 55vh) rotate(18deg); }
+}
+@keyframes theme-glint-sweep {
+  0%, 65% { opacity: 0; transform: translateX(0); }
+  75% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateX(220vw); }
+}
+@keyframes theme-vhs-glitch {
+  0%, 88%, 100% { opacity: 0; transform: translate(0, 0); }
+  89% { opacity: 0.75; transform: translate(10px, 0); }
+  90% { opacity: 0.35; transform: translate(-8px, 3px); }
+  91% { opacity: 0.7; transform: translate(6px, -4px); }
+  92% { opacity: 0.4; transform: translate(-4px, 2px); }
+  93% { opacity: 0; transform: translate(0, 0); }
+}
+@keyframes theme-vhs-fringe {
+  0%, 88%, 100% { opacity: 0; }
+  89%, 92% { opacity: 0.9; }
+  93% { opacity: 0; }
+}
+@keyframes theme-crt-sweep {
+  from { top: -20vh; }
+  to { top: 100vh; }
+}
+@keyframes theme-frost-pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+@keyframes theme-cloud-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6vw, 2vh) scale(1.08); }
+}
+@keyframes theme-lightning-flash {
+  0%, 84% { opacity: 0; }
+  85% { opacity: 1; }
+  87% { opacity: 0.15; }
+  88% { opacity: 0.85; }
+  90%, 100% { opacity: 0; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .bg-effect-aurora,
   .bg-effect-scan,
   .bg-effect-ripple,
   .bg-effect-leafdrop,
+  .bg-effect-breeze,
+  .bg-effect-sandgust,
+  .bg-effect-plant,
+  .bg-effect-bud,
+  .bg-effect-candy,
+  .bg-effect-bigbubble,
+  .bg-effect-shootingstar,
+  .bg-effect-glint,
+  .bg-effect-glitch,
+  .bg-effect-glitch-fringe,
+  .bg-effect-crtsweep,
+  .bg-effect-frostwash,
+  .bg-effect-lightning,
   .bg-effect-scanlines,
   .bg-effect-dotgrid,
   .bg-effect-sunburst,
-  /* These three effects vary duration/delay per instance via a compound
+  /* These effects vary duration/delay per instance via a compound
      class (e.g. .bg-effect-blob.b1), which has higher specificity than
      the plain .bg-effect-blob rule above -- list the compound selectors
      explicitly so this override actually wins. */
@@ -236,7 +565,19 @@
   .bg-effect-leaf.l1,
   .bg-effect-leaf.l2,
   .bg-effect-facet.f1,
-  .bg-effect-facet.f2 {
+  .bg-effect-facet.f2,
+  .bg-effect-facet.f3,
+  .bg-effect-stormcloud.c1,
+  .bg-effect-stormcloud.c2,
+  .bg-effect-stormcloud.c3 {
     animation: none;
+  }
+
+  /* These default to opacity: 0 so they can fade in/out via animation --
+     freezing the animation would leave them permanently invisible, so
+     pin them visible instead of just cutting the motion. */
+  .bg-effect-bud {
+    animation: none;
+    opacity: 0.85;
   }
 }
