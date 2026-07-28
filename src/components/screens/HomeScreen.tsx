@@ -221,7 +221,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 // than its own container and got clipped top/bottom. 320px
                 // was the baseline height tuned for carouselScale === 1,
                 // so it needs to scale right along with the cards.
-                style={{ height: 320 * carouselScale }}
+                style={{ height: 240 * carouselScale }}
                 onTouchStart={(e) => handleCarouselSwipeStart(e.touches[0].clientX, e.touches[0].clientY)}
                 onTouchEnd={(e) => handleCarouselSwipeEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY)}
                 onMouseDown={(e) => handleCarouselSwipeStart(e.clientX, e.clientY)}
@@ -246,32 +246,38 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       // that baseline), so cards fill however wide the
                       // container really is instead of just floating in
                       // extra empty space on a wider desktop screen.
-                      const xPos = adjustedOffset * 119 * carouselScale;
-                      const yPos = Math.abs(adjustedOffset) * 7.5 * carouselScale;
+                      // CARD_SIZE_SCALE shrinks card (and container) height
+                      // independently of the horizontal spread below --
+                      // it's applied to width/yPos only, not xPos, so a
+                      // shorter carousel doesn't also pull the cards closer
+                      // together.
+                      const CARD_SIZE_SCALE = 0.75;
+                      const xPos = adjustedOffset * 150 * carouselScale;
+                      const yPos = Math.abs(adjustedOffset) * 7.5 * carouselScale * CARD_SIZE_SCALE;
 
                       let scale = 1;
-                      let width = 225 * carouselScale;
+                      let width = 225 * carouselScale * CARD_SIZE_SCALE;
                       let opacity = 1;
 
                       if (adjustedOffset === 0) {
                         scale = 1.3;
-                        width = 150 * carouselScale;
+                        width = 150 * carouselScale * CARD_SIZE_SCALE;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 1) {
                         scale = 0.85;
-                        width = 131 * carouselScale;
+                        width = 131 * carouselScale * CARD_SIZE_SCALE;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 2) {
                         scale = 0.65;
-                        width = 113 * carouselScale;
+                        width = 113 * carouselScale * CARD_SIZE_SCALE;
                         opacity = 1;
                       } else if (Math.abs(adjustedOffset) === 3) {
                         scale = 0.5;
-                        width = 94 * carouselScale;
+                        width = 94 * carouselScale * CARD_SIZE_SCALE;
                         opacity = 1;
                       } else {
                         scale = 0.3;
-                        width = 63 * carouselScale;
+                        width = 63 * carouselScale * CARD_SIZE_SCALE;
                         opacity = 1;
                       }
 

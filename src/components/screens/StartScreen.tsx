@@ -1,13 +1,31 @@
 // src/components/StartScreen.tsx
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TileSwappyLogo } from '../TileSwappyLogo/TileSwappyLogo';
+import './StartScreen.css';
 
 interface StartScreenProps {
   onStart: () => void;
 }
 
+const TITLE = 'TileSwappy';
+
 export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
+  const [ripple, setRipple] = useState<{ origin: number; key: number } | null>(null);
+  const rippleTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => clearTimeout(rippleTimeout.current), []);
+
+  const triggerRipple = (index: number) => {
+    clearTimeout(rippleTimeout.current);
+    setRipple({ origin: index, key: Date.now() });
+    // Ripple has to outlive the farthest letter's staggered start (60ms
+    // per step) plus its own 0.7s pop, or that letter's class gets reset
+    // mid-animation and snaps back to idle-bob with a visible jump-cut.
+    const maxDistance = Math.max(index, TITLE.length - 1 - index);
+    rippleTimeout.current = setTimeout(() => setRipple(null), maxDistance * 60 + 700);
+  };
+
   return (
     <div className="min-h-screen bg-navy flex flex-col items-center justify-center p-4">
       <div className="mb-8">
@@ -16,8 +34,31 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
       <div className="text-center space-y-8 max-w-md w-full">
         {/* Logo/Title with TileSwappy colors */}
         <div className="space-y-4">
-          <h1 className="text-6xl font-bold text-offwhite drop-shadow-lg">
-            TileSwappy
+          <h1 className="title-letters text-6xl font-bold text-offwhite drop-shadow-lg">
+            {TITLE.split('').map((char, index) => {
+              const distance = ripple ? Math.abs(index - ripple.origin) : 0;
+              const style: React.CSSProperties = ripple
+                ? {
+                    animationDelay: `${distance * 0.06}s`,
+                    ['--letter-spin' as any]: index % 2 === 0 ? '360deg' : '-360deg',
+                    ['--letter-pop-color' as any]: index % 2 === 0 ? 'var(--color-coral)' : 'var(--color-teal)',
+                  }
+                : { animationDelay: `${index * 0.08}s` };
+
+              return (
+                <span
+                  key={ripple ? `${index}-${ripple.key}` : index}
+                  className={`letter ${ripple ? 'letter-splash' : ''}`}
+                  style={style}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerRipple(index);
+                  }}
+                >
+                  {char}
+                </span>
+              );
+            })}
           </h1>
           <p className="text-xl text-teal">
             Daily Puzzle Challenge
