@@ -8,9 +8,12 @@ import { GameBoard } from './components/game/GameBoard';
 import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
 import { ThemeBackground } from './components/common/ThemeBackground';
 import { Tooltip } from './components/common/Tooltip';
+import { ConfettiBurst } from './components/common/ConfettiBurst';
+import { TileMascot } from './components/TileMascot/TileMascot';
+import { MascotNarrator, MascotLine } from './components/TileMascot/MascotNarrator';
 import { THEMES, DEFAULT_THEME } from './theme/themes';
 import { getCurrentDate } from './utils/helpers';
-import { calculateCurrentStreak } from './utils/streaks';
+import { calculateCurrentStreak, STREAK_MILESTONES } from './utils/streaks';
 import { shareOrDownloadImage } from './utils/shareImage';
 
 // Lazy load modals - they're not needed on initial load
@@ -45,6 +48,33 @@ const STORAGE_KEYS = {
 };
 
 const MAX_STREAK_FREEZES = 3;
+
+// Tilo's reaction pool on the regular completion screen -- distinct from
+// the moves-based "Amazing!/Well Done!/Great Job!" line already shown
+// above it, so the two don't just repeat each other.
+const SOLVE_LINES: MascotLine[] = [
+  { text: "Nailed it! On to the next one." },
+  { text: "You make that look easy.", expression: 'wink' },
+  { text: "Great eye for those edges!" },
+  { text: "I knew you had it in you.", expression: 'love' },
+  { text: "That was oddly satisfying to watch.", expression: 'laughing' },
+  { text: "Come back tomorrow for a new one!" },
+  { text: "Wait, how did you even see that match?", expression: 'confused' },
+  { text: "Ok that one was actually impressive.", expression: 'excited' }
+];
+
+// Extra lines Tilo can pop in with if poked mid-milestone-celebration --
+// the FIRST thing shown is always the specific milestone message
+// (set/reset in App's milestoneBonusLine state), these only appear on
+// a click after that.
+const MILESTONE_BONUS_LINES: MascotLine[] = [
+  { text: "Seriously, that's impressive." },
+  { text: "I'm framing this moment.", expression: 'love' },
+  { text: "Go on, brag a little.", expression: 'wink' },
+  { text: "This deserves a victory lap.", expression: 'laughing' },
+  { text: "Okay, now I'm just showing off with you.", expression: 'excited' },
+  { text: "Triple-checking... yep, still real.", expression: 'confused' }
+];
 
 const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   try {
@@ -90,6 +120,13 @@ const App: React.FC = () => {
     time: false, moves: false, swaps: false
   });
   const [shareResultStatus, setShareResultStatus] = useState<'idle' | 'sharing' | 'done' | 'error'>('idle');
+  const [milestoneStreak, setMilestoneStreak] = useState<number | null>(null);
+  const [showMilestoneCelebration, setShowMilestoneCelebration] = useState(false);
+  const [shareMilestoneStatus, setShareMilestoneStatus] = useState<'idle' | 'sharing' | 'done' | 'error'>('idle');
+  // null = show the specific milestone message; poking Tilo swaps in a
+  // bonus reaction line instead. Reset on dismiss so the NEXT milestone
+  // celebration starts back on its own specific message.
+  const [milestoneBonusLine, setMilestoneBonusLine] = useState<MascotLine | null>(null);
   const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
@@ -690,6 +727,19 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       const isAdminPuzzle = currentPuzzle?.imageUrl || currentPuzzle?.image_url || currentPuzzle?.fromDatabase;
       if (isAdminPuzzle) {
         setCompletedDates(prev => new Set([...prev, currentPuzzleDate]));
+
+        // Computed locally rather than off the completedDates STATE --
+        // setCompletedDates above hasn't re-rendered yet, so that
+        // closure still holds the set from BEFORE this solve, and would
+        // miss a streak that just reached a milestone today.
+        const streakAfterThisSolve = calculateCurrentStreak(
+          new Set([...completedDates, currentPuzzleDate]),
+          frozenDates,
+          getCurrentDate()
+        );
+        if (STREAK_MILESTONES.includes(streakAfterThisSolve)) {
+          setMilestoneStreak(streakAfterThisSolve);
+        }
       }
 
       const finalTime = gameState.gameState.solveTime || 0;
@@ -751,10 +801,136 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
   // The completion screen now stays up until the player dismisses it
   // (tapping anywhere outside the card) rather than auto-advancing on a
   // timer -- so it can't vanish out from under someone still reading
-  // their stats or mid-share.
+  // their stats or mid-share. If today's solve also just crossed a
+  // streak milestone, route to that celebration next instead of
+  // straight to the Streak modal.
   const dismissCompletionAnimation = () => {
     setShowCompletionAnimation(false);
+    if (milestoneStreak) {
+      setShowMilestoneCelebration(true);
+    } else {
+      setShowStreak(true);
+    }
+  };
+
+  const dismissMilestoneCelebration = () => {
+    setShowMilestoneCelebration(false);
+    setMilestoneStreak(null);
+    setMilestoneBonusLine(null);
     setShowStreak(true);
+  };
+
+  const handleMilestoneMascotClick = () => {
+    setMilestoneBonusLine((prev) => {
+      let next = MILESTONE_BONUS_LINES[Math.floor(Math.random() * MILESTONE_BONUS_LINES.length)];
+      if (next.text === prev?.text) {
+        next = MILESTONE_BONUS_LINES[Math.floor(Math.random() * MILESTONE_BONUS_LINES.length)];
+      }
+      return next;
+    });
+  };
+
+  const MILESTONE_MESSAGES: Record<number, string> = {
+    7: "One week strong! You're building something great.",
+    30: "30 days?! That's a real habit now. Incredible work.",
+    100: "100 days. Triple digits. Absolute legend status."
+  };
+
+  const buildMilestoneCardCanvas = (streak: number): HTMLCanvasElement => {
+    const size = 1080;
+    const height = 1280;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas unavailable');
+
+    const cssColor = (name: string, fallback: string) => {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      return raw ? `rgb(${raw})` : fallback;
+    };
+
+    const navy = cssColor('--color-navy', '#0d1b2a');
+    const navyDark = cssColor('--color-navy-dark', '#08131d');
+    const coral = cssColor('--color-coral', '#ff4c4c');
+    const teal = cssColor('--color-teal', '#2ec4b6');
+    const gold = cssColor('--color-gold', '#fbbf24');
+    const offwhite = cssColor('--color-offwhite', '#f5f5f0');
+
+    const bgGrad = ctx.createLinearGradient(0, 0, size, height);
+    bgGrad.addColorStop(0, navy);
+    bgGrad.addColorStop(1, navyDark);
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, size, height);
+
+    const mx = 90, my = 90, markSize = 80, mgap = 8;
+    const half = (markSize - mgap) / 2;
+    ctx.fillStyle = offwhite;
+    ctx.fillRect(mx, my, half, half);
+    ctx.fillStyle = coral;
+    ctx.fillRect(mx + half + mgap, my, half, half);
+    ctx.fillStyle = teal;
+    ctx.fillRect(mx, my + half + mgap, half, half);
+    ctx.fillStyle = offwhite;
+    ctx.fillRect(mx + half + mgap, my + half + mgap, half, half);
+
+    ctx.fillStyle = offwhite;
+    ctx.font = '600 52px system-ui, -apple-system, sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    ctx.fillText('TileSwappy', mx + markSize + 28, my + markSize / 2);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = gold;
+    ctx.font = '800 340px system-ui, -apple-system, sans-serif';
+    ctx.fillText(String(streak), size / 2, 560);
+
+    ctx.fillStyle = offwhite;
+    ctx.font = '700 56px system-ui, -apple-system, sans-serif';
+    ctx.fillText('DAY STREAK', size / 2, 740);
+
+    ctx.fillStyle = teal;
+    ctx.font = '600 34px system-ui, -apple-system, sans-serif';
+    const message = MILESTONE_MESSAGES[streak] || "Still going strong!";
+    // Wrap the message across a couple of lines rather than letting it
+    // run off the edges -- it's plain-language copy, not a fixed label.
+    const words = message.split(' ');
+    const lines: string[] = [];
+    let line = '';
+    words.forEach((word) => {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > size - 220 && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+    if (line) lines.push(line);
+    lines.forEach((l, i) => ctx.fillText(l, size / 2, 830 + i * 48));
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = offwhite;
+    ctx.globalAlpha = 0.4;
+    ctx.font = '500 30px system-ui, -apple-system, sans-serif';
+    ctx.fillText('tileswappy.com', size / 2, height - 60);
+    ctx.globalAlpha = 1;
+
+    return canvas;
+  };
+
+  const handleShareMilestone = async () => {
+    if (!milestoneStreak) return;
+    setShareMilestoneStatus('sharing');
+    try {
+      const canvas = buildMilestoneCardCanvas(milestoneStreak);
+      await shareOrDownloadImage(canvas, 'tileswappy-streak.png', `My ${milestoneStreak}-Day TileSwappy Streak`);
+      setShareMilestoneStatus('done');
+    } catch (err) {
+      setShareMilestoneStatus((err as any)?.name === 'AbortError' ? 'idle' : 'error');
+    } finally {
+      setTimeout(() => setShareMilestoneStatus('idle'), 2500);
+    }
   };
 
   // A small reward chime whenever a swap/rotate causes a NEW edge to
@@ -893,8 +1069,21 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               />
             )}
           </div>
-          <div key={countdownValue} className="text-8xl font-extrabold text-coral pre-match-countdown-pop">
-            {countdownValue}
+          <div className="flex items-center justify-center gap-4">
+            {/* Tilo's expression builds anticipation as the countdown ticks
+                down, and re-pops each second the same way the number
+                itself does (same key-remount trick, same animation class). */}
+            <div key={`tilo-${countdownValue}`} className="pre-match-countdown-pop">
+              <TileMascot
+                size={64}
+                expression={countdownValue <= 1 ? 'excited' : countdownValue === 2 ? 'surprised' : 'thinking'}
+                color="coral"
+                bounce={false}
+              />
+            </div>
+            <div key={countdownValue} className="text-8xl font-extrabold text-coral pre-match-countdown-pop">
+              {countdownValue}
+            </div>
           </div>
 
           <style>{`
@@ -922,28 +1111,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           onClick={dismissCompletionAnimation}
           className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center overflow-hidden"
         >
-          <div className="absolute inset-0 pointer-events-none">
-            {[...Array(newBests.time || newBests.moves || newBests.swaps ? 90 : 55)].map((_, i) => {
-              const shape = ['circle', 'square', 'diamond'][i % 3];
-              const size = 8 + Math.floor(Math.random() * 8);
-              const color = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A8E6CF', '#C77DFF'][Math.floor(Math.random() * 5)];
-              return (
-                <div
-                  key={i}
-                  className={`absolute animate-confetti ${shape === 'circle' ? 'rounded-full' : shape === 'diamond' ? 'rotate-45' : ''}`}
-                  style={{
-                    left: `${Math.random() * 100}%`,
-                    top: '-20px',
-                    width: size,
-                    height: size,
-                    backgroundColor: color,
-                    animationDelay: `${Math.random() * 0.6}s`,
-                    animationDuration: `${1.8 + Math.random() * 2.2}s`
-                  }}
-                />
-              );
-            })}
-          </div>
+          <ConfettiBurst count={newBests.time || newBests.moves || newBests.swaps ? 90 : 55} />
 
           <div className="text-center relative z-10" onClick={(e) => e.stopPropagation()}>
             <div className="mb-6 animate-bounce-in">
@@ -1037,7 +1205,11 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               </div>
             )}
 
-            <div className="animate-slide-up mt-5" style={{ animationDelay: '1s' }}>
+            <div className="animate-slide-up mt-4 flex justify-center" style={{ animationDelay: '0.95s' }}>
+              <MascotNarrator lines={SOLVE_LINES} expression="excited" color="coral" size={52} />
+            </div>
+
+            <div className="animate-slide-up mt-5" style={{ animationDelay: '1.1s' }}>
               <button
                 onClick={handleShareResult}
                 disabled={shareResultStatus === 'sharing'}
@@ -1060,17 +1232,6 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           </div>
 
           <style>{`
-            @keyframes confetti {
-              0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-              }
-              100% {
-                transform: translateY(100vh) rotate(720deg);
-                opacity: 0;
-              }
-            }
-
             @keyframes bounce-in {
               0% {
                 transform: scale(0) rotate(-180deg);
@@ -1119,10 +1280,6 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               100% { transform: scale(1) translateX(-50%); opacity: 1; }
             }
 
-            .animate-confetti {
-              animation: confetti linear forwards;
-            }
-
             .animate-bounce-in {
               animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             }
@@ -1155,6 +1312,127 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
             .shadow-teal-glow {
               box-shadow: 0 0 20px rgb(var(--color-teal) / 0.4);
+            }
+          `}</style>
+        </div>
+      )}
+
+      {showMilestoneCelebration && milestoneStreak && (
+        <div
+          onClick={dismissMilestoneCelebration}
+          className="fixed inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center overflow-hidden"
+        >
+          <ConfettiBurst count={110} />
+
+          <div className="text-center relative z-10 px-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-center mb-4 milestone-mascot-pop">
+              <TileMascot
+                size={110}
+                expression={milestoneBonusLine?.expression ?? 'excited'}
+                color="gold"
+                bounce={false}
+                onClick={handleMilestoneMascotClick}
+              />
+            </div>
+
+            <p className="milestone-slide-up text-teal font-bold uppercase tracking-wide text-sm mb-1">
+              Milestone reached!
+            </p>
+
+            <h2
+              className="milestone-slide-up text-transparent bg-clip-text bg-gradient-to-r from-gold via-coral to-gold milestone-gradient font-extrabold"
+              style={{ fontSize: '5.5rem', lineHeight: 1, animationDelay: '0.15s' }}
+            >
+              {milestoneStreak}
+            </h2>
+            <p className="milestone-slide-up text-2xl font-bold text-offwhite mb-4" style={{ animationDelay: '0.15s' }}>
+              Day Streak
+            </p>
+
+            <div className="milestone-slide-up mascot-bubble-standalone mx-auto mb-6" style={{ animationDelay: '0.3s' }}>
+              <p key={milestoneBonusLine?.text ?? 'primary'} className="mascot-bubble-line">
+                {milestoneBonusLine?.text ?? (MILESTONE_MESSAGES[milestoneStreak] || 'Still going strong!')}
+              </p>
+            </div>
+
+            <div className="milestone-slide-up" style={{ animationDelay: '0.45s' }}>
+              <button
+                onClick={handleShareMilestone}
+                disabled={shareMilestoneStatus === 'sharing'}
+                className="inline-flex items-center gap-2 bg-navy-light/80 backdrop-blur-sm border-2 border-gold hover:bg-gold hover:text-navy-dark text-gold font-bold px-5 py-2.5 rounded-xl transition shadow-gold-glow disabled:opacity-60"
+              >
+                <Share2 size={16} />
+                {shareMilestoneStatus === 'sharing'
+                  ? 'Preparing…'
+                  : shareMilestoneStatus === 'done'
+                  ? 'Shared!'
+                  : shareMilestoneStatus === 'error'
+                  ? 'Couldn’t share'
+                  : 'Share Streak'}
+              </button>
+            </div>
+
+            <p className="milestone-slide-up text-xs text-offwhite/40 mt-5" style={{ animationDelay: '0.6s' }}>
+              Tap anywhere to continue
+            </p>
+          </div>
+
+          <style>{`
+            @keyframes milestone-mascot-pop {
+              0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+              60% { transform: scale(1.15) rotate(10deg); }
+              100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            }
+            .milestone-mascot-pop {
+              animation: milestone-mascot-pop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            }
+
+            @keyframes milestone-slide-up {
+              0% { transform: translateY(30px); opacity: 0; }
+              100% { transform: translateY(0); opacity: 1; }
+            }
+            .milestone-slide-up {
+              animation: milestone-slide-up 0.5s ease-out forwards;
+              opacity: 0;
+            }
+
+            @keyframes milestone-gradient {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+            .milestone-gradient {
+              background-size: 200% auto;
+              animation: milestone-gradient 3s ease infinite;
+            }
+
+            .shadow-gold-glow {
+              box-shadow: 0 0 20px rgb(var(--color-gold) / 0.45);
+            }
+
+            .mascot-bubble-standalone {
+              position: relative;
+              background: rgb(var(--color-navy-light) / 0.9);
+              border: 1px solid rgb(var(--color-gold) / 0.35);
+              border-radius: 14px;
+              padding: 0.75rem 1.1rem;
+              max-width: 320px;
+            }
+            .mascot-bubble-standalone p {
+              margin: 0;
+              font-size: 0.95rem;
+              font-weight: 600;
+              color: rgb(var(--color-offwhite));
+              line-height: 1.4;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              .milestone-mascot-pop,
+              .milestone-slide-up,
+              .milestone-gradient {
+                animation: none;
+                opacity: 1;
+              }
             }
           `}</style>
         </div>

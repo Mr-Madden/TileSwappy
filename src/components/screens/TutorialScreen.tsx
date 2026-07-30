@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Move } from 'lucide-react';
 import { useTileDragGesture } from '../../hooks/useTileDragGesture';
+import { MascotNarrator, MascotLine } from '../TileMascot/MascotNarrator';
+
+// Generic encouragement, deliberately NOT restating the step's own
+// title/description/action text above it -- just Tilo being present,
+// not a second copy of the instructions.
+const TUTORIAL_MASCOT_LINES: MascotLine[] = [
+  { text: "You've got this." },
+  { text: "Take your time, no rush." },
+  { text: "I believe in you!", expression: 'love' },
+  { text: "Almost a pro already.", expression: 'excited' },
+  { text: "This part trips up a lot of people.", expression: 'thinking' },
+  { text: "Wait, did I already say this one?", expression: 'confused' }
+];
 
 interface Tile {
   id: string;
@@ -250,6 +263,10 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                 style={{ width: `${((step + 1) / steps.length) * 100}%` }}
               />
             </div>
+          </div>
+
+          <div className="flex justify-center mb-4">
+            <MascotNarrator lines={TUTORIAL_MASCOT_LINES} expression="happy" size={44} />
           </div>
 
           {/* Instruction Card */}

@@ -4,6 +4,14 @@ import { DailyPuzzleNotifications } from '../DailyPuzzleNotifications';
 import { ModalShell } from '../common/ModalShell';
 import { THEMES } from '../../theme/themes';
 import { useSoundEffects, SoundStyle } from '../../hooks/useSoundEffects';
+import { MascotNarrator, MascotLine } from '../TileMascot/MascotNarrator';
+
+const SETTINGS_LINES: MascotLine[] = [
+  { text: 'Pick a theme, any theme.' },
+  { text: 'I look good in every color, if I do say so myself.', expression: 'wink' },
+  { text: "Don't forget to turn the sound on!" },
+  { text: 'Tweak away, I\'ll wait.', expression: 'sleepy' }
+];
 
 const SOUND_STYLES: { id: SoundStyle; name: string; description: string }[] = [
   { id: 'bowl', name: 'Bowl', description: 'Warm, rounded, singing bowl-like' },
@@ -99,6 +107,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     <ModalShell onClose={onClose} title="Settings" titleIcon={Settings} maxWidth="md" bodyClassName="">
         {/* Content */}
         <div>
+          <div className="px-6 pt-4">
+            <MascotNarrator lines={SETTINGS_LINES} expression="happy" size={44} />
+          </div>
+
           {/* Theme -- kept first so it catches the eye immediately. Tap
               a swatch to select it; the app re-themes right away. */}
           <div className="px-6 py-4">

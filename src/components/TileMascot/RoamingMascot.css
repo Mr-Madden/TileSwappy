@@ -1,0 +1,48 @@
+/* Foreground and clickable -- unlike TileSwappyLogo's `bouncing` prop
+   (faint, pointer-events:none background wallpaper), this Tilo is meant
+   to be noticed and poked. z-index sits above ThemeBackground (0) and
+   ordinary content, but this component is only ever mounted on screens
+   with no modals/gameplay to worry about competing with. */
+.roaming-mascot {
+  position: fixed;
+  z-index: 40;
+  pointer-events: none;
+}
+.roaming-mascot > * {
+  pointer-events: auto;
+}
+
+.roaming-mascot-bubble {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
+  background: rgb(var(--color-navy-light) / 0.95);
+  border: 1px solid rgb(var(--color-teal) / 0.35);
+  border-radius: 14px;
+  padding: 0.6rem 0.9rem;
+  max-width: 200px;
+  width: max-content;
+}
+
+.roaming-bubble-line {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgb(var(--color-offwhite));
+  line-height: 1.35;
+  white-space: normal;
+  animation: roaming-bubble-pop 0.25s ease-out;
+}
+
+@keyframes roaming-bubble-pop {
+  0% { opacity: 0; transform: translateY(4px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roaming-bubble-line {
+    animation: none;
+  }
+}

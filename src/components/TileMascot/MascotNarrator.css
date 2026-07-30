@@ -1,0 +1,86 @@
+.mascot-narrator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mascot-narrator--column {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mascot-bubble {
+  position: relative;
+  background: rgb(var(--color-navy-light) / 0.9);
+  border: 1px solid rgb(var(--color-teal) / 0.35);
+  border-radius: 14px;
+  padding: 0.6rem 0.9rem;
+  max-width: 260px;
+}
+
+.mascot-bubble p {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgb(var(--color-offwhite));
+  line-height: 1.35;
+}
+
+/* Keyed on the line's own text (see MascotNarrator.tsx), so React remounts
+   this on every change and the pop-in replays each time Tilo says something new. */
+@keyframes mascot-bubble-pop {
+  0% { opacity: 0; transform: translateY(4px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.mascot-bubble-line {
+  animation: mascot-bubble-pop 0.25s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-bubble-line {
+    animation: none;
+  }
+}
+
+/* Tail pointing at Tilo -- left edge for row layout, top edge for column */
+.mascot-narrator--row .mascot-bubble::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 7px 8px 7px 0;
+  border-style: solid;
+  border-color: transparent rgb(var(--color-teal) / 0.35) transparent transparent;
+}
+.mascot-narrator--row .mascot-bubble::after {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px 7px 6px 0;
+  border-style: solid;
+  border-color: transparent rgb(var(--color-navy-light) / 0.9) transparent transparent;
+}
+
+.mascot-narrator--column .mascot-bubble::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 7px 8px 7px;
+  border-style: solid;
+  border-color: transparent transparent rgb(var(--color-teal) / 0.35) transparent;
+}
+.mascot-narrator--column .mascot-bubble::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 6px 7px 6px;
+  border-style: solid;
+  border-color: transparent transparent rgb(var(--color-navy-light) / 0.9) transparent;
+}

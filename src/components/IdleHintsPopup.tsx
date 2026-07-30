@@ -1,4 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { MascotNarrator, MascotLine } from './TileMascot/MascotNarrator';
+
+// Tilo popping in specifically because the player's gone idle -- distinct
+// from his other appearances, which are tied to a specific moment
+// (starting, solving, hitting a streak) rather than "you've been staring
+// at this screen a while."
+const IDLE_LINES: MascotLine[] = [
+  { text: "Psst, need a nudge?", expression: 'wink' },
+  { text: "Here's a few things you could jump into." },
+  { text: "No pressure, just some ideas!" },
+  { text: "I'll be here if you need me." },
+  { text: "Hmm, deciding is the hardest part.", expression: 'thinking' },
+  { text: "Still there? Just checking!", expression: 'confused' }
+];
 
 interface IdleHintsPopupProps {
   onOpenArchive: () => void;
@@ -93,13 +107,17 @@ export const IdleHintsPopup: React.FC<IdleHintsPopupProps> = ({
         style={{ position: 'relative', zIndex: 100 }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-teal">💡 Quick Tips</h3>
+          <h3 className="text-xl font-bold text-teal">Quick Tips</h3>
           <span
             className="text-offwhite/60 hover:text-offwhite cursor-pointer text-2xl"
             onClick={dismiss}
           >
             ×
           </span>
+        </div>
+
+        <div className="mb-4">
+          <MascotNarrator lines={IDLE_LINES} expression="thinking" color="teal" size={48} />
         </div>
 
         {/* Controls reminder -- surfaces the drag-and-drop gesture since

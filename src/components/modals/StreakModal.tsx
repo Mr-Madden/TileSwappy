@@ -9,6 +9,7 @@ import {
   calculateLongestStreak,
   findFreezableGap
 } from '../../utils/streaks';
+import { MascotNarrator, MascotLine } from '../TileMascot/MascotNarrator';
 
 interface StreakModalProps {
   onClose: () => void;
@@ -246,6 +247,22 @@ export const StreakModal: React.FC<StreakModalProps> = ({
   const freezableGap = findFreezableGap(completedDates, frozenDates, todayStr);
   const nextMilestone = STREAK_MILESTONES.find((m) => m > currentStreak);
 
+  // Built off the actual streak numbers rather than a fixed pool, so
+  // Tilo's comment here is at least loosely aware of where the player
+  // actually stands instead of being totally generic.
+  const streakLines: MascotLine[] = currentStreak === 0
+    ? [
+        { text: "No streak yet -- today's a great day to start one!" },
+        { text: 'Every streak starts with day one.', expression: 'thinking' }
+      ]
+    : [
+        { text: `${currentStreak} day${currentStreak === 1 ? '' : 's'} and counting!`, expression: 'excited' },
+        { text: "Keep it going, don't break the chain!", expression: 'wink' },
+        longestStreak > currentStreak
+          ? { text: `Your best is ${longestStreak}. Let's beat it.`, expression: 'thinking' }
+          : { text: 'This is your best streak yet!', expression: 'love' }
+      ];
+
   return (
     <ModalShell
       onClose={onClose}
@@ -263,6 +280,10 @@ export const StreakModal: React.FC<StreakModalProps> = ({
         </button>
       }
     >
+          <div className="flex justify-center mb-4">
+            <MascotNarrator lines={streakLines} expression="happy" size={44} />
+          </div>
+
           {/* Streak */}
           <div className="bg-gradient-to-r from-coral/20 to-gold/20 border border-gold/30 rounded-xl p-4 mb-4">
             <div className="flex items-center justify-between">

@@ -5,6 +5,14 @@ import { TileSwappyLogo } from '../TileSwappyLogo/TileSwappyLogo';
 import { calculateCurrentStreak } from '../../utils/streaks';
 import { getCurrentDate } from '../../utils/helpers';
 import { shareOrDownloadImage } from '../../utils/shareImage';
+import { MascotNarrator, MascotLine } from '../TileMascot/MascotNarrator';
+
+const STATS_LINES: MascotLine[] = [
+  { text: "Look at you go!", expression: 'excited' },
+  { text: "Numbers don't lie -- you're getting good at this." },
+  { text: "I keep track of all of this, you know.", expression: 'wink' },
+  { text: "Your best times live here.", expression: 'thinking' }
+];
 
 interface PlayerStatsModalProps {
   onClose: () => void;
@@ -358,6 +366,10 @@ export const PlayerStatsModal: React.FC<PlayerStatsModalProps> = ({
     >
           {selectedTab === 'overview' ? (
             <div className="space-y-6">
+              <div className="flex justify-center">
+                <MascotNarrator lines={STATS_LINES} expression="happy" size={44} />
+              </div>
+
               {/* Main Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-black/20 rounded-xl p-4 text-center">

@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { TileSwappyLogo } from '../TileSwappyLogo/TileSwappyLogo';
+import type { MascotLine } from '../TileMascot/MascotNarrator';
+import { RoamingMascot } from '../TileMascot/RoamingMascot';
 import './StartScreen.css';
 
 interface StartScreenProps {
@@ -10,9 +12,42 @@ interface StartScreenProps {
 
 const TITLE = 'TileSwappy';
 
+// One picked at random on load, and tapping Tilo cycles to another --
+// his whole job here is to make the start screen feel a little alive.
+const GREETINGS: MascotLine[] = [
+  { text: "Ready to swap some tiles?" },
+  { text: "Today's puzzle is waiting for you!" },
+  { text: "Let's beat yesterday's time.", expression: 'excited' },
+  { text: "I've got a good feeling about this one.", expression: 'wink' },
+  { text: "Tap in whenever you're ready!" },
+  { text: "Poke me again, I don't mind." },
+  { text: "Okay okay, I'll stop stalling. Go play!", expression: 'laughing' },
+  { text: "Did you know every puzzle has exactly one solution?", expression: 'thinking' },
+  { text: "I love puzzle day. Every day is puzzle day!", expression: 'love' },
+  { text: "Wait, was I supposed to say something clever here?", expression: 'confused' },
+  { text: "Sneak peek: today's one is a good one.", expression: 'wink' }
+];
+
 export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
   const [ripple, setRipple] = useState<{ origin: number; key: number } | null>(null);
   const rippleTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const startButtonRef = useRef<HTMLButtonElement | null>(null);
+  // Roaming Tilo needs a real ceiling, not a guessed percentage -- this
+  // measures where the "Touch to Start" button actually sits on THIS
+  // device/viewport, so he can never wander down far enough to block it.
+  const [maxRoamY, setMaxRoamY] = useState(40);
+
+  useEffect(() => {
+    const measure = () => {
+      if (!startButtonRef.current) return;
+      const rect = startButtonRef.current.getBoundingClientRect();
+      const percent = (rect.top / window.innerHeight) * 100;
+      setMaxRoamY(Math.max(10, percent - 6));
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
   useEffect(() => () => clearTimeout(rippleTimeout.current), []);
 
@@ -28,6 +63,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
 
   return (
     <div className="min-h-screen bg-navy flex flex-col items-center justify-center p-4">
+      <RoamingMascot lines={GREETINGS} yRangePercent={[2, maxRoamY]} />
       <div className="mb-8">
   <TileSwappyLogo size={150} />
 </div>
@@ -67,6 +103,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
 
         {/* Touch to Start Button with coral/teal gradient */}
         <button
+          ref={startButtonRef}
           onClick={onStart}
           className="group relative px-16 py-6 bg-gradient-to-r from-coral to-teal rounded-2xl font-bold text-2xl text-offwhite shadow-coral-glow hover:shadow-teal-glow transform hover:scale-105 transition-all duration-300 active:scale-95 w-full"
         >

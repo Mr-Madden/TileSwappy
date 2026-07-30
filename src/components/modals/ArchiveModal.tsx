@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 import { Calendar, Heart, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import { ModalShell } from '../common/ModalShell';
+import { MascotNarrator, MascotLine } from '../TileMascot/MascotNarrator';
 
 type ArchiveFilter = 'all' | 'favorites' | 'completed' | 'Easy' | 'Medium' | 'Hard';
+
+const ARCHIVE_LINES: MascotLine[] = [
+  { text: "So many puzzles, so little time." },
+  { text: "Ooh, replay one of your favorites!", expression: 'excited' },
+  { text: "I can't pick a favorite. Don't ask me to.", expression: 'confused' },
+  { text: "Filters up top if you're looking for something specific." }
+];
 
 interface Puzzle {
   id: string;
@@ -403,6 +411,10 @@ export const ArchiveModal: React.FC<ArchiveModalProps> = ({
       maxWidth="2xl"
       bodyClassName="p-6"
     >
+          <div className="mb-6 flex justify-center">
+            <MascotNarrator lines={ARCHIVE_LINES} expression="happy" size={44} />
+          </div>
+
           <div className="mb-6 bg-navy-dark rounded-xl p-4 border border-navy">
             <div className="flex items-center justify-between">
               <div>
