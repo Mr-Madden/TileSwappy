@@ -28,25 +28,36 @@
     style.textContent =
       '#cookie-notice {' +
         'position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999;' +
+        // Hard cap regardless of how long the copy ever gets -- a banner
+        // that can grow without bound on a short/narrow phone (this one
+        // measured out to 182px tall, ~1/3 of an iPhone SE's viewport)
+        // will inevitably swallow whatever real UI sits behind it.
+        'max-height: 40vh; overflow-y: auto;' +
         'background: rgb(var(--color-navy-dark, 10 20 32));' +
         'color: rgb(var(--color-offwhite, 244 244 244));' +
         'border-top: 2px solid rgb(var(--color-teal-dark, 31 163 154) / 0.4);' +
-        'padding: 0.9rem 1rem;' +
+        'padding: 0.75rem 1rem;' +
         'display: flex; flex-wrap: wrap; align-items: center; justify-content: center;' +
-        'gap: 0.75rem 1.5rem;' +
+        'gap: 0.5rem 1.5rem;' +
         'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;' +
         'font-size: 0.85rem;' +
         'box-shadow: 0 -4px 16px rgba(0,0,0,0.25);' +
       '}' +
-      '#cookie-notice p { margin: 0; max-width: 640px; line-height: 1.5; color: rgb(var(--color-offwhite, 244 244 244) / 0.85); }' +
+      '#cookie-notice p { margin: 0; max-width: 640px; line-height: 1.4; color: rgb(var(--color-offwhite, 244 244 244) / 0.85); }' +
       '#cookie-notice a { color: rgb(var(--color-teal-dark, 31 163 154)); font-weight: 600; text-decoration: none; }' +
       '#cookie-notice a:hover { text-decoration: underline; }' +
       '#cookie-notice button {' +
         'flex-shrink: 0; background: rgb(var(--color-teal-dark, 31 163 154));' +
         'color: rgb(var(--color-navy, 13 27 42)); border: none; border-radius: 8px;' +
-        'padding: 0.55rem 1.2rem; font-weight: 700; font-size: 0.85rem; cursor: pointer;' +
+        'padding: 0.5rem 1.1rem; font-weight: 700; font-size: 0.85rem; cursor: pointer;' +
       '}' +
-      '#cookie-notice button:hover { opacity: 0.9; }';
+      '#cookie-notice button:hover { opacity: 0.9; }' +
+      // Shorter copy still wraps to 3+ lines under ~360px wide -- shrink
+      // font and padding further there instead of letting height grow.
+      '@media (max-width: 400px) {' +
+        '#cookie-notice { padding: 0.6rem 0.75rem; font-size: 0.78rem; gap: 0.4rem 1rem; }' +
+        '#cookie-notice button { padding: 0.45rem 0.9rem; font-size: 0.78rem; }' +
+      '}';
     document.head.appendChild(style);
 
     var banner = document.createElement('div');
@@ -54,7 +65,7 @@
     banner.setAttribute('role', 'region');
     banner.setAttribute('aria-label', 'Cookie notice');
     banner.innerHTML =
-      '<p>TileSwappy uses cookies to save your progress and to show ads through Google AdSense, which may use cookies to personalize ads. See our <a href="/privacy.html">Privacy Policy</a> for details and opt-out options.</p>' +
+      '<p>We use cookies to save your progress and personalize ads. <a href="/privacy.html">Privacy Policy</a></p>' +
       '<button type="button">Got it</button>';
 
     document.body.appendChild(banner);
