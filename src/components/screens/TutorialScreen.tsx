@@ -1,19 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Move } from 'lucide-react';
 import { useTileDragGesture } from '../../hooks/useTileDragGesture';
-import { MascotNarrator, MascotLine } from '../TileMascot/MascotNarrator';
-
-// Generic encouragement, deliberately NOT restating the step's own
-// title/description/action text above it -- just Tilo being present,
-// not a second copy of the instructions.
-const TUTORIAL_MASCOT_LINES: MascotLine[] = [
-  { text: "You've got this." },
-  { text: "Take your time, no rush." },
-  { text: "I believe in you!", expression: 'love' },
-  { text: "Almost a pro already.", expression: 'excited' },
-  { text: "This part trips up a lot of people.", expression: 'thinking' },
-  { text: "Wait, did I already say this one?", expression: 'confused' }
-];
+import { TileMascot } from '../TileMascot/TileMascot';
+import type { MascotExpression } from '../TileMascot/types';
 
 interface Tile {
   id: string;
@@ -191,42 +180,54 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
     setShowSkipConfirm(true);
   };
 
-  const steps = [
+  const steps: {
+    title: string;
+    description: string;
+    action: string;
+    highlight: string | string[] | null;
+    expression: MascotExpression;
+  }[] = [
     {
       title: 'Welcome to TileSwappy!',
-      description: "Let's learn how to play with this interactive tutorial.",
+      description: "Hi, I'm Tilo! I'll walk you through the basics with this interactive tutorial.",
       action: 'Tap "Next" to begin',
-      highlight: null
+      highlight: null,
+      expression: 'love'
     },
     {
       title: 'Rotate Tiles',
       description: 'Quickly flick the center tile (5) left or right to rotate it. A fast flick — not a slow drag.',
       action: 'Try flicking tile 5 now!',
-      highlight: '1-1'
+      highlight: '1-1',
+      expression: 'thinking'
     },
     {
       title: 'Swap Tiles',
       description: 'Tap tile 1, then tap tile 3 to swap their positions.',
       action: 'Try swapping tiles 1 and 3!',
-      highlight: ['0-0', '0-2']
+      highlight: ['0-0', '0-2'],
+      expression: 'happy'
     },
     {
       title: 'Drag & Drop',
       description: 'Prefer dragging? Press and hold tile 7, then drag it onto tile 9 to swap them the same way.',
       action: 'Try dragging tile 7 onto tile 9!',
-      highlight: ['2-0', '2-2']
+      highlight: ['2-0', '2-2'],
+      expression: 'wink'
     },
     {
       title: 'Match the Edges',
       description: 'In the real game, make edges match between tiles. When they match correctly, a green glow appears! Every puzzle has one correct picture — each tile has exactly one right neighbor.',
       action: 'Tap "Next" to continue',
-      highlight: null
+      highlight: null,
+      expression: 'excited'
     },
     {
       title: "You're Ready! 🚀",
       description: 'Combine flicking, tapping, and dragging to solve puzzles. Match all edges to win!',
       action: 'Start playing',
-      highlight: null
+      highlight: null,
+      expression: 'laughing'
     }
   ];
 
@@ -265,21 +266,32 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
             </div>
           </div>
 
-          <div className="flex justify-center mb-4">
-            <MascotNarrator lines={TUTORIAL_MASCOT_LINES} expression="happy" size={44} />
-          </div>
-
-          {/* Instruction Card */}
+          {/* Instruction Card -- Tilo hosts it directly now instead of
+              standing off to the side with generic encouragement: his
+              expression tracks the step's own mood (and flashes excited
+              the moment a step is completed), and the title+description
+              sit in a box attached to him, like he's the one explaining
+              it. Poking him still works exactly like everywhere else. */}
           <div
             key={step}
             className="tutorial-step-enter bg-navy-light/90 backdrop-blur-sm rounded-2xl p-6 mb-6 border-2 border-teal/30 shadow-2xl"
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-teal mb-3">
-              {currentStep.title}
-            </h2>
-            <p className="text-offwhite text-base md:text-lg mb-4 leading-relaxed">
-              {currentStep.description}
-            </p>
+            <div className="flex items-start gap-3 mb-4">
+              <TileMascot
+                size={56}
+                expression={toast ? 'excited' : currentStep.expression}
+                color="teal"
+                onClick={() => {}}
+              />
+              <div className="flex-1 min-w-0 bg-navy-dark/40 border border-teal/20 rounded-xl p-3">
+                <h2 className="text-xl md:text-2xl font-bold text-teal mb-1.5">
+                  {currentStep.title}
+                </h2>
+                <p className="text-offwhite text-sm md:text-base leading-relaxed">
+                  {currentStep.description}
+                </p>
+              </div>
+            </div>
             <div className="bg-coral/20 border border-coral/40 rounded-lg p-3">
               <p className="text-coral font-semibold text-center">
                 {currentStep.action}

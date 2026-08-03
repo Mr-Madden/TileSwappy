@@ -1,16 +1,12 @@
 import React, { useState, useRef } from 'react';
+import { useMascotSound } from './useMascotSound';
+import { incrementPokeCount, getPokeMilestoneLine } from './pokeTracker';
+import { useMascotTheme, getAccessoryForTheme } from './useMascotTheme';
+import { MascotAccessory } from './MascotAccessory';
+import type { MascotExpression, MascotLine } from './types';
 import './TileMascot.css';
 
-export type MascotExpression =
-  | 'happy'
-  | 'excited'
-  | 'wink'
-  | 'sleepy'
-  | 'surprised'
-  | 'thinking'
-  | 'laughing'
-  | 'love'
-  | 'confused';
+export type { MascotExpression } from './types';
 
 // Written out as literal class names (not interpolated) so Tailwind's
 // content scanner -- which greps source files for whole class strings,
@@ -33,6 +29,12 @@ interface TileMascotProps {
       to make him clickable, play a little squash-and-stretch "poke", and
       briefly flash a reaction expression before settling back. */
   onClick?: () => void;
+  /** Fires when a poke crosses a milestone (see pokeTracker). Callers
+      that already render their own speech bubble (MascotNarrator,
+      RoamingMascot) should use this to show the milestone line in THAT
+      bubble -- otherwise TileMascot renders its own small inline one,
+      which would double up into two overlapping bubbles at once. */
+  onMilestone?: (line: MascotLine) => void;
 }
 
 // Tilo is built from the same rounded-tile-with-curved-eye-marks motif as
@@ -46,22 +48,44 @@ export const TileMascot: React.FC<TileMascotProps> = ({
   color = 'coral',
   bounce = true,
   className = '',
-  onClick
+  onClick,
+  onMilestone
 }) => {
   const [poked, setPoked] = useState(false);
   const pokeTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const playMascotSound = useMascotSound();
+  const [milestoneLine, setMilestoneLine] = useState<MascotLine | null>(null);
+  const milestoneTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const accessory = getAccessoryForTheme(useMascotTheme());
 
   // A quick surprised flash on top of whatever expression was passed in
   // -- reads as "oh, you got me!" rather than just a generic bounce, and
-  // reverts on its own so callers don't have to manage it.
-  const effectiveExpression: MascotExpression = poked ? 'surprised' : expression;
+  // reverts on its own so callers don't have to manage it. A poke-count
+  // milestone (see pokeTracker) takes over for its own longer window
+  // once that initial flash clears.
+  const effectiveExpression: MascotExpression = poked
+    ? 'surprised'
+    : milestoneLine?.expression ?? expression;
 
   const handleClick = () => {
     if (!onClick) return;
     onClick();
+    playMascotSound('mascotPoke');
     setPoked(true);
     clearTimeout(pokeTimeoutRef.current);
     pokeTimeoutRef.current = setTimeout(() => setPoked(false), 350);
+
+    const count = incrementPokeCount();
+    const milestone = getPokeMilestoneLine(count);
+    if (milestone) {
+      // The expression reaction is always local (it's Tilo's own face),
+      // but the bubble is only rendered here as a fallback -- a caller
+      // with its own bubble handles display itself via onMilestone.
+      clearTimeout(milestoneTimeoutRef.current);
+      setMilestoneLine(milestone);
+      milestoneTimeoutRef.current = setTimeout(() => setMilestoneLine(null), 3200);
+      onMilestone?.(milestone);
+    }
   };
 
   // The logo's mark is ~2.5x taller than wide (tileSize*0.08 by
@@ -182,6 +206,7 @@ export const TileMascot: React.FC<TileMascotProps> = ({
       aria-label={onClick ? 'Tilo the TileSwappy mascot' : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } } : undefined}
     >
+      {accessory && <MascotAccessory kind={accessory} size={size} />}
       <div className="mascot-face">
         {/* Percentage `gap` measured out too small in practice to keep
             the two eyes from visually merging into a single "V" at
@@ -193,6 +218,11 @@ export const TileMascot: React.FC<TileMascotProps> = ({
         </div>
         <div className="mascot-mouth" style={mouthStyle} />
       </div>
+      {!onMilestone && milestoneLine && (
+        <div className="mascot-milestone-bubble">
+          <p key={milestoneLine.text}>{milestoneLine.text}</p>
+        </div>
+      )}
     </div>
   );
 };

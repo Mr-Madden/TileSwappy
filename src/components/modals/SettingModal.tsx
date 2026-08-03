@@ -257,7 +257,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
               <p className="text-xs text-offwhite/60 mb-3 pl-[52px]">Get notified when new puzzles are available</p>
               <div className="pl-[52px]">
-                <DailyPuzzleNotifications />
+                <DailyPuzzleNotifications
+                  enabled={settings.notificationsEnabled}
+                  onEnabledChange={(enabled) => onUpdateSettings({ notificationsEnabled: enabled })}
+                />
               </div>
             </div>
           </div>

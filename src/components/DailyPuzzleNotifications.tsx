@@ -1,92 +1,73 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { Bell, BellOff } from 'lucide-react';
 
-export const DailyPuzzleNotifications: React.FC = () => {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+interface DailyPuzzleNotificationsProps {
+  enabled: boolean;
+  onEnabledChange: (enabled: boolean) => void;
+}
 
-  const checkForNewPuzzle = useCallback(() => {
-    const lastPuzzleDate = localStorage.getItem('lastPuzzleDate');
-    const today = new Date().toDateString();
+// Purely a controlled toggle now -- the actual hourly check-and-notify
+// logic lives in useDailyPuzzleNotifications, called from App.tsx so it
+// keeps running for the whole session instead of only while this sits
+// inside an open Settings modal. The stored preference (`enabled`) is
+// necessary but not sufficient -- actual firing also depends on real
+// browser permission, so the UI here reflects that directly instead of
+// just echoing back the stored flag.
+export const DailyPuzzleNotifications: React.FC<DailyPuzzleNotificationsProps> = ({
+  enabled,
+  onEnabledChange
+}) => {
+  if (!('Notification' in window)) {
+    return null;
+  }
 
-    if (lastPuzzleDate !== today && notificationsEnabled && Notification.permission === 'granted') {
-      new Notification('🎨 New TileSwappy Puzzle!', {
-        body: 'A fresh puzzle is waiting for you today!',
-        icon: '/icon.png',
-        badge: '/icon.png',
-        tag: 'daily-puzzle',
-        requireInteraction: false
-      });
-    }
-    // Update last puzzle date (set this when user completes or starts today's puzzle)
-    // localStorage.setItem('lastPuzzleDate', today);
-  }, [notificationsEnabled]);
-
-  useEffect(() => {
-    if (!('Notification' in window)) return;
-    const enabled = localStorage.getItem('dailyPuzzleNotifications') === 'true';
-    setNotificationsEnabled(enabled);
-  }, []);
-
-  // Re-checks on mount (once notificationsEnabled has loaded from storage)
-  // and hourly thereafter while the app stays open, in case midnight
-  // passes during the session -- cleared whenever notifications are
-  // disabled or the component unmounts, so it never runs forever in
-  // the background.
-  useEffect(() => {
-    checkForNewPuzzle();
-    if (!notificationsEnabled) return;
-    const interval = setInterval(checkForNewPuzzle, 3600000);
-    return () => clearInterval(interval);
-  }, [notificationsEnabled, checkForNewPuzzle]);
+  const permission = Notification.permission;
+  const isBlocked = permission === 'denied';
+  const isOn = enabled && permission === 'granted';
 
   const requestNotificationPermission = async () => {
-    if (!('Notification' in window)) {
-      alert('Your browser does not support notifications');
-      return;
-    }
-
     const permission = await Notification.requestPermission();
-
     if (permission === 'granted') {
-      setNotificationsEnabled(true);
-      localStorage.setItem('dailyPuzzleNotifications', 'true');
-
-      // Show test notification
+      onEnabledChange(true);
+      // Confirms the permission grant actually produces a visible
+      // notification right away, rather than the player having to take
+      // it on faith until tomorrow's puzzle.
       new Notification('🎉 Notifications Enabled!', {
         body: "You'll be notified when new puzzles are available",
         icon: '/icon.png'
       });
+    } else {
+      onEnabledChange(false);
     }
   };
 
-  const disableNotifications = () => {
-    setNotificationsEnabled(false);
-    localStorage.setItem('dailyPuzzleNotifications', 'false');
-  };
-
   const toggleNotifications = () => {
-    if (notificationsEnabled) {
-      disableNotifications();
+    if (isBlocked) return;
+    if (enabled) {
+      onEnabledChange(false);
     } else {
       requestNotificationPermission();
     }
   };
 
-  // Don't show if notifications aren't supported
-  if (!('Notification' in window)) {
-    return null;
-  }
-
   return (
     <button
       onClick={toggleNotifications}
+      disabled={isBlocked}
       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-        notificationsEnabled
+        isBlocked
+          ? 'bg-navy-dark text-offwhite/40 border border-navy cursor-not-allowed'
+          : isOn
           ? 'bg-teal text-navy hover:bg-teal/90'
           : 'bg-navy-dark text-offwhite hover:bg-navy border border-navy'
       }`}
     >
-      {notificationsEnabled ? (
+      {isBlocked ? (
+        <>
+          <BellOff size={18} />
+          <span className="text-sm font-medium">Blocked in browser settings</span>
+        </>
+      ) : isOn ? (
         <>
           <Bell size={18} />
           <span className="text-sm font-medium">Notifications On</span>

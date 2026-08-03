@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TileMascot } from './TileMascot';
-import type { MascotLine } from './MascotNarrator';
+import type { MascotLine } from './types';
 import './RoamingMascot.css';
 
 interface RoamingMascotProps {
@@ -37,8 +37,18 @@ export const RoamingMascot: React.FC<RoamingMascotProps> = ({
     y: (Math.random() - 0.5) * 0.5
   });
   const animationFrameRef = useRef<number | null>(null);
-  const [line, setLine] = useState<MascotLine | null>(null);
+  // Pre-picked (not null) so the very first thing he does on arrival is
+  // say something, same as any other Tilo appearance -- a bubble that
+  // only ever shows after being poked would mean nobody ever sees the
+  // "welcome back" / time-of-day lines this pool can lead with.
+  const [line, setLine] = useState<MascotLine | null>(() => pickLine(lines));
   const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    bubbleTimeoutRef.current = setTimeout(() => setLine(null), 4000);
+    return () => clearTimeout(bubbleTimeoutRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -72,12 +82,18 @@ export const RoamingMascot: React.FC<RoamingMascotProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [size]);
 
-  useEffect(() => () => clearTimeout(bubbleTimeoutRef.current), []);
-
   const handleClick = () => {
     clearTimeout(bubbleTimeoutRef.current);
     setLine((prev) => pickLine(lines, prev?.text));
     bubbleTimeoutRef.current = setTimeout(() => setLine(null), 2600);
+  };
+
+  // Same reasoning as MascotNarrator -- reuses this bubble instead of
+  // letting TileMascot render a second one on top of it.
+  const handleMilestone = (milestone: MascotLine) => {
+    clearTimeout(bubbleTimeoutRef.current);
+    setLine(milestone);
+    bubbleTimeoutRef.current = setTimeout(() => setLine(null), 3200);
   };
 
   return (
@@ -90,7 +106,13 @@ export const RoamingMascot: React.FC<RoamingMascotProps> = ({
           <p key={line.text} className="roaming-bubble-line">{line.text}</p>
         </div>
       )}
-      <TileMascot size={size} expression={line?.expression ?? 'happy'} color={color} onClick={handleClick} />
+      <TileMascot
+        size={size}
+        expression={line?.expression ?? 'happy'}
+        color={color}
+        onClick={handleClick}
+        onMilestone={handleMilestone}
+      />
     </div>
   );
 };

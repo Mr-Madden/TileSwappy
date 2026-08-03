@@ -9,12 +9,14 @@ import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
 import { ThemeBackground } from './components/common/ThemeBackground';
 import { Tooltip } from './components/common/Tooltip';
 import { ConfettiBurst } from './components/common/ConfettiBurst';
+import { MainMenuWalkthrough } from './components/MainMenuWalkthrough';
 import { TileMascot } from './components/TileMascot/TileMascot';
 import { MascotNarrator, MascotLine } from './components/TileMascot/MascotNarrator';
 import { THEMES, DEFAULT_THEME } from './theme/themes';
 import { getCurrentDate } from './utils/helpers';
 import { calculateCurrentStreak, STREAK_MILESTONES } from './utils/streaks';
 import { shareOrDownloadImage } from './utils/shareImage';
+import { useDailyPuzzleNotifications } from './hooks/useDailyPuzzleNotifications';
 
 // Lazy load modals - they're not needed on initial load
 const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
@@ -76,6 +78,15 @@ const MILESTONE_BONUS_LINES: MascotLine[] = [
   { text: "Triple-checking... yep, still real.", expression: 'confused' }
 ];
 
+// Shown as a small, dismissible, auto-hiding toast -- not a modal -- if
+// no new edge has matched in a while. Hint-adjacent, never a spoiler.
+const STUCK_NUDGE_LINES: MascotLine[] = [
+  { text: "Stuck? Try rotating a tile — sometimes that's all it takes.", expression: 'thinking' },
+  { text: "Look for edges that almost match. You're closer than you think.", expression: 'happy' },
+  { text: "No rush — take a breath and check the corners.", expression: 'sleepy' },
+  { text: "Psst, try dragging a tile instead of tapping.", expression: 'wink' }
+];
+
 const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   try {
     const item = localStorage.getItem(key);
@@ -130,11 +141,13 @@ const App: React.FC = () => {
   const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
-  // Whether the currently-open tutorial is the auto-shown one gating a
-  // fresh puzzle start, vs. the player manually reopening "How to Play"
-  // mid-game -- only the former should chain into the pre-match reveal
-  // when it closes; the latter should just resume the puzzle as normal.
-  const [tutorialIsForFreshStart, setTutorialIsForFreshStart] = useState(false);
+  // Whether the currently-open tutorial is the once-ever onboarding one
+  // shown right after the splash screen, vs. the player manually
+  // reopening "How to Play" (from the home menu or mid-game) -- only the
+  // former should dismiss the splash screen and chain into the main-menu
+  // walkthrough when it closes.
+  const [isOnboardingTutorial, setIsOnboardingTutorial] = useState(false);
+  const [showMenuWalkthrough, setShowMenuWalkthrough] = useState(false);
   const [showPreMatchReveal, setShowPreMatchReveal] = useState(false);
   const [countdownValue, setCountdownValue] = useState(3);
   
@@ -170,7 +183,11 @@ const App: React.FC = () => {
   );
   const [settings, setSettings] = useState(() => 
     loadFromStorage(STORAGE_KEYS.SETTINGS, {
-      notificationsEnabled: true,
+      // Opt-in like every other permission-gated notification setting --
+      // was previously defaulted true despite gating an actual browser
+      // permission prompt, which meant the Settings toggle displayed
+      // "Notifications On" for players who'd never granted anything.
+      notificationsEnabled: false,
       vibrateEnabled: true,
       soundEnabled: true,
       soundStyle: 'wood' as SoundStyle,
@@ -188,6 +205,10 @@ const App: React.FC = () => {
     settings.soundStyle ?? 'wood',
     settings.soundVolume ?? 0.8
   );
+  // Called here (not inside the Settings-modal-only toggle component) so
+  // the hourly re-check keeps running for the whole session, not just
+  // the few seconds Settings happens to be open.
+  useDailyPuzzleNotifications(settings.notificationsEnabled ?? false);
 
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.COMPLETED_PUZZLES, Array.from(completedPuzzleIds));
@@ -304,22 +325,14 @@ const App: React.FC = () => {
     const currentStatus = gameState.gameState.status;
 
     if (currentStatus === 'playing' && !hasShownTutorialForCurrentPuzzle) {
-      const tutorialCompleted = localStorage.getItem('tutorialCompleted');
-
-      // Every fresh puzzle start is paused here -- either the tutorial
-      // shows first (first time only), or straight into the pre-match
-      // reveal+countdown (every time), and either way the puzzle timer
-      // doesn't actually start until resumeGame() fires at the end of
-      // whichever gate applies.
+      // Every fresh puzzle start is paused here, straight into the
+      // pre-match reveal+countdown -- the tutorial no longer gates this.
+      // It now runs once, earlier, right after the splash screen (see
+      // handleStartScreenDismiss below), before the player can even
+      // reach a puzzle card, so tutorialCompleted is already true by
+      // the time anyone gets here.
       gameState.pauseGame();
-
-      if (!tutorialCompleted) {
-        setTutorialIsForFreshStart(true);
-        setShowTutorialOverlay(true);
-      } else {
-        beginPreMatchReveal();
-      }
-
+      beginPreMatchReveal();
       setHasShownTutorialForCurrentPuzzle(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -348,14 +361,33 @@ const App: React.FC = () => {
 
   const handleTutorialComplete = () => {
     setShowTutorialOverlay(false);
-    if (tutorialIsForFreshStart) {
-      // The auto-shown tutorial gating a fresh puzzle start -- chain into
-      // the pre-match reveal instead of resuming immediately.
-      setTutorialIsForFreshStart(false);
-      beginPreMatchReveal();
+    if (isOnboardingTutorial) {
+      // The once-ever onboarding tutorial -- NOW dismiss the splash
+      // screen (it was deliberately left up behind the tutorial so
+      // there's nothing to see if the player backs out mid-tutorial
+      // some other way) and hand off to Tilo's menu walkthrough.
+      setIsOnboardingTutorial(false);
+      gameState.dismissStartScreen();
+      setShowMenuWalkthrough(true);
     } else {
-      // Reopened manually mid-game via "How to Play" -- just resume.
+      // Reopened manually (home menu's Tutorial button, or mid-game via
+      // "How to Play") -- just close it. resumeGame() is a safe no-op
+      // if the game was never paused/playing in the first place.
       gameState.resumeGame();
+    }
+  };
+
+  // The splash screen's "Touch to Start" -- first time ever (no
+  // tutorialCompleted flag), show the onboarding tutorial before the
+  // player can reach the main menu at all; every time after, go
+  // straight to the main menu like before.
+  const handleStartScreenDismiss = () => {
+    const tutorialCompleted = localStorage.getItem('tutorialCompleted');
+    if (!tutorialCompleted) {
+      setIsOnboardingTutorial(true);
+      setShowTutorialOverlay(true);
+    } else {
+      gameState.dismissStartScreen();
     }
   };
 
@@ -939,13 +971,50 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
   // on top of the swap/rotate sound that triggered it rather than
   // replacing it, same as a combo sound in other games.
   const prevMatchCountRef = useRef(0);
+  const lastMatchProgressRef = useRef(Date.now());
   useEffect(() => {
     const currentCount = gameState.gameState.matchingEdges.size;
     if (currentCount > prevMatchCountRef.current) {
       playSound('match');
+      lastMatchProgressRef.current = Date.now();
     }
     prevMatchCountRef.current = currentCount;
   }, [gameState.gameState.matchingEdges, playSound]);
+
+  // A small, dismissible, auto-hiding nudge -- not a modal, and never
+  // more than once per COOLDOWN_MS -- if no new edge has matched for a
+  // while during actual play. Deliberately keyed off match PROGRESS
+  // rather than every swap/rotate: someone actively experimenting but
+  // just not landing a match yet is still exactly who this is for.
+  const [stuckNudge, setStuckNudge] = useState<MascotLine | null>(null);
+  const lastNudgeRef = useRef(0);
+  const stuckNudgeTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    if (gameState.gameState.status === 'playing') {
+      lastMatchProgressRef.current = Date.now();
+      lastNudgeRef.current = 0;
+    }
+  }, [currentPuzzleDate, gameState.gameState.status]);
+
+  useEffect(() => {
+    if (gameState.gameState.status !== 'playing' || gameState.gameState.isPaused) return;
+
+    const STUCK_MS = 45000;
+    const COOLDOWN_MS = 90000;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      if (now - lastMatchProgressRef.current >= STUCK_MS && now - lastNudgeRef.current >= COOLDOWN_MS) {
+        lastNudgeRef.current = now;
+        setStuckNudge(STUCK_NUDGE_LINES[Math.floor(Math.random() * STUCK_NUDGE_LINES.length)]);
+        clearTimeout(stuckNudgeTimeoutRef.current);
+        stuckNudgeTimeoutRef.current = setTimeout(() => setStuckNudge(null), 6000);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [gameState.gameState.status, gameState.gameState.isPaused]);
 
   useEffect(() => {
     const cleanupOldStats = () => {
@@ -978,7 +1047,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       <TileSwappyLogo size={150} bouncing />
       
       {gameState.gameState.status === 'start' && (
-        <StartScreen onStart={gameState.dismissStartScreen} />
+        <StartScreen onStart={handleStartScreenDismiss} />
       )}
 
       {gameState.gameState.status === 'idle' && (
@@ -989,7 +1058,12 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           onOpenStats={() => setShowPlayerStats(true)}
           onOpenSettings={() => setShowSettings(true)}
           onOpenTutorial={() => setShowTutorialOverlay(true)}
+          suppressIdleHints={showMenuWalkthrough}
         />
+      )}
+
+      {showMenuWalkthrough && (
+        <MainMenuWalkthrough onComplete={() => setShowMenuWalkthrough(false)} />
       )}
 
       {showArchive && (
@@ -1117,6 +1191,19 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             <div className="mb-6 animate-bounce-in">
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-teal/30 rounded-full blur-2xl animate-pulse"></div>
+
+                {/* Sonar rings -- fire on every win, gold when it's a new best */}
+                <div
+                  className={`absolute inset-0 rounded-full trophy-ring ${
+                    newBests.time || newBests.moves || newBests.swaps ? 'trophy-ring--gold' : 'trophy-ring--teal'
+                  }`}
+                />
+                <div
+                  className={`absolute inset-0 rounded-full trophy-ring trophy-ring--delay ${
+                    newBests.time || newBests.moves || newBests.swaps ? 'trophy-ring--gold' : 'trophy-ring--teal'
+                  }`}
+                />
+
                 {(newBests.time || newBests.moves || newBests.swaps) && (
                   <div className="absolute inset-[-30px] animate-starburst">
                     {[...Array(12)].map((_, i) => (
@@ -1128,7 +1215,23 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                     ))}
                   </div>
                 )}
-                <div className="relative text-9xl animate-wiggle">
+
+                {[
+                  { top: '-8%', left: '4%' },
+                  { top: '6%', right: '-10%' },
+                  { top: '74%', left: '-12%' },
+                  { top: '82%', right: '0%' }
+                ].map((pos, i) => (
+                  <span
+                    key={i}
+                    className="absolute trophy-sparkle"
+                    style={{ ...pos, animationDelay: `${i * 0.3}s` }}
+                  >
+                    ✨
+                  </span>
+                ))}
+
+                <div className="relative text-9xl trophy-idle">
                   🏆
                 </div>
               </div>
@@ -1257,9 +1360,19 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               }
             }
 
-            @keyframes wiggle {
-              0%, 100% { transform: rotate(-5deg); }
-              50% { transform: rotate(5deg); }
+            @keyframes trophy-idle {
+              0%, 100% { transform: rotate(-5deg) scale(1); }
+              50% { transform: rotate(5deg) scale(1.06); }
+            }
+
+            @keyframes trophy-ring-ping {
+              0% { transform: scale(0.6); opacity: 0.55; }
+              100% { transform: scale(1.9); opacity: 0; }
+            }
+
+            @keyframes trophy-sparkle-twinkle {
+              0%, 100% { transform: scale(0.4) rotate(0deg); opacity: 0; }
+              50% { transform: scale(1.1) rotate(15deg); opacity: 1; }
             }
 
             @keyframes gradient {
@@ -1289,8 +1402,31 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               opacity: 0;
             }
 
-            .animate-wiggle {
-              animation: wiggle 1s ease-in-out infinite;
+            .trophy-idle {
+              display: inline-block;
+              animation: trophy-idle 1.8s ease-in-out infinite;
+            }
+
+            .trophy-ring {
+              border: 2px solid currentColor;
+              animation: trophy-ring-ping 1.8s ease-out infinite;
+            }
+
+            .trophy-ring--teal {
+              color: rgb(var(--color-teal));
+            }
+
+            .trophy-ring--gold {
+              color: rgb(var(--color-gold));
+            }
+
+            .trophy-ring--delay {
+              animation-delay: 0.9s;
+            }
+
+            .trophy-sparkle {
+              font-size: 1.25rem;
+              animation: trophy-sparkle-twinkle 1.6s ease-in-out infinite;
             }
 
             .animate-gradient {
@@ -1312,6 +1448,19 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
             .shadow-teal-glow {
               box-shadow: 0 0 20px rgb(var(--color-teal) / 0.4);
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              .animate-bounce-in,
+              .animate-slide-up,
+              .animate-gradient,
+              .animate-starburst,
+              .animate-badge-pop,
+              .trophy-idle,
+              .trophy-ring,
+              .trophy-sparkle {
+                animation: none;
+              }
             }
           `}</style>
         </div>
@@ -1443,6 +1592,34 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           className="h-dvh bg-navy flex flex-col overflow-hidden"
           style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
+          {stuckNudge && (
+            <div
+              className="fixed z-[70] stuck-nudge-toast"
+              style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.5rem)' }}
+            >
+              <MascotNarrator
+                lines={[stuckNudge]}
+                expression={stuckNudge.expression ?? 'thinking'}
+                color="teal"
+                size={40}
+              />
+              <style>{`
+                @keyframes stuck-nudge-pop {
+                  0% { opacity: 0; transform: translate(-50%, 8px) scale(0.95); }
+                  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+                }
+                .stuck-nudge-toast {
+                  left: 50%;
+                  transform: translateX(-50%);
+                  animation: stuck-nudge-pop 0.3s ease-out forwards;
+                }
+                @media (prefers-reduced-motion: reduce) {
+                  .stuck-nudge-toast { animation: none; }
+                }
+              `}</style>
+            </div>
+          )}
+
           <div className="flex-shrink-0 p-2 bg-navy">
             <div className="max-w-2xl mx-auto">
               {/* Everything the player might tap sits in one slim row now --

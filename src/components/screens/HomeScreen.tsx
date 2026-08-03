@@ -12,6 +12,8 @@ interface HomeScreenProps {
   onOpenStats?: () => void;
   onOpenSettings?: () => void;
   onOpenTutorial?: () => void;
+  /** Suppresses the idle-hints popup -- used while the menu walkthrough is up, so the two don't stack (the walkthrough easily takes longer than the idle timer to get through). */
+  suppressIdleHints?: boolean;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
@@ -20,7 +22,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenStreak,
   onOpenStats,
   onOpenSettings,
-  onOpenTutorial
+  onOpenTutorial,
+  suppressIdleHints
 }) => {
   const [carouselOffset, setCarouselOffset] = useState(0);
   const [carouselSwipeStart, setCarouselSwipeStart] = useState({ x: 0, y: 0, touching: false, startTime: 0 });
@@ -208,7 +211,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Main Game Content - No login required */}
           <div className="space-y-4">
             {/* Daily Puzzle Carousel */}
-            <div className="bg-navy-light/10 backdrop-blur-sm rounded-2xl p-4 border border-navy-light">
+            <div data-tour="daily-puzzles" className="bg-navy-light/10 backdrop-blur-sm rounded-2xl p-4 border border-navy-light">
               <h2 className="text-offwhite text-base font-semibold mb-2 text-center">Daily Puzzles</h2>
 
               <div
@@ -503,7 +506,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
 
       {/* Idle Hints Popup */}
-      {showIdleHints && (
+      {showIdleHints && !suppressIdleHints && (
         <IdleHintsPopup
           onOpenArchive={onOpenArchive || (() => console.log('onOpenArchive not provided'))}
           onOpenStreak={onOpenStreak || (() => console.log('onOpenStreak not provided'))}

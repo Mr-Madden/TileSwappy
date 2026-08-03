@@ -10,7 +10,8 @@ export type SoundName =
   | 'solved'
   | 'click'
   | 'countdownTick'
-  | 'countdownGo';
+  | 'countdownGo'
+  | 'mascotPoke';
 
 export type SoundStyle = 'bowl' | 'wood' | 'glass' | 'arcade';
 
@@ -252,6 +253,10 @@ export function useSoundEffects(enabled: boolean, style: SoundStyle = 'wood', vo
           case 'countdownGo':
             arcadeTone(ctx, 880, now, 0.25, 0.16, 'square');
             break;
+          case 'mascotPoke':
+            arcadeTone(ctx, 660, now, 0.05, 0.09, 'sine');
+            arcadeTone(ctx, 990, now + 0.045, 0.06, 0.1, 'sine');
+            break;
         }
         return;
       }
@@ -285,6 +290,10 @@ export function useSoundEffects(enabled: boolean, style: SoundStyle = 'wood', vo
             break;
           case 'countdownGo':
             woodHit(ctx, 392.0, now, 0.7, 0.07, { filterFreq: 700, wet: 0.45 });
+            break;
+          case 'mascotPoke':
+            woodHit(ctx, 440.0, now, 0.3, 0.05, { filterFreq: 900, wet: 0.3 });
+            woodHit(ctx, 587.33, now + 0.045, 0.3, 0.045, { filterFreq: 950, wet: 0.3 });
             break;
         }
         return;
@@ -320,6 +329,10 @@ export function useSoundEffects(enabled: boolean, style: SoundStyle = 'wood', vo
           case 'countdownGo':
             glassTone(ctx, 523.25, now, 0.8, 0.06, 0.06, { filterFreq: 1700, wet: 0.5 });
             break;
+          case 'mascotPoke':
+            glassTone(ctx, 587.33, now, 0.3, 0.04, 0.02, { filterFreq: 1700, wet: 0.35 });
+            glassTone(ctx, 880.0, now + 0.04, 0.3, 0.035, 0.02, { filterFreq: 1800, wet: 0.35 });
+            break;
         }
         return;
       }
@@ -353,6 +366,10 @@ export function useSoundEffects(enabled: boolean, style: SoundStyle = 'wood', vo
           break;
         case 'countdownGo':
           warmTone(ctx, 349.23, now, 0.9, 0.065, 0.1, { filterFreq: 750, wet: 0.5 });
+          break;
+        case 'mascotPoke':
+          warmTone(ctx, 392.0, now, 0.35, 0.045, 0.03, { filterFreq: 800, wet: 0.35 });
+          warmTone(ctx, 523.25, now + 0.045, 0.35, 0.04, 0.03, { filterFreq: 850, wet: 0.35 });
           break;
       }
     },

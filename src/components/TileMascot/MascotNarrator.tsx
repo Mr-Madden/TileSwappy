@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { TileMascot, MascotExpression } from './TileMascot';
+import { TileMascot } from './TileMascot';
+import type { MascotExpression, MascotLine } from './types';
 import './MascotNarrator.css';
 
-export interface MascotLine {
-  text: string;
-  /** Overrides the narrator's default `expression` for just this line -- lets specific lines land with a wink/laugh/heart-eyes instead of the generic default. */
-  expression?: MascotExpression;
-}
+export type { MascotLine } from './types';
 
 interface MascotNarratorProps {
   /** A pool of things Tilo might say -- one is picked at random on mount, and clicking him cycles to another. Plain strings use the narrator's default `expression`; pass a MascotLine to pair a specific line with its own expression. */
@@ -54,9 +51,25 @@ export const MascotNarrator: React.FC<MascotNarratorProps> = ({
     setCurrent((prev) => pickLine(lines, prev.text));
   };
 
+  // Takes over the SAME bubble that already exists here rather than
+  // letting TileMascot render its own -- two bubbles stacking up at
+  // once read as a layout bug, not a bonus.
+  const handleMilestone = (milestone: MascotLine) => {
+    setCurrent(milestone);
+    setTimeout(() => {
+      setCurrent((prev) => (prev.text === milestone.text ? pickLine(lines, prev.text) : prev));
+    }, 3200);
+  };
+
   return (
     <div className={`mascot-narrator mascot-narrator--${layout} ${className}`}>
-      <TileMascot size={size} expression={current.expression ?? expression} color={color} onClick={handleClick} />
+      <TileMascot
+        size={size}
+        expression={current.expression ?? expression}
+        color={color}
+        onClick={handleClick}
+        onMilestone={handleMilestone}
+      />
       <div className="mascot-bubble">
         <p key={current.text} className="mascot-bubble-line">{current.text}</p>
       </div>

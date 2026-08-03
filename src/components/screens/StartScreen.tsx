@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { TileSwappyLogo } from '../TileSwappyLogo/TileSwappyLogo';
-import type { MascotLine } from '../TileMascot/MascotNarrator';
+import type { MascotLine } from '../TileMascot/types';
 import { RoamingMascot } from '../TileMascot/RoamingMascot';
 import './StartScreen.css';
 
@@ -11,6 +11,7 @@ interface StartScreenProps {
 }
 
 const TITLE = 'TileSwappy';
+const LAST_VISIT_KEY = 'tileswappy_last_visit';
 
 // One picked at random on load, and tapping Tilo cycles to another --
 // his whole job here is to make the start screen feel a little alive.
@@ -28,10 +29,68 @@ const GREETINGS: MascotLine[] = [
   { text: "Sneak peek: today's one is a good one.", expression: 'wink' }
 ];
 
+// A special returning-player or time-of-day line takes over the whole
+// pool for just this one mount (rather than being diluted 1-in-12
+// inside GREETINGS) so it's actually likely to be seen when it applies
+// -- most visits hit neither condition and just get the regular pool.
+function buildGreetings(): MascotLine[] {
+  const now = new Date();
+  const lastVisitRaw = (() => {
+    try {
+      return localStorage.getItem(LAST_VISIT_KEY);
+    } catch {
+      return null;
+    }
+  })();
+
+  try {
+    localStorage.setItem(LAST_VISIT_KEY, now.toISOString());
+  } catch {
+    // ignore -- worst case the welcome-back line just never fires
+  }
+
+  if (lastVisitRaw) {
+    const daysSince = Math.floor((now.getTime() - new Date(lastVisitRaw).getTime()) / 86400000);
+    if (daysSince >= 7) {
+      return [
+        { text: "Whoa, it's been over a week! I missed you.", expression: 'love' },
+        { text: 'Welcome back, stranger!', expression: 'excited' }
+      ];
+    }
+    if (daysSince >= 2) {
+      return [
+        { text: `Welcome back! It's been ${daysSince} days.`, expression: 'happy' },
+        { text: 'Good to see you again!', expression: 'wink' }
+      ];
+    }
+  }
+
+  const hour = now.getHours();
+  if (hour < 5) {
+    return [
+      { text: 'Up late, huh? I respect it.', expression: 'sleepy' },
+      { text: 'Shh, everyone else is asleep.', expression: 'wink' }
+    ];
+  }
+  if (hour < 11) {
+    return [{ text: "Good morning! Ready for today's puzzle?", expression: 'happy' }, ...GREETINGS];
+  }
+  if (hour >= 22) {
+    return [{ text: 'Burning the midnight oil?', expression: 'sleepy' }, ...GREETINGS];
+  }
+
+  return GREETINGS;
+}
+
 export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
   const [ripple, setRipple] = useState<{ origin: number; key: number } | null>(null);
   const rippleTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const startButtonRef = useRef<HTMLButtonElement | null>(null);
+  // Computed once per mount (not per render) -- it both reads AND writes
+  // the last-visit timestamp, so recomputing on every render would stamp
+  // "now" as the last visit repeatedly and the welcome-back check would
+  // never see a real gap.
+  const [greetings] = useState(() => buildGreetings());
   // Roaming Tilo needs a real ceiling, not a guessed percentage -- this
   // measures where the "Touch to Start" button actually sits on THIS
   // device/viewport, so he can never wander down far enough to block it.
@@ -63,7 +122,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
 
   return (
     <div className="min-h-screen bg-navy flex flex-col items-center justify-center p-4">
-      <RoamingMascot lines={GREETINGS} yRangePercent={[2, maxRoamY]} />
+      <RoamingMascot lines={greetings} yRangePercent={[2, maxRoamY]} />
       <div className="mb-8">
   <TileSwappyLogo size={150} />
 </div>

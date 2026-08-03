@@ -1,0 +1,81 @@
+.menu-walkthrough {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+.menu-walkthrough-dim {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.72);
+  pointer-events: auto;
+}
+
+/* Sits over the highlighted rect itself -- transparent, but still blocks
+   clicks through to the real button underneath, so the tour can't be
+   short-circuited by tapping the very thing being explained. */
+.menu-walkthrough-ring {
+  position: fixed;
+  pointer-events: auto;
+  border-radius: 14px;
+  border: 2px solid rgb(var(--color-gold, 251 191 36));
+  box-shadow: 0 0 0 4px rgb(var(--color-gold, 251 191 36) / 0.25), 0 0 24px rgb(var(--color-gold, 251 191 36) / 0.5);
+  animation: menu-walkthrough-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes menu-walkthrough-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgb(var(--color-gold, 251 191 36) / 0.25), 0 0 24px rgb(var(--color-gold, 251 191 36) / 0.5); }
+  50% { box-shadow: 0 0 0 8px rgb(var(--color-gold, 251 191 36) / 0.15), 0 0 32px rgb(var(--color-gold, 251 191 36) / 0.7); }
+}
+
+.menu-walkthrough-card {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
+  transform: translateX(-50%);
+  width: min(92vw, 400px);
+  max-height: min(48vh, 320px);
+  overflow-y: auto;
+  background: rgb(var(--color-navy-light, 27 43 58) / 0.98);
+  border: 2px solid rgb(var(--color-gold, 251 191 36) / 0.4);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  animation: menu-walkthrough-card-pop 0.3s ease-out;
+}
+
+/* Used when the spotlighted target sits low on screen -- flips the card
+   to the top edge instead so it never covers the thing Tilo is pointing at. */
+.menu-walkthrough-card--top {
+  top: calc(env(safe-area-inset-top) + 1.25rem);
+  bottom: auto;
+  animation: menu-walkthrough-card-pop-top 0.3s ease-out;
+}
+
+@keyframes menu-walkthrough-card-pop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.97); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+@keyframes menu-walkthrough-card-pop-top {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.97); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+.menu-walkthrough-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgb(var(--color-offwhite, 244 244 244) / 0.25);
+}
+
+.menu-walkthrough-dot--active {
+  background: rgb(var(--color-gold, 251 191 36));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-walkthrough-ring,
+  .menu-walkthrough-card,
+  .menu-walkthrough-card--top {
+    animation: none;
+  }
+}
