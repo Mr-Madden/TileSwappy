@@ -1,16 +1,17 @@
 // src/components/StartScreen.tsx
 
 import React, { useEffect, useRef, useState } from 'react';
+import { Settings } from 'lucide-react';
 import { TileSwappyLogo } from '../TileSwappyLogo/TileSwappyLogo';
+import { TileSwappyWordmark } from '../TileSwappyLogo/TileSwappyWordmark';
 import type { MascotLine } from '../TileMascot/types';
 import { RoamingMascot } from '../TileMascot/RoamingMascot';
-import './StartScreen.css';
 
 interface StartScreenProps {
   onStart: () => void;
+  onOpenSettings: () => void;
 }
 
-const TITLE = 'TileSwappy';
 const LAST_VISIT_KEY = 'tileswappy_last_visit';
 
 // One picked at random on load, and tapping Tilo cycles to another --
@@ -82,9 +83,7 @@ function buildGreetings(): MascotLine[] {
   return GREETINGS;
 }
 
-export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
-  const [ripple, setRipple] = useState<{ origin: number; key: number } | null>(null);
-  const rippleTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+export const StartScreen: React.FC<StartScreenProps> = ({ onStart, onOpenSettings }) => {
   const startButtonRef = useRef<HTMLButtonElement | null>(null);
   // Computed once per mount (not per render) -- it both reads AND writes
   // the last-visit timestamp, so recomputing on every render would stamp
@@ -108,20 +107,17 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  useEffect(() => () => clearTimeout(rippleTimeout.current), []);
-
-  const triggerRipple = (index: number) => {
-    clearTimeout(rippleTimeout.current);
-    setRipple({ origin: index, key: Date.now() });
-    // Ripple has to outlive the farthest letter's staggered start (60ms
-    // per step) plus its own 0.7s pop, or that letter's class gets reset
-    // mid-animation and snaps back to idle-bob with a visible jump-cut.
-    const maxDistance = Math.max(index, TITLE.length - 1 - index);
-    rippleTimeout.current = setTimeout(() => setRipple(null), maxDistance * 60 + 700);
-  };
-
   return (
     <div className="min-h-screen bg-navy flex flex-col items-center justify-center p-4">
+      <button
+        onClick={onOpenSettings}
+        aria-label="Settings"
+        className="fixed top-4 right-4 bg-navy-light hover:bg-navy-dark rounded-lg transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-2 gap-0.5"
+      >
+        <Settings size={18} className="text-offwhite" />
+        <span className="text-offwhite text-[9px] font-semibold">Settings</span>
+      </button>
+
       <RoamingMascot lines={greetings} yRangePercent={[2, maxRoamY]} />
       <div className="mb-8">
   <TileSwappyLogo size={150} />
@@ -129,32 +125,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
       <div className="text-center space-y-8 max-w-md w-full">
         {/* Logo/Title with TileSwappy colors */}
         <div className="space-y-4">
-          <h1 className="title-letters text-6xl font-bold text-offwhite drop-shadow-lg">
-            {TITLE.split('').map((char, index) => {
-              const distance = ripple ? Math.abs(index - ripple.origin) : 0;
-              const style: React.CSSProperties = ripple
-                ? {
-                    animationDelay: `${distance * 0.06}s`,
-                    ['--letter-spin' as any]: index % 2 === 0 ? '360deg' : '-360deg',
-                    ['--letter-pop-color' as any]: index % 2 === 0 ? 'var(--color-coral)' : 'var(--color-teal)',
-                  }
-                : { animationDelay: `${index * 0.08}s` };
-
-              return (
-                <span
-                  key={ripple ? `${index}-${ripple.key}` : index}
-                  className={`letter ${ripple ? 'letter-splash' : ''}`}
-                  style={style}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    triggerRipple(index);
-                  }}
-                >
-                  {char}
-                </span>
-              );
-            })}
-          </h1>
+          <TileSwappyWordmark sizeClassName="text-4xl sm:text-5xl md:text-6xl" />
           <p className="text-xl text-teal">
             Daily Puzzle Challenge
           </p>

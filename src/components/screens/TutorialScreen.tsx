@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Move } from 'lucide-react';
+import { Check, Move, Keyboard } from 'lucide-react';
 import { useTileDragGesture } from '../../hooks/useTileDragGesture';
+import { useIsDesktopInput } from '../../hooks/useIsDesktopInput';
 import { TileMascot } from '../TileMascot/TileMascot';
 import type { MascotExpression } from '../TileMascot/types';
 
@@ -45,6 +46,12 @@ const TUTORIAL_CONFETTI = [
 ];
 
 export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) => {
+  // REMOVE FOR iOS BUILD -- see useIsDesktopInput's own comment. This
+  // gates the keyboard-controls card below; a native iOS build should
+  // cut that card (and this line) entirely rather than rely on it just
+  // evaluating false at runtime.
+  const isDesktopInput = useIsDesktopInput();
+
   const [step, setStep] = useState(0);
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [selectedTile, setSelectedTile] = useState<string | null>(null);
@@ -420,6 +427,25 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({ onComplete }) =>
                   <p className="text-offwhite text-sm leading-relaxed">
                     When two tiles' edges match, you'll see a bright green glow between them.
                     Your goal is to get all 12 edges glowing green!
+                  </p>
+                </div>
+              )}
+
+              {/* REMOVE FOR iOS BUILD -- desktop-only, gated by
+                  useIsDesktopInput (pointer: fine). A touchscreen-only
+                  native build has no keyboard/mouse story to explain. */}
+              {step === 4 && isDesktopInput && (
+                <div className="bg-navy-light/90 rounded-xl p-4 border border-teal/30">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 bg-teal/20 rounded-lg flex items-center justify-center">
+                      <Keyboard className="w-6 h-6 text-teal" />
+                    </div>
+                    <h3 className="text-lg font-bold text-teal">Playing on a Computer?</h3>
+                  </div>
+                  <p className="text-offwhite text-sm leading-relaxed">
+                    Tab to the puzzle grid, then use the arrow keys to move between tiles.
+                    Enter or Space selects a tile — select a second to swap them. R rotates
+                    clockwise, Shift+R rotates the other way.
                   </p>
                 </div>
               )}

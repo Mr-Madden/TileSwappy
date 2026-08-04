@@ -102,6 +102,21 @@ const buildTilesFromFactoryData = (factoryTiles: FactoryTile[], difficulty: Diff
 export const useGameState = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
 
+  // The tile id(s) a hint just touched, so GameBoard can flash them --
+  // with zero move animation elsewhere in the game, an autonomous swap
+  // (especially between two tiles that aren't near each other) otherwise
+  // reads as an unexplained glitch rather than help. Self-clears; nothing
+  // else needs to reset it.
+  const [hintedTileIds, setHintedTileIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (hintedTileIds.length === 0) {
+      return;
+    }
+    const timer = setTimeout(() => setHintedTileIds([]), 1200);
+    return () => clearTimeout(timer);
+  }, [hintedTileIds]);
+
   const [gameState, setGameState] =
     useState<GameState>({
       status: 'start',
@@ -109,6 +124,7 @@ export const useGameState = () => {
       moves: 0,
       swaps: 0,
       undos: 0,
+      hints: 0,
       startTime: Date.now(),
       currentTime: 0,
       solveTime: null,
@@ -182,6 +198,7 @@ export const useGameState = () => {
         moves: 0,
         swaps: 0,
         undos: 0,
+        hints: 0,
         moveHistory: [],
         selectedTile: null,
         matchingEdges: new Set(),
@@ -242,6 +259,7 @@ export const useGameState = () => {
               moves: 0,
               swaps: 0,
               undos: 0,
+              hints: 0,
               moveHistory: [],
               selectedTile: null,
               matchingEdges: new Set(),
@@ -515,6 +533,7 @@ export const useGameState = () => {
         moves: 0,
         swaps: 0,
         undos: 0,
+        hints: 0,
         startTime: Date.now(),
         currentTime: 0,
         solveTime: null,
@@ -574,6 +593,82 @@ export const useGameState = () => {
       });
     },
     [gameState.status, gameState.isPaused, computeMatchFields]
+  );
+
+  // Applies GameLogicService's best single rotate-or-swap suggestion as a
+  // real move (pushed onto moveHistory exactly like a manual move), so
+  // Undo can revert a hint the same way it reverts anything else. Returns
+  // whether a hint was actually found/applied -- the caller (App.tsx) uses
+  // that to decide whether to spend the currency that paid for it.
+  const useHint = useCallback(
+    () => {
+      if (
+        gameState.status !== 'playing' ||
+        gameState.isPaused
+      ) {
+        return false;
+      }
+
+      const move = GameLogicService.findHintMove(gameState.tiles);
+      if (!move) {
+        return false;
+      }
+
+      if (move.type === 'rotate') {
+        const tile = gameState.tiles.find(t => t.id === move.tileId);
+        if (!tile) return false;
+
+        setGameState(prev => {
+          const tiles = GameLogicService.rotateTile(prev.tiles, move.tileId, move.amount);
+          return {
+            ...prev,
+            tiles,
+            moves: prev.moves + 1,
+            hints: prev.hints + 1,
+            moveHistory: [
+              ...prev.moveHistory,
+              {
+                type: 'rotate',
+                tileId: move.tileId,
+                previousRotation: tile.rotation
+              }
+            ],
+            ...computeMatchFields(tiles, prev)
+          };
+        });
+        setHintedTileIds([move.tileId]);
+        return true;
+      }
+
+      const first = gameState.tiles.find(t => t.id === move.tile1Id);
+      const second = gameState.tiles.find(t => t.id === move.tile2Id);
+      if (!first || !second) return false;
+
+      setGameState(prev => {
+        const tiles = GameLogicService.swapTiles(prev.tiles, move.tile1Id, move.tile2Id);
+        return {
+          ...prev,
+          tiles,
+          moves: prev.moves + 1,
+          swaps: prev.swaps + 1,
+          hints: prev.hints + 1,
+          moveHistory: [
+            ...prev.moveHistory,
+            {
+              type: 'swap',
+              tile1Id: move.tile1Id,
+              tile2Id: move.tile2Id,
+              tile1PrevPos: { row: first.row, col: first.col },
+              tile2PrevPos: { row: second.row, col: second.col }
+            }
+          ],
+          ...computeMatchFields(tiles, prev)
+        };
+      });
+      setHintedTileIds([move.tile1Id, move.tile2Id]);
+      return true;
+    },
+    [gameState.status, gameState.isPaused, gameState.tiles, computeMatchFields]
   );
 
   const shuffleAll = useCallback(
@@ -641,6 +736,8 @@ export const useGameState = () => {
     resetGame,
     dismissStartScreen,
     undoLastMove,
+    useHint,
+    hintedTileIds,
     shuffleAll
   };
 };

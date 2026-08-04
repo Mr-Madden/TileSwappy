@@ -1,4 +1,8 @@
-/* TileSwappy title letter animations */
+/* TileSwappy wordmark letter animations -- shared by StartScreen and
+   HomeScreen. Both idle bob and touch-ripple are deliberately slower than
+   their original StartScreen-only versions (2.2s->3.4s bob, 0.7s->1.05s
+   splash, 0.06s->0.09s stagger) -- calmer now that the wordmark shows up
+   in two places instead of one moment on the splash screen. */
 
 .title-letters {
   display: inline-flex;
@@ -10,7 +14,7 @@
   cursor: pointer;
   user-select: none;
   will-change: transform;
-  animation: letter-bob 2.2s ease-in-out infinite;
+  animation: letter-bob 3.4s ease-in-out infinite;
 }
 
 @keyframes letter-bob {
@@ -25,7 +29,7 @@
 /* Ripple pop: replaces the idle bob for one pass, staggered by distance
    from the touched letter so it reads as a wave traveling outward. */
 .letter-splash {
-  animation: letter-splash 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: letter-splash 1.05s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes letter-splash {
@@ -41,5 +45,14 @@
   }
   100% {
     transform: translateY(0) rotate(var(--letter-spin, 360deg)) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter {
+    animation: none;
+  }
+  .letter-splash {
+    animation: none;
   }
 }

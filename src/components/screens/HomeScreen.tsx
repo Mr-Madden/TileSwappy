@@ -4,6 +4,8 @@ import { getCurrentDate, formatDisplayDate, addDays, getRelativeDayLabel } from 
 import { getWeekPuzzles } from '../../services/supabase';
 import { IdleHintsPopup } from '../IdleHintsPopup';
 import { TileSwappyLogo } from '../TileSwappyLogo/TileSwappyLogo';
+import { TileSwappyWordmark } from '../TileSwappyLogo/TileSwappyWordmark';
+import { AdBanner } from '../common/AdBanner';
 
 interface HomeScreenProps {
   onStartPuzzle: (puzzle?: any) => void;
@@ -204,6 +206,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="text-center mb-4">
             <div className="inline-block mb-2 rounded-2xl shadow-2xl">
               <TileSwappyLogo size={96} />
+            </div>
+            <div className="flex justify-center mb-1">
+              <TileSwappyWordmark sizeClassName="text-3xl" />
             </div>
             <p className="text-teal text-sm font-medium">Addictive tile puzzle madness</p>
           </div>
@@ -502,6 +507,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </button>
               </div>
             </div>
+
+            <AdBanner />
           </div>
       </div>
 

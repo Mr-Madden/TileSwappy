@@ -217,6 +217,10 @@ export interface Move {
   };
 }
 
+export type HintMove =
+  | { type: 'rotate'; tileId: string; amount: 90 | 180 | 270 }
+  | { type: 'swap'; tile1Id: string; tile2Id: string };
+
 // =====================
 // Runtime State
 // =====================
@@ -236,6 +240,8 @@ export interface GameState {
   swaps: number;
 
   undos: number;
+
+  hints: number;
 
   startTime: number;
 

@@ -782,8 +782,12 @@ details[open] > .faq-question::after {
 
 .site-footer__columns {
   display: grid;
-  grid-template-columns: repeat(3, minmax(130px, 1fr));
-  gap: 2rem;
+  /* auto-fit reflows to fewer columns as space shrinks instead of a
+     fixed repeat(3, ...) forcing a hard 454px+ minimum width that
+     doesn't fit any phone in portrait -- still renders as exactly 3
+     columns on anything wide enough, same as before. */
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 1.5rem 2rem;
   flex: 1 1 380px;
 }
 

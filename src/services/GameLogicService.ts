@@ -1,7 +1,8 @@
 import {
   Tile,
   EdgeData,
-  Move
+  Move,
+  HintMove
 } from '../models/types';
 
 type Direction =
@@ -209,6 +210,58 @@ export class GameLogicService {
     const gridSize = Math.round(Math.sqrt(tiles.length)) || 1;
     const totalInternalSeams = 2 * gridSize * (gridSize - 1);
     return this.checkEdgeMatches(tiles).size === totalInternalSeams;
+  }
+
+  // The single rotate-or-swap action that increases the matched-edge count
+  // the most. Deliberately only one primitive move (never a combined
+  // swap+rotate) so the result maps directly onto the existing Move
+  // history shape -- a hint plays back through undoLastMove exactly like
+  // a move the player made themselves. Returns null when no single move
+  // helps (already solved, or the next step genuinely needs a multi-move
+  // sequence) rather than guessing.
+  //
+  // Among moves that gain the same number of matches, the least
+  // disruptive one wins: a rotation only moves one tile in place, and a
+  // swap between two tiles that are already near each other reads as a
+  // normal nearby move. A swap between two tiles on opposite sides of the
+  // board is just as valid but -- with no move animation -- teleports two
+  // tiles across the grid at once, which reads as a glitch rather than
+  // help. Gain always wins first; disruption is only a tiebreaker, so
+  // this never trades away a better hint for a calmer-looking worse one.
+  static findHintMove(tiles: Tile[]): HintMove | null {
+    const baseline = this.checkEdgeMatches(tiles).size;
+    let bestGain = 0;
+    let bestDisruption = Infinity;
+    let bestMove: HintMove | null = null;
+
+    const consider = (gain: number, disruption: number, move: HintMove) => {
+      if (gain > bestGain || (gain > 0 && gain === bestGain && disruption < bestDisruption)) {
+        bestGain = gain;
+        bestDisruption = disruption;
+        bestMove = move;
+      }
+    };
+
+    for (const tile of tiles) {
+      for (const amount of [90, 180, 270] as const) {
+        const next = this.rotateTile(tiles, tile.id, amount);
+        const gain = this.checkEdgeMatches(next).size - baseline;
+        consider(gain, 0, { type: 'rotate', tileId: tile.id, amount });
+      }
+    }
+
+    for (let i = 0; i < tiles.length; i++) {
+      for (let j = i + 1; j < tiles.length; j++) {
+        const a = tiles[i];
+        const b = tiles[j];
+        const next = this.swapTiles(tiles, a.id, b.id);
+        const gain = this.checkEdgeMatches(next).size - baseline;
+        const distance = Math.abs(a.row - b.row) + Math.abs(a.col - b.col);
+        consider(gain, distance, { type: 'swap', tile1Id: a.id, tile2Id: b.id });
+      }
+    }
+
+    return bestMove;
   }
 
   static undoMove(

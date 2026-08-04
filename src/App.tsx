@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Calendar, Settings, BarChart3, Home, Menu, Share2 } from 'lucide-react';
+import { Calendar, Settings, BarChart3, Home, Menu, Share2, Lightbulb, Film } from 'lucide-react';
 import { useGameState } from './hooks/useGameState';
 import { useSoundEffects, SoundStyle } from './hooks/useSoundEffects';
 import { StartScreen } from './components/screens/StartScreen';
@@ -7,7 +7,6 @@ import { HomeScreen } from './components/screens/HomeScreen';
 import { GameBoard } from './components/game/GameBoard';
 import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
 import { ThemeBackground } from './components/common/ThemeBackground';
-import { Tooltip } from './components/common/Tooltip';
 import { ConfettiBurst } from './components/common/ConfettiBurst';
 import { MainMenuWalkthrough } from './components/MainMenuWalkthrough';
 import { TileMascot } from './components/TileMascot/TileMascot';
@@ -17,6 +16,7 @@ import { getCurrentDate } from './utils/helpers';
 import { calculateCurrentStreak, STREAK_MILESTONES } from './utils/streaks';
 import { shareOrDownloadImage } from './utils/shareImage';
 import { useDailyPuzzleNotifications } from './hooks/useDailyPuzzleNotifications';
+import { showRewardedAd } from './services/adService';
 
 // Lazy load modals - they're not needed on initial load
 const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
@@ -46,7 +46,8 @@ const STORAGE_KEYS = {
   DAILY_PUZZLES: 'tileswappy_daily_puzzles',
   STREAK_FREEZES: 'tileswappy_streak_freezes',
   FROZEN_DATES: 'tileswappy_frozen_dates',
-  FREEZE_GRANT_MONTH: 'tileswappy_freeze_grant_month'
+  FREEZE_GRANT_MONTH: 'tileswappy_freeze_grant_month',
+  EXTRA_HINTS: 'tileswappy_extra_hints'
 };
 
 const MAX_STREAK_FREEZES = 3;
@@ -181,6 +182,14 @@ const App: React.FC = () => {
   const [frozenDates, setFrozenDates] = useState<Set<string>>(() =>
     new Set(loadFromStorage<string[]>(STORAGE_KEYS.FROZEN_DATES, []))
   );
+  // Hint currency earned by watching a rewarded ad -- separate from the
+  // one free hint every puzzle already gets (that one doesn't touch this
+  // balance at all, see freeHintUsedThisPuzzle below).
+  const [extraHints, setExtraHints] = useState(() =>
+    loadFromStorage(STORAGE_KEYS.EXTRA_HINTS, 0)
+  );
+  const [freeHintUsedThisPuzzle, setFreeHintUsedThisPuzzle] = useState(false);
+  const [hintAdState, setHintAdState] = useState<'idle' | 'loading'>('idle');
   const [settings, setSettings] = useState(() => 
     loadFromStorage(STORAGE_KEYS.SETTINGS, {
       // Opt-in like every other permission-gated notification setting --
@@ -237,6 +246,10 @@ const App: React.FC = () => {
   useEffect(() => {
     saveToStorage(STORAGE_KEYS.FROZEN_DATES, Array.from(frozenDates));
   }, [frozenDates]);
+
+  useEffect(() => {
+    saveToStorage(STORAGE_KEYS.EXTRA_HINTS, extraHints);
+  }, [extraHints]);
 
   // Grant one streak freeze per calendar month (capped), the first time
   // the app loads in a new month.
@@ -395,6 +408,51 @@ const App: React.FC = () => {
   // directly from the gameboard's top bar, without pausing first. Confirms
   // before discarding an in-progress puzzle; a solved one has nothing left
   // to lose, so it skips the prompt.
+  // First hint per puzzle is free; after that it draws from the extraHints
+  // balance (earned by watching a rewarded ad). If the balance is empty,
+  // this triggers the ad itself. If findHintMove genuinely can't find a
+  // helpful single move (rare -- see its own comment), nothing is spent:
+  // a watched-but-unspendable ad is instead banked as a hint credit so
+  // the reward isn't just lost.
+  const handleHintClick = async () => {
+    if (gameState.gameState.status !== 'playing' || gameState.gameState.isPaused || hintAdState === 'loading') {
+      return;
+    }
+
+    if (!freeHintUsedThisPuzzle) {
+      if (gameState.useHint()) {
+        setFreeHintUsedThisPuzzle(true);
+        triggerHaptic(15);
+        playSound('click');
+      }
+      return;
+    }
+
+    if (extraHints > 0) {
+      if (gameState.useHint()) {
+        setExtraHints(prev => prev - 1);
+        triggerHaptic(15);
+        playSound('click');
+      }
+      return;
+    }
+
+    setHintAdState('loading');
+    const rewarded = await showRewardedAd();
+    if (!rewarded) {
+      setHintAdState('idle');
+      return;
+    }
+
+    if (gameState.useHint()) {
+      triggerHaptic(15);
+      playSound('click');
+    } else {
+      setExtraHints(prev => prev + 1);
+    }
+    setHintAdState('idle');
+  };
+
   const handleQuitToHome = () => {
     const canQuitSilently = gameState.gameState.status === 'solved';
     if (!canQuitSilently && !window.confirm('Quit to home? Your progress on this puzzle will be lost.')) {
@@ -452,6 +510,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
   setHasProcessedCompletion(false);
   setShowCompletionAnimation(false);
   setHasShownTutorialForCurrentPuzzle(false);
+  setFreeHintUsedThisPuzzle(false);
   setNewBests({ time: false, moves: false, swaps: false });
 
   // Set current puzzle
@@ -1047,7 +1106,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       <TileSwappyLogo size={150} bouncing />
       
       {gameState.gameState.status === 'start' && (
-        <StartScreen onStart={handleStartScreenDismiss} />
+        <StartScreen onStart={handleStartScreenDismiss} onOpenSettings={() => setShowSettings(true)} />
       )}
 
       {gameState.gameState.status === 'idle' && (
@@ -1622,21 +1681,20 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
           <div className="flex-shrink-0 p-2 bg-navy">
             <div className="max-w-2xl mx-auto">
-              {/* Everything the player might tap sits in one slim row now --
-                  Home/Menu, title+difficulty, and How to Play (now icon-only)
-                  used to be three stacked rows plus a full stats grid below,
-                  which was the single biggest chunk of space taken away from
-                  the board itself. */}
+              {/* Home/Menu, title+difficulty, and How to Play share one slim
+                  row -- each side button is now icon+label (was icon-only,
+                  compensated for with a hover-only Tooltip) since a label
+                  visible at a glance beats a tooltip that touch devices
+                  can't trigger at all. */}
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <Tooltip label="Quit to home">
-                  <button
-                    onClick={() => { triggerHaptic(15); playSound('click'); handleQuitToHome(); }}
-                    aria-label="Quit to home"
-                    className="flex-shrink-0 p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
-                  >
-                    <Home size={16} />
-                  </button>
-                </Tooltip>
+                <button
+                  onClick={() => { triggerHaptic(15); playSound('click'); handleQuitToHome(); }}
+                  aria-label="Quit to home"
+                  className="flex-shrink-0 flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
+                >
+                  <Home size={16} />
+                  <span className="text-[9px] font-semibold leading-none">Home</span>
+                </button>
 
                 <div className="flex-1 min-w-0 flex items-baseline justify-center gap-1.5">
                   <h1 className="text-sm font-bold text-offwhite truncate">
@@ -1647,39 +1705,37 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   </span>
                 </div>
 
-                <Tooltip label="How to play">
-                  <button
-                    onClick={() => {
-                      triggerHaptic(10);
-                      playSound('click');
-                      // The auto-shown first-time tutorial already pauses via
-                      // the effect below -- this button opens the same
-                      // overlay mid-game (to review it again), and needs the
-                      // same pause or the puzzle timer keeps running the
-                      // whole time it's open. handleTutorialComplete's
-                      // resumeGame() is a safe no-op if this is a repeat call.
-                      gameState.pauseGame();
-                      setShowTutorialOverlay(true);
-                    }}
-                    aria-label="How to play"
-                    className="flex-shrink-0 p-1.5 rounded-lg bg-teal/20 text-teal border border-teal hover:bg-teal hover:text-navy-dark transition"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </button>
-                </Tooltip>
+                <button
+                  onClick={() => {
+                    triggerHaptic(10);
+                    playSound('click');
+                    // The auto-shown first-time tutorial already pauses via
+                    // the effect below -- this button opens the same
+                    // overlay mid-game (to review it again), and needs the
+                    // same pause or the puzzle timer keeps running the
+                    // whole time it's open. handleTutorialComplete's
+                    // resumeGame() is a safe no-op if this is a repeat call.
+                    gameState.pauseGame();
+                    setShowTutorialOverlay(true);
+                  }}
+                  aria-label="How to play"
+                  className="flex-shrink-0 flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg bg-teal/20 text-teal border border-teal hover:bg-teal hover:text-navy-dark transition"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-[9px] font-semibold leading-none">Tutorial</span>
+                </button>
 
                 <div className="relative flex-shrink-0">
-                  <Tooltip label="Menu">
-                    <button
-                      onClick={() => { triggerHaptic(10); playSound('click'); setShowGameMenu((v) => !v); }}
-                      aria-label="Menu"
-                      className="p-1.5 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
-                    >
-                      <Menu size={16} />
-                    </button>
-                  </Tooltip>
+                  <button
+                    onClick={() => { triggerHaptic(10); playSound('click'); setShowGameMenu((v) => !v); }}
+                    aria-label="Menu"
+                    className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
+                  >
+                    <Menu size={16} />
+                    <span className="text-[9px] font-semibold leading-none">Menu</span>
+                  </button>
                   {showGameMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowGameMenu(false)} />
@@ -1746,6 +1802,9 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               zoomLevel={gameState.zoomLevel}
               onZoomIn={() => { triggerHaptic(10); playSound('click'); gameState.zoomIn(); }}
               onZoomOut={() => { triggerHaptic(10); playSound('click'); gameState.zoomOut(); }}
+              hintedTileIds={gameState.hintedTileIds}
+              previewImageUrl={currentPuzzle?.imageUrl}
+              previewGradient={currentPuzzle?.gradient}
             />
           </div>
 
@@ -1813,6 +1872,34 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
               <div className="space-y-2 mb-2">
                 <div className="flex justify-center gap-2">
                   <button
+                    onClick={handleHintClick}
+                    disabled={gameState.gameState.status !== 'playing' || gameState.gameState.isPaused || hintAdState === 'loading'}
+                    className={`flex-1 max-w-[120px] px-2 py-1.5 rounded-lg border transition-all duration-200 text-xs font-medium flex items-center justify-center gap-1 ${
+                      gameState.gameState.status !== 'playing' || gameState.gameState.isPaused
+                        ? 'bg-navy-dark/80 text-offwhite/40 cursor-not-allowed border-navy-dark'
+                        : 'bg-gold/20 text-gold border-gold hover:bg-gold hover:text-navy-dark'
+                    }`}
+                  >
+                    {hintAdState === 'loading' ? (
+                      <>
+                        <Film size={13} className="animate-pulse" /> Loading…
+                      </>
+                    ) : !freeHintUsedThisPuzzle ? (
+                      <>
+                        <Lightbulb size={13} /> Hint
+                      </>
+                    ) : extraHints > 0 ? (
+                      <>
+                        <Lightbulb size={13} /> Hint ({extraHints})
+                      </>
+                    ) : (
+                      <>
+                        <Film size={13} /> Hint
+                      </>
+                    )}
+                  </button>
+
+                  <button
                     onClick={() => { triggerHaptic(15); playSound('click'); gameState.undoLastMove(); }}
                     disabled={gameState.gameState.moveHistory.length === 0 || gameState.gameState.status !== 'playing'}
                     className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
@@ -1878,6 +1965,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                       // straight to the reveal) once status flips back
                       // to 'playing'.
                       setHasShownTutorialForCurrentPuzzle(false);
+                      setFreeHintUsedThisPuzzle(false);
                       gameState.startGame(currentPuzzle);
                     }}
                     className="flex-1 max-w-[120px] px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-navy-dark transition-all duration-200 text-xs font-medium"

@@ -1,5 +1,6 @@
 // src/components/game/GameBoard.tsx
 import React, { useEffect, useRef, useState } from 'react';
+import { Eye } from 'lucide-react';
 import { GameLogicService } from '../../services/GameLogicService';
 import { useTileDragGesture } from '../../hooks/useTileDragGesture';
 import { Tooltip } from '../common/Tooltip';
@@ -34,6 +35,11 @@ interface GameBoardProps {
   zoomLevel?: number;
   onZoomIn?: () => void;
   onZoomOut?: () => void;
+  /** Tile id(s) a hint just touched -- flashed briefly so an autonomous move doesn't read as an unexplained glitch. */
+  hintedTileIds?: string[];
+  /** The solved picture, for the "preview" popover -- practice/gradient puzzles have no image, so previewGradient is the fallback. */
+  previewImageUrl?: string | null;
+  previewGradient?: string[];
 }
 
 export const GameBoard: React.FC<GameBoardProps> = ({
@@ -51,7 +57,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   isPaused,
   zoomLevel = 1,
   onZoomIn,
-  onZoomOut
+  onZoomOut,
+  hintedTileIds,
+  previewImageUrl,
+  previewGradient
 }) => {
   const boardRef = useRef<HTMLDivElement | null>(null);
 
@@ -60,6 +69,21 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   // wide-but-short window. Measured off boardRef via ResizeObserver's
   // contentRect (the box's true layout size).
   const [available, setAvailable] = useState({ width: 300, height: 300 });
+
+  // "Peek at the solved picture" popover -- helps most on hard/busy
+  // images where zoom alone (capped near 100%, see squareSize below)
+  // isn't enough to make out what's actually being assembled.
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Roving tabindex for keyboard grid navigation: exactly one tile is
+  // ever tabIndex=0 (Tab lands there / resumes there), the rest -1 --
+  // arrow keys then move focus between them. Plain per-tile tabIndex=0
+  // would put every tile in page Tab order, which is both slow to
+  // traverse and wrong the moment a swap moves a tile: DOM/array order
+  // never changes on swap (only row/col do), so Tab order would stop
+  // matching the tile's visual position after the very first move.
+  const [focusedTileId, setFocusedTileId] = useState<string | null>(null);
+  const tileRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Approx height of the zoom-control row plus the flex gap above it --
   // reserved so the row always has real room below the board instead of
@@ -113,6 +137,55 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   // position within the tiles array, so auto-flow placement never moved
   // a swapped tile on screen.
   const gridSize = Math.round(Math.sqrt(tiles.length)) || 3;
+
+  // Keep the roving-tabindex target valid across a fresh shuffle/restart
+  // (new tile ids), defaulting to the top-left cell.
+  useEffect(() => {
+    if (tiles.length === 0) return;
+    if (!focusedTileId || !tiles.some(t => t.id === focusedTileId)) {
+      const topLeft = tiles.find(t => t.row === 0 && t.col === 0) ?? tiles[0];
+      setFocusedTileId(topLeft.id);
+    }
+  }, [tiles, focusedTileId]);
+
+  const ARROW_DELTAS: Record<string, [number, number]> = {
+    ArrowUp: [-1, 0],
+    ArrowDown: [1, 0],
+    ArrowLeft: [0, -1],
+    ArrowRight: [0, 1]
+  };
+
+  const handleTileKeyDown = (e: React.KeyboardEvent, tile: Tile) => {
+    const delta = ARROW_DELTAS[e.key];
+    if (delta) {
+      e.preventDefault();
+      const [dRow, dCol] = delta;
+      const target = tiles.find(t => t.row === tile.row + dRow && t.col === tile.col + dCol);
+      if (target) {
+        setFocusedTileId(target.id);
+        tileRefs.current.get(target.id)?.focus();
+      }
+      return;
+    }
+
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelectTile(tile.id);
+      return;
+    }
+
+    if (e.key.toLowerCase() === 'r') {
+      e.preventDefault();
+      onRotateTile(tile.id, e.shiftKey ? -1 : 1);
+    }
+  };
+
+  const tileAriaLabel = (tile: Tile, isSelected: boolean) => {
+    const parts = [`Tile, row ${tile.row + 1}, column ${tile.col + 1}`];
+    if (tile.rotation) parts.push(`rotated ${tile.rotation} degrees`);
+    if (isSelected) parts.push('selected');
+    return parts.join(', ');
+  };
 
   // Glow bars for seams whose edges genuinely match -- rendered as a
   // single overlay layer at the whole-grid level, NOT as children of
@@ -175,22 +248,39 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       ref={boardRef}
       className="game-board w-full h-full flex flex-col items-center justify-center gap-3 min-h-0"
     >
-      <div className="tiles-grid grid gap-1 relative" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: squareSize, height: squareSize }}>
+      <p id="tile-grid-instructions" className="sr-only">
+        Puzzle grid. Arrow keys move between tiles. Enter or Space selects a tile, then selects a second tile to swap them. R rotates a tile clockwise, Shift plus R rotates it counter-clockwise.
+      </p>
+      <div
+        role="group"
+        aria-label="Puzzle grid"
+        aria-describedby="tile-grid-instructions"
+        className="tiles-grid grid gap-1 relative"
+        style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: squareSize, height: squareSize }}
+      >
         {tiles.map((tile) => {
           const isSelected = selectedTile === tile.id;
           const isBeingDragged = dragState?.tileId === tile.id;
           const isHoverTarget = hoverTargetId === tile.id;
+          const isHinted = hintedTileIds?.includes(tile.id) ?? false;
 
           return (
             <div
               key={tile.id}
+              ref={(el) => {
+                if (el) tileRefs.current.set(tile.id, el);
+                else tileRefs.current.delete(tile.id);
+              }}
               role="button"
-              tabIndex={0}
+              tabIndex={focusedTileId === tile.id ? 0 : -1}
+              onKeyDown={(e) => handleTileKeyDown(e, tile)}
+              onFocus={() => setFocusedTileId(tile.id)}
+              aria-label={tileAriaLabel(tile, isSelected)}
               {...{ [tileAttr]: tile.id }}
               {...getTileHandlers(tile.id)}
               className={`tile relative select-none touch-none bg-navy-dark border rounded-md overflow-hidden flex items-center justify-center cursor-pointer transition-opacity ${
                 isHoverTarget ? 'border-teal ring-2 ring-teal' : 'border-navy'
-              } ${isBeingDragged ? 'opacity-30' : ''}`}
+              } ${isBeingDragged ? 'opacity-30' : ''} ${isHinted ? 'hint-flash' : ''}`}
               style={{
                 gridColumn: tile.col + 1,
                 gridRow: tile.row + 1,
@@ -202,7 +292,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               aria-pressed={isSelected}
             >
               {tile.imageData ? (
-                <img src={tile.imageData} alt={`tile-${tile.id}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} draggable={false} />
+                <img src={tile.imageData} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} draggable={false} />
               ) : (
                 <div className="text-xs text-offwhite font-mono">{tile.id}</div>
               )}
@@ -242,12 +332,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         )}
       </div>
 
-      {/* Zoom only -- Undo/Shuffle/Pause/Restart already live in the
+      {/* Zoom + preview -- Undo/Shuffle/Pause/Restart already live in the
           persistent toolbar below the board (App.tsx); duplicating them
           here as a second, absolutely-positioned cluster was the "extra
           buttons floating on the right" bug. */}
       {onZoomIn && onZoomOut && (
-        <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-2">
           <Tooltip label="Zoom out" position="top">
             <button onClick={onZoomOut} aria-label="Zoom out" className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">-</button>
           </Tooltip>
@@ -255,8 +345,71 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           <Tooltip label="Zoom in" position="top">
             <button onClick={onZoomIn} aria-label="Zoom in" className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">+</button>
           </Tooltip>
+
+          {(previewImageUrl || (previewGradient && previewGradient.length > 0)) && (
+            <>
+              {/* No Tooltip here (unlike the zoom buttons) -- its
+                  group-focus-within label anchors to the same "above the
+                  row" space this button's own popover uses, and the two
+                  visibly collided when open. The gold active state plus
+                  aria-label already carry the meaning. */}
+              <button
+                onClick={() => setShowPreview((v) => !v)}
+                aria-label="Peek at the solved picture"
+                aria-pressed={showPreview}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition ${
+                  showPreview ? 'bg-gold text-navy-dark' : 'bg-navy-dark text-offwhite hover:text-gold'
+                }`}
+              >
+                <Eye size={13} />
+              </button>
+
+              {showPreview && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowPreview(false)} />
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 bg-navy-light border-2 border-gold rounded-xl p-2 shadow-2xl">
+                    <div className="w-36 h-36 rounded-lg overflow-hidden bg-navy-dark">
+                      {previewImageUrl ? (
+                        <img
+                          src={previewImageUrl}
+                          alt="What the solved puzzle looks like"
+                          className="w-full h-full object-cover"
+                          draggable={false}
+                        />
+                      ) : (
+                        <div
+                          className="w-full h-full"
+                          style={{ background: `linear-gradient(135deg, ${(previewGradient ?? []).join(', ')})` }}
+                        />
+                      )}
+                    </div>
+                    <p className="text-[10px] text-offwhite/70 text-center mt-1 whitespace-nowrap">What you're building</p>
+                  </div>
+                </>
+              )}
+            </>
+          )}
         </div>
       )}
+
+      <style>{`
+        @keyframes hint-flash {
+          0%, 100% { box-shadow: 0 0 0 3px rgb(var(--color-gold, 251 191 36) / 0.9); }
+          50% { box-shadow: 0 0 0 6px rgb(var(--color-gold, 251 191 36) / 0.4); }
+        }
+
+        .hint-flash {
+          animation: hint-flash 0.4s ease-in-out 3;
+          z-index: 10;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .hint-flash {
+            animation: none;
+            box-shadow: 0 0 0 3px rgb(var(--color-gold, 251 191 36) / 0.9);
+          }
+        }
+      `}</style>
     </div>
   );
 };
