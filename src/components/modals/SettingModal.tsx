@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Settings, Check, Bell, Volume2, VolumeX, Vibrate } from 'lucide-react';
+import { Settings, Check, Bell, Volume2, VolumeX, Vibrate, MessageCircle } from 'lucide-react';
+import { TileMascot } from '../TileMascot/TileMascot';
 import { DailyPuzzleNotifications } from '../DailyPuzzleNotifications';
 import { ModalShell } from '../common/ModalShell';
 import { THEMES } from '../../theme/themes';
@@ -27,6 +28,8 @@ interface AppSettings {
   soundStyle?: SoundStyle;
   soundVolume?: number;
   theme?: string;
+  mascotEnabled?: boolean;
+  mascotVoiceEnabled?: boolean;
 }
 
 interface SettingsModalProps {
@@ -244,6 +247,59 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
           )}
+
+          {/* Tilo -- the roaming mascot is opt-out (some players find him
+              distracting mid-puzzle), and his talk-blip "voice" toggles
+              independently of general Sound Effects so a player can keep
+              game SFX on but his chatter off, or vice versa. */}
+          <div className="px-6 py-4 border-t border-offwhite/10">
+            <h3 className="text-offwhite/60 text-xs font-semibold uppercase mb-3">Tilo</h3>
+            <div className="bg-offwhite/10 rounded-lg divide-y divide-offwhite/10">
+              <div className="flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-coral/20 flex items-center justify-center flex-shrink-0">
+                  <TileMascot size={24} bounce={false} />
+                </div>
+                <div className="flex-1">
+                  <span className="text-offwhite font-semibold block">Show Tilo</span>
+                  <span className="text-xs text-offwhite/60">Let him roam and pop up around the app</span>
+                </div>
+                <button
+                  onClick={() => onUpdateSettings({ mascotEnabled: settings.mascotEnabled === false })}
+                  className={`relative w-12 h-6 rounded-full transition flex-shrink-0 ${
+                    settings.mascotEnabled !== false ? 'bg-teal' : 'bg-offwhite/20'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 left-1 w-4 h-4 bg-offwhite rounded-full transition-transform ${
+                      settings.mascotEnabled !== false ? 'translate-x-6' : ''
+                    }`}
+                  ></div>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-violet/20 flex items-center justify-center flex-shrink-0">
+                  <MessageCircle size={20} className="text-violet" />
+                </div>
+                <div className="flex-1">
+                  <span className="text-offwhite font-semibold block">Tilo's Voice</span>
+                  <span className="text-xs text-offwhite/60">The little "talk blip" sound as he speaks</span>
+                </div>
+                <button
+                  onClick={() => onUpdateSettings({ mascotVoiceEnabled: settings.mascotVoiceEnabled === false })}
+                  className={`relative w-12 h-6 rounded-full transition flex-shrink-0 ${
+                    settings.mascotVoiceEnabled !== false ? 'bg-teal' : 'bg-offwhite/20'
+                  }`}
+                >
+                  <div
+                    className={`absolute top-1 left-1 w-4 h-4 bg-offwhite rounded-full transition-transform ${
+                      settings.mascotVoiceEnabled !== false ? 'translate-x-6' : ''
+                    }`}
+                  ></div>
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Notifications */}
           <div className="px-6 py-4 border-t border-offwhite/10">

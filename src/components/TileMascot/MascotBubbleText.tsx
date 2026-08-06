@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useMascotSound } from './useMascotSound';
+import { useMascotVoiceEnabled } from './useMascotVoiceEnabled';
 
 interface MascotBubbleTextProps {
   text: string;
@@ -11,10 +12,15 @@ interface MascotBubbleTextProps {
 // Crossing, Banjo-Kazooie) instead of real voice acting or a paid TTS
 // service. Reuses the existing synthesized sound system (one more
 // SoundName), so it costs nothing ongoing and respects the same
-// enabled/style/volume settings every other sound already does.
+// enabled/style/volume settings every other sound already does, plus its
+// own dedicated "Tilo's Voice" toggle (independent of general sound
+// effects -- see useMascotVoiceEnabled). Turning voice off only mutes the
+// blip; the visual reveal still plays out so the bubble isn't just a
+// silent instant pop-in.
 export const MascotBubbleText: React.FC<MascotBubbleTextProps> = ({ text, className }) => {
   const [shownWords, setShownWords] = useState(0);
   const playSound = useMascotSound();
+  const voiceEnabled = useMascotVoiceEnabled();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
@@ -32,7 +38,7 @@ export const MascotBubbleText: React.FC<MascotBubbleTextProps> = ({ text, classN
     const revealNext = () => {
       i++;
       setShownWords(i);
-      playSound('mascotBlip');
+      if (voiceEnabled) playSound('mascotBlip');
       if (i < words.length) {
         timeoutRef.current = setTimeout(revealNext, 70 + Math.random() * 55);
       }

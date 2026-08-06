@@ -255,7 +255,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         role="group"
         aria-label="Puzzle grid"
         aria-describedby="tile-grid-instructions"
-        className="tiles-grid grid gap-1 relative"
+        // z-[35] sits above the roaming mascot (z-index 30) so the board
+        // visually covers him when he wanders behind it, but stays below
+        // the z-40 click-away overlays used by the game menu and the
+        // preview popover -- tying with those would let a click on the
+        // board eat a click meant to dismiss one of them instead.
+        className="tiles-grid grid gap-1 relative z-[35]"
         style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)`, width: squareSize, height: squareSize }}
       >
         {tiles.map((tile) => {

@@ -13,8 +13,6 @@ interface RoamingMascotProps {
   yRangePercent?: [number, number];
   /** Faded out and paused in place (not unmounted, so his position/velocity survive) whenever a modal, walkthrough, or other scripted Tilo moment is on screen -- avoids two Tilos ever being visible at once. */
   hidden?: boolean;
-  /** CSS selector for an element he'll steer around instead of wandering over -- the gameboard screen passes its tile grid so he can't drift over tiles a player is trying to tap/drag. Re-queried every frame (cheap for one selector), so it naturally becomes null/empty on screens with nothing to avoid. */
-  avoidSelector?: string;
 }
 
 const pickLine = (lines: MascotLine[], exclude?: string): MascotLine => {
@@ -25,40 +23,6 @@ const pickLine = (lines: MascotLine[], exclude?: string): MascotLine => {
   }
   return next;
 };
-
-interface RectPercent {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-}
-
-const getAvoidRectPercent = (selector?: string): RectPercent | null => {
-  if (!selector) return null;
-  const el = document.querySelector(selector);
-  if (!el) return null;
-  const r = el.getBoundingClientRect();
-  if (r.width === 0 || r.height === 0) return null;
-  return {
-    left: (r.left / window.innerWidth) * 100,
-    right: (r.right / window.innerWidth) * 100,
-    top: (r.top / window.innerHeight) * 100,
-    bottom: (r.bottom / window.innerHeight) * 100
-  };
-};
-
-const overlapsRect = (
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  rect: RectPercent,
-  pad: number
-): boolean =>
-  x + w > rect.left - pad &&
-  x < rect.right + pad &&
-  y + h > rect.top - pad &&
-  y < rect.bottom + pad;
 
 // A free-roaming Tilo -- same edge-bounce physics as TileSwappyLogo's
 // `bouncing` prop, but foreground/opaque/clickable instead of faint
@@ -72,8 +36,7 @@ export const RoamingMascot: React.FC<RoamingMascotProps> = ({
   size = 56,
   color = 'coral',
   yRangePercent = [10, 90],
-  hidden = false,
-  avoidSelector
+  hidden = false
 }) => {
   const [position, setPosition] = useState({ x: 50, y: 20 });
   const velocityRef = useRef({
@@ -117,12 +80,16 @@ export const RoamingMascot: React.FC<RoamingMascotProps> = ({
     if (reduce) return;
 
     const [minY, maxY] = yRangePercent;
-    const pad = 3; // percent -- keeps him from visually grazing the avoided rect's edge
 
+    // No obstacle-avoidance here on purpose -- he used to bounce off the
+    // gameboard's tile grid to stay clear of it, which squeezed his whole
+    // roam range down to whatever margin was left around the board. By
+    // request, he now roams the full screen freely and simply passes
+    // BEHIND the puzzle when their paths cross (see the tile grid's
+    // z-index in GameBoard.tsx, kept just above .roaming-mascot's).
     const animate = () => {
       setPosition((prev) => {
         const maxXPercent = 100 - (size / window.innerWidth) * 100;
-        const sizeXPercent = (size / window.innerWidth) * 100;
         const sizeYPercent = (size / window.innerHeight) * 100;
 
         let newX = prev.x + velocityRef.current.x;
@@ -133,51 +100,6 @@ export const RoamingMascot: React.FC<RoamingMascotProps> = ({
 
         newX = Math.max(0, Math.min(maxXPercent, newX));
         newY = Math.max(minY, Math.min(Math.min(maxY, 100 - sizeYPercent), newY));
-
-        const avoidRect = getAvoidRectPercent(avoidSelector);
-        if (avoidRect) {
-          if (overlapsRect(newX, newY, sizeXPercent, sizeYPercent, avoidRect, pad)) {
-            if (overlapsRect(prev.x, prev.y, sizeXPercent, sizeYPercent, avoidRect, pad)) {
-              // Already standing inside the rect -- happens right after a
-              // screen change put a tile grid where he used to be
-              // standing. Velocity reflection alone would just oscillate
-              // him in place forever, so push him straight out along
-              // whichever edge is nearest instead.
-              const rLeft = avoidRect.left - pad;
-              const rRight = avoidRect.right + pad;
-              const rTop = avoidRect.top - pad;
-              const rBottom = avoidRect.bottom + pad;
-              const distLeft = prev.x + sizeXPercent - rLeft;
-              const distRight = rRight - prev.x;
-              const distTop = prev.y + sizeYPercent - rTop;
-              const distBottom = rBottom - prev.y;
-              const minDist = Math.min(distLeft, distRight, distTop, distBottom);
-
-              if (minDist === distLeft) {
-                newX = rLeft - sizeXPercent;
-                velocityRef.current.x = -Math.abs(velocityRef.current.x) || -0.3;
-              } else if (minDist === distRight) {
-                newX = rRight;
-                velocityRef.current.x = Math.abs(velocityRef.current.x) || 0.3;
-              } else if (minDist === distTop) {
-                newY = rTop - sizeYPercent;
-                velocityRef.current.y = -Math.abs(velocityRef.current.y) || -0.3;
-              } else {
-                newY = rBottom;
-                velocityRef.current.y = Math.abs(velocityRef.current.y) || 0.3;
-              }
-              newX = Math.max(0, Math.min(maxXPercent, newX));
-              newY = Math.max(minY, Math.min(Math.min(maxY, 100 - sizeYPercent), newY));
-            } else {
-              // Flying toward it -- hold this frame's position and bounce
-              // off, same feel as the screen-edge bounce above.
-              newX = prev.x;
-              newY = prev.y;
-              velocityRef.current.x *= -1;
-              velocityRef.current.y *= -1;
-            }
-          }
-        }
 
         return { x: newX, y: newY };
       });

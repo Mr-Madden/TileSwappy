@@ -250,7 +250,9 @@ const App: React.FC = () => {
       soundEnabled: true,
       soundStyle: 'wood' as SoundStyle,
       soundVolume: 0.8,
-      theme: DEFAULT_THEME
+      theme: DEFAULT_THEME,
+      mascotEnabled: true,
+      mascotVoiceEnabled: true
     })
   );
   const [dailyPuzzles, setDailyPuzzles] = useState<Record<string, any>>(() => 
@@ -1236,12 +1238,15 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       {/* Mounted once, above every screen-conditional render below, so
           navigating Home <-> Archive <-> gameboard <-> Settings never
           remounts him -- only StartScreen keeps its own separate,
-          differently-tuned instance (see RoamingMascot's usage there). */}
-      {gameState.gameState.status !== 'start' && (
+          differently-tuned instance (see RoamingMascot's usage there).
+          Fully unmounted (not just hidden) when the player has turned
+          him off in Settings -- a deliberate opt-out, unlike the
+          transient `hidden` cases, so there's no reason to keep his
+          animation loop running in the background. */}
+      {gameState.gameState.status !== 'start' && settings.mascotEnabled !== false && (
         <RoamingMascot
           lines={AMBIENT_LINES}
           hidden={suppressRoamingMascot}
-          avoidSelector='[data-tour="tile-grid"]'
         />
       )}
       

@@ -4,7 +4,11 @@
    ordinary screen content, but below modals/walkthroughs/celebrations
    (all z-40+) -- those are also explicitly passed as `hidden` from
    App.tsx (see suppressRoamingMascot), this is just a second line of
-   defense so a transition frame never shows him floating on top. */
+   defense so a transition frame never shows him floating on top.
+   Also deliberately BELOW the gameboard's tile grid (GameBoard.tsx sets
+   the grid to z-index 40) -- by request, he's allowed to roam the whole
+   screen including over the puzzle, and just passes behind the tiles
+   when their paths cross instead of being physically kept off them. */
 .roaming-mascot {
   position: fixed;
   z-index: 30;
