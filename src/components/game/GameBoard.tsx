@@ -196,7 +196,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   // `overflow-hidden` across the grid's gap. A grid-level overlay avoids
   // both problems.
   const seamGlowStyle = {
-    boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'
+    boxShadow: '0 0 15px rgb(var(--color-match) / 0.8), 0 0 30px rgb(var(--color-match) / 0.4)'
   };
   const seamBars: React.ReactNode[] = [];
   for (let row = 0; row < gridSize; row++) {
@@ -280,13 +280,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               {...getTileHandlers(tile.id)}
               className={`tile relative select-none touch-none bg-navy-dark border rounded-md overflow-hidden flex items-center justify-center cursor-pointer transition-opacity ${
                 isHoverTarget ? 'border-teal ring-2 ring-teal' : 'border-navy'
-              } ${isBeingDragged ? 'opacity-30' : ''} ${isHinted ? 'hint-flash' : ''}`}
+              } ${isBeingDragged ? 'opacity-30' : ''} ${isHinted ? 'hint-flash' : ''} ${isSelected ? 'tile-selected-shake' : ''}`}
               style={{
                 gridColumn: tile.col + 1,
                 gridRow: tile.row + 1,
                 width: '100%',
                 aspectRatio: '1 / 1',
-                transform: `rotate(${tile.rotation ?? 0}deg)`,
+                // The shake keyframes below also need the tile's real
+                // rotation (so a shaking 90deg-rotated tile doesn't snap
+                // back to unrotated for the animation's duration) -- a CSS
+                // custom property lets both the plain base transform and
+                // every shake keyframe reference the same value instead of
+                // fighting over the inline `transform` property directly.
+                ['--tile-rotation' as any]: `${tile.rotation ?? 0}deg`,
                 outline: isSelected ? '3px solid rgba(78,205,196,0.25)' : undefined
               }}
               aria-pressed={isSelected}
@@ -396,6 +402,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       )}
 
       <style>{`
+        .tile {
+          transform: rotate(var(--tile-rotation, 0deg));
+        }
+
         @keyframes hint-flash {
           0%, 100% { box-shadow: 0 0 0 3px rgb(var(--color-gold, 251 191 36) / 0.9); }
           50% { box-shadow: 0 0 0 6px rgb(var(--color-gold, 251 191 36) / 0.4); }
@@ -406,10 +416,36 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           z-index: 10;
         }
 
+        /* Selected tile jitters in place (screen-space translate, layered
+           on top of the tile's own --tile-rotation) so it's obvious at a
+           glance which tile is armed for the next tap/swap -- keeps
+           looping for as long as the tile stays selected, not just once. */
+        @keyframes tile-select-shake {
+          0%, 100% { transform: translate(0, 0) rotate(var(--tile-rotation, 0deg)); }
+          10% { transform: translate(-2px, 1px) rotate(calc(var(--tile-rotation, 0deg) - 1.5deg)); }
+          20% { transform: translate(2px, -1px) rotate(calc(var(--tile-rotation, 0deg) + 1.5deg)); }
+          30% { transform: translate(-2px, -1px) rotate(calc(var(--tile-rotation, 0deg) - 1deg)); }
+          40% { transform: translate(2px, 1px) rotate(calc(var(--tile-rotation, 0deg) + 1deg)); }
+          50% { transform: translate(-1px, 2px) rotate(calc(var(--tile-rotation, 0deg) - 1.5deg)); }
+          60% { transform: translate(1px, -2px) rotate(calc(var(--tile-rotation, 0deg) + 1.5deg)); }
+          70% { transform: translate(-2px, 1px) rotate(calc(var(--tile-rotation, 0deg) - 1deg)); }
+          80% { transform: translate(2px, -1px) rotate(calc(var(--tile-rotation, 0deg) + 1deg)); }
+          90% { transform: translate(-1px, 1px) rotate(calc(var(--tile-rotation, 0deg) - 0.5deg)); }
+        }
+
+        .tile-selected-shake {
+          animation: tile-select-shake 0.5s ease-in-out infinite;
+          z-index: 10;
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .hint-flash {
             animation: none;
             box-shadow: 0 0 0 3px rgb(var(--color-gold, 251 191 36) / 0.9);
+          }
+
+          .tile-selected-shake {
+            animation: none;
           }
         }
       `}</style>

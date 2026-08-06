@@ -3,9 +3,11 @@
  * so Tailwind's `rgb(var(--x) / <alpha-value>)` pattern keeps opacity
  * modifiers (bg-navy/80, text-offwhite/60, etc.) working per theme.
  *
- * `match` (the edge-match "correct" glow) is intentionally NOT a variable
- * here — it's a semantic state color, not a brand color, and stays fixed
- * across every theme. See tailwind.config.js.
+ * `match` (the edge-match "correct" glow) used to be a fixed green,
+ * deliberately not themed. By request, it now follows the active theme's
+ * own teal/accent color instead -- aliased with `var(--color-teal[-dark])`
+ * rather than a duplicated literal so it can never drift out of sync with
+ * that theme's actual teal. See tailwind.config.js.
  */
 
 :root,
@@ -19,6 +21,8 @@
   --color-teal: 46 196 182;
   --color-teal-light: 79 209 197;
   --color-teal-dark: 31 163 154;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 244 244 244;
   --color-violet: 139 92 246;
   --color-violet-light: 167 139 250;
@@ -40,6 +44,8 @@
   --color-teal: 34 211 238;
   --color-teal-light: 103 232 249;
   --color-teal-dark: 8 145 178;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 238 242 247;
   --color-violet: 124 92 255;
   --color-violet-light: 167 148 255;
@@ -61,6 +67,8 @@
   --color-teal: 0 245 212;
   --color-teal-light: 128 250 232;
   --color-teal-dark: 0 184 158;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 215 250 255;
   --color-violet: 176 38 255;
   --color-violet-light: 205 128 255;
@@ -82,6 +90,8 @@
   --color-teal: 53 193 255;
   --color-teal-light: 125 216 255;
   --color-teal-dark: 26 143 201;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 255 250 242;
   --color-violet: 139 92 246;
   --color-violet-light: 167 139 250;
@@ -103,6 +113,8 @@
   --color-teal: 255 169 77;
   --color-teal-light: 255 207 153;
   --color-teal-dark: 204 122 31;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 245 230 211;
   --color-violet: 138 90 61;
   --color-violet-light: 168 122 92;
@@ -124,6 +136,8 @@
   --color-teal: 143 174 107;
   --color-teal-light: 174 203 142;
   --color-teal-dark: 107 138 74;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 243 234 217;
   --color-violet: 122 90 122;
   --color-violet-light: 155 122 155;
@@ -156,6 +170,8 @@
   --color-teal: 95 122 99;
   --color-teal-light: 143 166 147;
   --color-teal-dark: 68 92 72;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 58 66 56;
   --color-violet: 107 90 115;
   --color-violet-light: 155 143 166;
@@ -177,6 +193,8 @@
   --color-teal: 79 209 197;
   --color-teal-light: 189 238 226;
   --color-teal-dark: 13 138 143;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 234 250 246;
   --color-violet: 61 90 122;
   --color-violet-light: 94 125 158;
@@ -199,6 +217,8 @@
   --color-teal: 92 107 68;
   --color-teal-light: 122 139 94;
   --color-teal-dark: 70 80 36;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 90 56 37;
   --color-violet: 107 74 90;
   --color-violet-light: 138 106 122;
@@ -220,6 +240,8 @@
   --color-teal: 95 184 220;
   --color-teal-light: 159 215 236;
   --color-teal-dark: 47 127 163;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 234 248 255;
   --color-violet: 138 154 217;
   --color-violet-light: 174 186 232;
@@ -242,6 +264,8 @@
   --color-teal: 42 157 111;
   --color-teal-light: 110 230 179;
   --color-teal-dark: 31 117 80;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 91 42 134;
   --color-violet: 120 87 184;
   --color-violet-light: 217 198 255;
@@ -263,6 +287,8 @@
   --color-teal: 107 122 63;
   --color-teal-light: 150 166 106;
   --color-teal-dark: 74 90 38;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 246 232 216;
   --color-violet: 107 42 58;
   --color-violet-light: 148 82 98;
@@ -284,6 +310,8 @@
   --color-teal: 63 107 82;
   --color-teal-light: 107 150 120;
   --color-teal-dark: 35 74 54;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 237 224 189;
   --color-violet: 107 74 138;
   --color-violet-light: 148 118 179;
@@ -311,6 +339,8 @@
   --color-teal: 110 145 190;
   --color-teal-light: 158 184 216;
   --color-teal-dark: 72 98 138;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 224 230 240;
   --color-violet: 100 80 150;
   --color-violet-light: 152 132 200;
@@ -332,6 +362,8 @@
   --color-teal: 217 217 217;
   --color-teal-light: 240 240 240;
   --color-teal-dark: 160 160 160;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
   --color-offwhite: 255 255 255;
   --color-violet: 138 138 138;
   --color-violet-light: 170 170 170;

@@ -39,12 +39,12 @@ module.exports = {
         },
         silver: 'rgb(var(--color-silver) / <alpha-value>)',
         bronze: 'rgb(var(--color-bronze) / <alpha-value>)',
-        // Semantic state color (edge-match "correct" glow), NOT a brand
-        // color -- deliberately a plain static value, never themed, so
-        // "correct" always reads as green regardless of the active theme.
+        // Semantic state color (edge-match "correct" glow) -- aliased to
+        // each theme's own teal in themes.css, so it follows whichever
+        // theme the player has selected instead of a fixed color.
         match: {
-          DEFAULT: '#22C55E',
-          dark: '#16A34A',
+          DEFAULT: 'rgb(var(--color-match) / <alpha-value>)',
+          dark: 'rgb(var(--color-match-dark) / <alpha-value>)',
         },
       },
       borderRadius: {
