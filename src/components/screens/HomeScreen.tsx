@@ -180,7 +180,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-navy overflow-hidden flex items-center justify-center p-4">
+    // min-h-dvh, not min-h-screen -- see the App.tsx root wrapper's comment.
+    <div className="min-h-dvh bg-navy overflow-hidden flex items-center justify-center p-4">
       {/* Tutorial Button - Top Left */}
       <button
         onClick={onOpenTutorial}

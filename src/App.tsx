@@ -1231,7 +1231,14 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
     gameState.gameState.isPaused;
 
   return (
-    <div className="min-h-screen bg-navy">
+    // min-h-dvh (not min-h-screen/100vh) -- 100vh is measured against the
+    // "largest" mobile viewport (address bar collapsed), so on a phone
+    // that starts with the address bar expanded, this div is shorter than
+    // the real screen and leaves a gap at the bottom that shows whatever
+    // is behind it instead of the themed navy. dvh tracks the actual
+    // visible viewport as the address bar shows/hides, same as the
+    // gameboard screen below already does with h-dvh.
+    <div className="min-h-dvh bg-navy">
       <ThemeBackground theme={settings.theme || DEFAULT_THEME} />
       <TileSwappyLogo size={150} bouncing />
 
@@ -1261,7 +1268,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           onOpenStreak={() => setShowStreak(true)}
           onOpenStats={() => setShowPlayerStats(true)}
           onOpenSettings={() => setShowSettings(true)}
-          onOpenTutorial={handleOpenTutorialFromHome}
+          onOpenTutorial={() => { triggerHaptic(10); playSound('click'); handleOpenTutorialFromHome(); }}
           suppressIdleHints={showMenuWalkthrough}
         />
       )}

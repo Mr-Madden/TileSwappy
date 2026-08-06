@@ -108,7 +108,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, onOpenSetting
   }, []);
 
   return (
-    <div className="min-h-screen bg-navy flex flex-col items-center justify-center p-4">
+    // min-h-dvh, not min-h-screen -- see the App.tsx root wrapper's comment.
+    <div className="min-h-dvh bg-navy flex flex-col items-center justify-center p-4">
       <button
         onClick={onOpenSettings}
         aria-label="Settings"

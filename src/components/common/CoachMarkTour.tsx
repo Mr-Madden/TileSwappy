@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { TileMascot } from '../TileMascot/TileMascot';
 import type { MascotExpression } from '../TileMascot/types';
+import { useHaptics } from '../../hooks/useHaptics';
 import './CoachMarkTour.css';
 
 export interface TourStep {
@@ -93,8 +94,10 @@ export const CoachMarkTour: React.FC<CoachMarkTourProps> = ({ steps, onComplete,
   }, [rect, stepIndex]);
 
   const isLast = stepIndex === steps.length - 1;
+  const triggerHaptic = useHaptics();
 
   const handleNext = () => {
+    triggerHaptic(10);
     if (isLast) {
       onComplete();
     } else {
@@ -102,7 +105,10 @@ export const CoachMarkTour: React.FC<CoachMarkTourProps> = ({ steps, onComplete,
     }
   };
 
-  const handleSkip = () => onComplete();
+  const handleSkip = () => {
+    triggerHaptic(10);
+    onComplete();
+  };
 
   return (
     <div className="coach-mark-tour">

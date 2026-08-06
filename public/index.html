@@ -82,6 +82,16 @@
   
   <style>
     /* Critical CSS - inline for faster first paint */
+    /* html gets the same themed background as body -- a belt-and-suspenders
+       safety net for mobile browsers where the CSS spec's "propagate body's
+       background to the canvas" rule doesn't reliably cover every edge case
+       (notch/home-indicator safe areas, the gap left behind when the
+       address bar collapses/expands). Without this, any such gap falls
+       back to the browser's own default canvas color instead of the
+       selected theme. */
+    html {
+      background-color: rgb(var(--color-navy, 13 27 42));
+    }
     body {
       margin: 0;
       padding: 0;
@@ -92,9 +102,9 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
-    
+
     #root {
-      min-height: 100vh;
+      min-height: 100dvh;
     }
 
     /* Loading spinner for initial load -- uses the same theme variable
