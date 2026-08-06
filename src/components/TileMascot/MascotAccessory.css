@@ -51,3 +51,94 @@
   background: rgb(var(--color-offwhite, 244 244 244) / 0.85);
   border-radius: 999px;
 }
+
+/* Halloween -- witch hat: a tapered cone (clip-path triangle, not a
+   sharp point -- reads better as fabric than a knife) plus a small
+   buckled band and a wide brim disc underneath it. */
+.mascot-witch-cone {
+  position: relative;
+  background: #4a3d63;
+  clip-path: polygon(50% 0%, 15% 100%, 85% 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.mascot-witch-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22%;
+  background: #ff9d2e;
+}
+.mascot-witch-brim {
+  border-radius: 50%;
+  background: #4a3d63;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+  margin: -2px auto 0;
+}
+
+/* Winter holidays -- Santa hat: a drooping red cone (asymmetric
+   border-radius on the tip does the "floppy" work) with a white fur
+   trim band and a pom at the end. */
+.mascot-santa-cone {
+  position: relative;
+  background: linear-gradient(160deg, #e0453f, #b8302b);
+  border-radius: 55% 15% 50% 50% / 65% 15% 85% 35%;
+  transform: rotate(-8deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+.mascot-santa-pom {
+  position: absolute;
+  right: -8%;
+  bottom: -10%;
+  border-radius: 50%;
+  background: #fdfaf5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.mascot-santa-band {
+  border-radius: 999px;
+  background: #fdfaf5;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+  margin-top: -4%;
+}
+
+/* Valentine's -- a thin headband with a heart on a short stem above it,
+   same two-circles-plus-rotated-square construction as TileMascot's own
+   'love' expression eyes (see .mascot-eye--heart), scaled up. */
+.mascot-valentine-heart {
+  position: relative;
+  width: var(--heart-size);
+  height: var(--heart-size);
+  border-radius: 2px;
+  transform: rotate(-45deg);
+  background: rgb(var(--color-coral, 255 76 76));
+  margin: 0 auto;
+}
+.mascot-valentine-heart::before,
+.mascot-valentine-heart::after {
+  content: '';
+  position: absolute;
+  width: var(--heart-size);
+  height: var(--heart-size);
+  background: rgb(var(--color-coral, 255 76 76));
+  border-radius: 50%;
+}
+.mascot-valentine-heart::before {
+  top: calc(var(--heart-size) * -0.5);
+  left: 0;
+}
+.mascot-valentine-heart::after {
+  left: calc(var(--heart-size) * 0.5);
+  top: 0;
+}
+.mascot-valentine-stem {
+  width: 2px;
+  background: rgb(var(--color-offwhite, 244 244 244) / 0.7);
+  margin-left: auto;
+  margin-right: auto;
+}
+.mascot-valentine-band {
+  height: 3px;
+  border-radius: 999px;
+  background: rgb(var(--color-offwhite, 244 244 244) / 0.7);
+  margin: 0 auto;
+}

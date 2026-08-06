@@ -12,6 +12,7 @@ import { MainMenuWalkthrough } from './components/MainMenuWalkthrough';
 import { GameboardWalkthrough } from './components/GameboardWalkthrough';
 import { TileMascot } from './components/TileMascot/TileMascot';
 import { MascotNarrator, MascotLine } from './components/TileMascot/MascotNarrator';
+import { RoamingMascot } from './components/TileMascot/RoamingMascot';
 import { THEMES, DEFAULT_THEME } from './theme/themes';
 import { getCurrentDate } from './utils/helpers';
 import { calculateCurrentStreak, STREAK_MILESTONES } from './utils/streaks';
@@ -92,6 +93,48 @@ const STUCK_NUDGE_LINES: MascotLine[] = [
   { text: "Look for edges that almost match. You're closer than you think.", expression: 'happy' },
   { text: "No rush — take a breath and check the corners.", expression: 'sleepy' },
   { text: "Psst, try dragging a tile instead of tapping.", expression: 'wink' }
+];
+
+// Same toast, fired the moment a hint is actually used (any of the three
+// handleHintClick branches -- free/banked/ad-earned all end the same way).
+const HINT_REACTION_LINES: MascotLine[] = [
+  { text: "Here, let me help!", expression: 'thinking' },
+  { text: "Ooh, try that one.", expression: 'wink' },
+  { text: "I saw that one coming.", expression: 'happy' }
+];
+
+// Fired on undo -- gently reassuring rather than teasing, since it's the
+// one action a player takes specifically because something didn't work.
+const UNDO_REACTION_LINES: MascotLine[] = [
+  { text: "No worries, try again!", expression: 'wink' },
+  { text: "Happens to the best of us.", expression: 'happy' },
+  { text: "Take two!", expression: 'thinking' }
+];
+
+// Fired once when exactly one edge is left unmatched (see the
+// hasFiredNearSolveRef effect) -- deliberately NOT reused for the fully
+// solved state, which already gets its own SOLVE_LINES celebration.
+const NEAR_SOLVE_LINES: MascotLine[] = [
+  { text: "So close! One more.", expression: 'excited' },
+  { text: "You can feel it, right?", expression: 'surprised' },
+  { text: "Just one edge left!", expression: 'excited' }
+];
+
+// The ambient companion pool for the app-wide RoamingMascot -- generic
+// enough to make sense on Home, mid-puzzle, or anywhere else he might be
+// wandering, unlike StartScreen's own GREETINGS (which lean "let's play"
+// and only fit the splash screen he still gets separately).
+const AMBIENT_LINES: MascotLine[] = [
+  { text: "Just wandering around, don't mind me." },
+  { text: "This is my house, you're just playing in it.", expression: 'wink' },
+  { text: "Poke me if you get bored!" },
+  { text: "I live here now.", expression: 'laughing' },
+  { text: "How's the puzzling going?", expression: 'happy' },
+  { text: "I'm keeping an eye on things.", expression: 'thinking' },
+  { text: "You've got this.", expression: 'excited' },
+  { text: "Just stretching my tile legs.", expression: 'sleepy' },
+  { text: "Every corner of this app is my domain.", expression: 'love' },
+  { text: "Don't mind me, just patrolling.", expression: 'wink' }
 ];
 
 const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
@@ -440,6 +483,7 @@ const App: React.FC = () => {
         setFreeHintUsedThisPuzzle(true);
         triggerHaptic(15);
         playSound('click');
+        showMascotToast(HINT_REACTION_LINES[Math.floor(Math.random() * HINT_REACTION_LINES.length)]);
       }
       return;
     }
@@ -449,6 +493,7 @@ const App: React.FC = () => {
         setExtraHints(prev => prev - 1);
         triggerHaptic(15);
         playSound('click');
+        showMascotToast(HINT_REACTION_LINES[Math.floor(Math.random() * HINT_REACTION_LINES.length)]);
       }
       return;
     }
@@ -463,10 +508,24 @@ const App: React.FC = () => {
     if (gameState.useHint()) {
       triggerHaptic(15);
       playSound('click');
+      showMascotToast(HINT_REACTION_LINES[Math.floor(Math.random() * HINT_REACTION_LINES.length)]);
     } else {
       setExtraHints(prev => prev + 1);
     }
     setHintAdState('idle');
+  };
+
+  // Cooldown (not a hard "once per puzzle" limit) so mashing Undo doesn't
+  // machine-gun the same toast/blip-sound over and over -- still reacts
+  // again if it's been a little while, just not on every single click.
+  const lastUndoReactionRef = useRef(0);
+  const handleUndoClick = () => {
+    gameState.undoLastMove();
+    const now = Date.now();
+    if (now - lastUndoReactionRef.current > 8000) {
+      lastUndoReactionRef.current = now;
+      showMascotToast(UNDO_REACTION_LINES[Math.floor(Math.random() * UNDO_REACTION_LINES.length)]);
+    }
   };
 
   const handleQuitToHome = () => {
@@ -1066,14 +1125,26 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
     prevMatchCountRef.current = currentCount;
   }, [gameState.gameState.matchingEdges, playSound]);
 
-  // A small, dismissible, auto-hiding nudge -- not a modal, and never
-  // more than once per COOLDOWN_MS -- if no new edge has matched for a
-  // while during actual play. Deliberately keyed off match PROGRESS
-  // rather than every swap/rotate: someone actively experimenting but
-  // just not landing a match yet is still exactly who this is for.
-  const [stuckNudge, setStuckNudge] = useState<MascotLine | null>(null);
+  // A small, dismissible, auto-hiding toast -- not a modal -- Tilo pops
+  // up near the bottom of the gameboard to react to something that just
+  // happened. Originally just the "stuck" nudge below; now shared by
+  // every mid-game reaction (hint used, undo used, one edge from solved)
+  // so there's a single toast slot/timeout instead of one per reaction
+  // type competing to render in the same spot.
+  const [mascotToast, setMascotToast] = useState<MascotLine | null>(null);
+  const mascotToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const showMascotToast = (line: MascotLine, durationMs: number = 4000) => {
+    setMascotToast(line);
+    clearTimeout(mascotToastTimeoutRef.current);
+    mascotToastTimeoutRef.current = setTimeout(() => setMascotToast(null), durationMs);
+  };
+
+  // Stuck-nudge specific: never more than once per COOLDOWN_MS, and only
+  // if no new edge has matched in a while during actual play. Deliberately
+  // keyed off match PROGRESS rather than every swap/rotate: someone
+  // actively experimenting but just not landing a match yet is still
+  // exactly who this is for.
   const lastNudgeRef = useRef(0);
-  const stuckNudgeTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (gameState.gameState.status === 'playing') {
@@ -1092,14 +1163,28 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
       const now = Date.now();
       if (now - lastMatchProgressRef.current >= STUCK_MS && now - lastNudgeRef.current >= COOLDOWN_MS) {
         lastNudgeRef.current = now;
-        setStuckNudge(STUCK_NUDGE_LINES[Math.floor(Math.random() * STUCK_NUDGE_LINES.length)]);
-        clearTimeout(stuckNudgeTimeoutRef.current);
-        stuckNudgeTimeoutRef.current = setTimeout(() => setStuckNudge(null), 6000);
+        showMascotToast(STUCK_NUDGE_LINES[Math.floor(Math.random() * STUCK_NUDGE_LINES.length)], 6000);
       }
     }, 5000);
 
     return () => clearInterval(interval);
   }, [gameState.gameState.status, gameState.gameState.isPaused]);
+
+  // Near-solve reaction -- fires once when exactly one edge is left
+  // (11 of 12), not every render it stays at 11, and re-arms itself once
+  // progress drops back below that (an undo, a fresh puzzle) so it can
+  // fire again rather than only ever once per session.
+  const hasFiredNearSolveRef = useRef(false);
+  useEffect(() => {
+    if (gameState.gameState.status !== 'playing') return;
+    const count = gameState.gameState.matchingEdges.size;
+    if (count === 11 && !hasFiredNearSolveRef.current) {
+      hasFiredNearSolveRef.current = true;
+      showMascotToast(NEAR_SOLVE_LINES[Math.floor(Math.random() * NEAR_SOLVE_LINES.length)], 4000);
+    } else if (count < 11) {
+      hasFiredNearSolveRef.current = false;
+    }
+  }, [gameState.gameState.matchingEdges, gameState.gameState.status]);
 
   useEffect(() => {
     const cleanupOldStats = () => {
@@ -1126,10 +1211,39 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
     cleanupOldStats();
   }, []);
 
+  // Every other Tilo appearance is a scripted, single-purpose cameo
+  // (countdown, milestone, tutorial, a modal's own static portrait) --
+  // the roaming companion below yields the floor to all of them rather
+  // than risking two Tilos on screen, or wandering behind a modal
+  // backdrop doing nothing useful.
+  const suppressRoamingMascot =
+    showArchive ||
+    showPlayerStats ||
+    showStreak ||
+    showSettings ||
+    showMenuWalkthrough ||
+    showGameboardWalkthrough ||
+    showPreMatchReveal ||
+    showCompletionAnimation ||
+    showMilestoneCelebration ||
+    gameState.gameState.isPaused;
+
   return (
     <div className="min-h-screen bg-navy">
       <ThemeBackground theme={settings.theme || DEFAULT_THEME} />
       <TileSwappyLogo size={150} bouncing />
+
+      {/* Mounted once, above every screen-conditional render below, so
+          navigating Home <-> Archive <-> gameboard <-> Settings never
+          remounts him -- only StartScreen keeps its own separate,
+          differently-tuned instance (see RoamingMascot's usage there). */}
+      {gameState.gameState.status !== 'start' && (
+        <RoamingMascot
+          lines={AMBIENT_LINES}
+          hidden={suppressRoamingMascot}
+          avoidSelector='[data-tour="tile-grid"]'
+        />
+      )}
       
       {gameState.gameState.status === 'start' && (
         <StartScreen onStart={handleStartScreenDismiss} onOpenSettings={() => setShowSettings(true)} />
@@ -1684,29 +1798,34 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           className="h-dvh bg-navy flex flex-col overflow-hidden"
           style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
-          {stuckNudge && (
+          {mascotToast && (
             <div
-              className="fixed z-[70] stuck-nudge-toast"
+              className="fixed z-[70] mascot-toast"
               style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4.5rem)' }}
             >
+              {/* Keyed on the line text so a reaction firing while another
+                  is already showing (e.g. an undo right after a hint)
+                  remounts MascotNarrator instead of silently keeping its
+                  own already-picked `current` line from the first mount. */}
               <MascotNarrator
-                lines={[stuckNudge]}
-                expression={stuckNudge.expression ?? 'thinking'}
+                key={mascotToast.text}
+                lines={[mascotToast]}
+                expression={mascotToast.expression ?? 'thinking'}
                 color="teal"
                 size={40}
               />
               <style>{`
-                @keyframes stuck-nudge-pop {
+                @keyframes mascot-toast-pop {
                   0% { opacity: 0; transform: translate(-50%, 8px) scale(0.95); }
                   100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
                 }
-                .stuck-nudge-toast {
+                .mascot-toast {
                   left: 50%;
                   transform: translateX(-50%);
-                  animation: stuck-nudge-pop 0.3s ease-out forwards;
+                  animation: mascot-toast-pop 0.3s ease-out forwards;
                 }
                 @media (prefers-reduced-motion: reduce) {
-                  .stuck-nudge-toast { animation: none; }
+                  .mascot-toast { animation: none; }
                 }
               `}</style>
             </div>
@@ -1939,7 +2058,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
 
                   <button
                     data-tour="undo-button"
-                    onClick={() => { triggerHaptic(15); playSound('click'); gameState.undoLastMove(); }}
+                    onClick={() => { triggerHaptic(15); playSound('click'); handleUndoClick(); }}
                     disabled={gameState.gameState.moveHistory.length === 0 || gameState.gameState.status !== 'playing'}
                     className={`flex-1 max-w-[120px] md:max-w-[160px] lg:max-w-[200px] px-3 py-1.5 md:px-4 md:py-2 lg:px-5 lg:py-2.5 rounded-lg text-xs md:text-sm lg:text-base font-medium transition-all duration-200 ${
                       gameState.gameState.moveHistory.length === 0 || gameState.gameState.status !== 'playing'

@@ -108,6 +108,31 @@
   animation: mascot-poke 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* Idle personality ticks (see useIdleTics) -- also defined after
+   .mascot-bounce so either one wins the shared `animation` shorthand for
+   its brief duration, same trick as .mascot-poked above. Purely cosmetic:
+   a curious head-tilt or a little shiver, self-resolving in well under a
+   second, then idle bounce just resumes on its own. */
+@keyframes mascot-tic-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-9deg); }
+  65% { transform: rotate(6deg); }
+}
+.mascot-tic-tilt {
+  animation: mascot-tic-tilt 0.75s ease-in-out;
+}
+
+@keyframes mascot-tic-shiver {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-3px) rotate(-2deg); }
+  40% { transform: translateX(3px) rotate(2deg); }
+  60% { transform: translateX(-2px) rotate(-1deg); }
+  80% { transform: translateX(2px) rotate(1deg); }
+}
+.mascot-tic-shiver {
+  animation: mascot-tic-shiver 0.5s ease-in-out;
+}
+
 /* Poke-count milestone bubble -- self-contained on TileMascot itself
    (rather than requiring MascotNarrator) so every clickable instance
    anywhere in the app gets this for free, not just the ones already
@@ -143,6 +168,8 @@
 @media (prefers-reduced-motion: reduce) {
   .mascot-bounce,
   .mascot-poked,
+  .mascot-tic-tilt,
+  .mascot-tic-shiver,
   .mascot-eye--round,
   .mascot-milestone-bubble p {
     animation: none;

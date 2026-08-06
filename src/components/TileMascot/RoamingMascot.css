@@ -1,15 +1,26 @@
 /* Foreground and clickable -- unlike TileSwappyLogo's `bouncing` prop
    (faint, pointer-events:none background wallpaper), this Tilo is meant
    to be noticed and poked. z-index sits above ThemeBackground (0) and
-   ordinary content, but this component is only ever mounted on screens
-   with no modals/gameplay to worry about competing with. */
+   ordinary screen content, but below modals/walkthroughs/celebrations
+   (all z-40+) -- those are also explicitly passed as `hidden` from
+   App.tsx (see suppressRoamingMascot), this is just a second line of
+   defense so a transition frame never shows him floating on top. */
 .roaming-mascot {
   position: fixed;
-  z-index: 40;
+  z-index: 30;
   pointer-events: none;
+  transition: opacity 0.25s ease;
 }
 .roaming-mascot > * {
   pointer-events: auto;
+}
+
+.roaming-mascot--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.roaming-mascot--hidden > * {
+  pointer-events: none;
 }
 
 .roaming-mascot-bubble {

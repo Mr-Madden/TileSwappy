@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { TileMascot } from './TileMascot';
+import { MascotBubbleText } from './MascotBubbleText';
+import { useIdleTics } from './useIdleTics';
 import type { MascotExpression, MascotLine } from './types';
 import './MascotNarrator.css';
 
@@ -61,17 +63,22 @@ export const MascotNarrator: React.FC<MascotNarratorProps> = ({
     }, 3200);
   };
 
+  const ticClass = useIdleTics(true);
+
   return (
     <div className={`mascot-narrator mascot-narrator--${layout} ${className}`}>
       <TileMascot
         size={size}
         expression={current.expression ?? expression}
         color={color}
+        className={ticClass}
         onClick={handleClick}
         onMilestone={handleMilestone}
       />
       <div className="mascot-bubble">
-        <p key={current.text} className="mascot-bubble-line">{current.text}</p>
+        <p key={current.text} className="mascot-bubble-line">
+          <MascotBubbleText text={current.text} />
+        </p>
       </div>
     </div>
   );

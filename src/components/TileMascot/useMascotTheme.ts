@@ -16,7 +16,7 @@ export function useMascotTheme(): string {
   }
 }
 
-export type AccessoryKind = 'desert' | 'ice' | 'candy';
+export type AccessoryKind = 'desert' | 'ice' | 'candy' | 'halloween' | 'winter' | 'valentine';
 
 const THEME_ACCESSORY: Partial<Record<string, AccessoryKind>> = {
   desert: 'desert',
@@ -24,6 +24,24 @@ const THEME_ACCESSORY: Partial<Record<string, AccessoryKind>> = {
   candy: 'candy'
 };
 
-export function getAccessoryForTheme(themeId: string): AccessoryKind | null {
-  return THEME_ACCESSORY[themeId] ?? null;
+// Month is 0-indexed (Date#getMonth()). Ranges are deliberately generous
+// "seasons" rather than the single calendar day -- most players who ever
+// see this only open the app a few times a month, so a one-day window
+// would mean almost nobody ever does.
+function getSeasonalAccessory(now: Date): AccessoryKind | null {
+  const month = now.getMonth();
+  const day = now.getDate();
+
+  if (month === 9 && day >= 15) return 'halloween'; // Oct 15-31
+  if (month === 11) return 'winter'; // all of December
+  if (month === 1 && day >= 7 && day <= 14) return 'valentine'; // Feb 7-14
+  return null;
+}
+
+// Seasonal takes priority over a theme's own accessory when both would
+// apply -- it's the rarer, more special one, and only ever active a few
+// weeks a year. TileMascot renders at most one accessory at a time, so
+// this is a fallback chain rather than a combination.
+export function getAccessoryForTheme(themeId: string, now: Date = new Date()): AccessoryKind | null {
+  return getSeasonalAccessory(now) ?? THEME_ACCESSORY[themeId] ?? null;
 }

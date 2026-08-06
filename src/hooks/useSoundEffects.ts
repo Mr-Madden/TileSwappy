@@ -11,7 +11,8 @@ export type SoundName =
   | 'click'
   | 'countdownTick'
   | 'countdownGo'
-  | 'mascotPoke';
+  | 'mascotPoke'
+  | 'mascotBlip';
 
 export type SoundStyle = 'bowl' | 'wood' | 'glass' | 'arcade';
 
@@ -257,6 +258,12 @@ export function useSoundEffects(enabled: boolean, style: SoundStyle = 'wood', vo
             arcadeTone(ctx, 660, now, 0.05, 0.09, 'sine');
             arcadeTone(ctx, 990, now + 0.045, 0.06, 0.1, 'sine');
             break;
+          case 'mascotBlip':
+            // Randomized per call so a whole typed-out line doesn't
+            // sound like a metronome -- the classic Animal Crossing/
+            // Banjo-Kazooie "talk blip" illusion instead of real voice.
+            arcadeTone(ctx, 520 + Math.random() * 380, now, 0.045, 0.07, 'square');
+            break;
         }
         return;
       }
@@ -294,6 +301,9 @@ export function useSoundEffects(enabled: boolean, style: SoundStyle = 'wood', vo
           case 'mascotPoke':
             woodHit(ctx, 440.0, now, 0.3, 0.05, { filterFreq: 900, wet: 0.3 });
             woodHit(ctx, 587.33, now + 0.045, 0.3, 0.045, { filterFreq: 950, wet: 0.3 });
+            break;
+          case 'mascotBlip':
+            woodHit(ctx, 340 + Math.random() * 220, now, 0.12, 0.045, { filterFreq: 850, wet: 0.2 });
             break;
         }
         return;
@@ -333,6 +343,9 @@ export function useSoundEffects(enabled: boolean, style: SoundStyle = 'wood', vo
             glassTone(ctx, 587.33, now, 0.3, 0.04, 0.02, { filterFreq: 1700, wet: 0.35 });
             glassTone(ctx, 880.0, now + 0.04, 0.3, 0.035, 0.02, { filterFreq: 1800, wet: 0.35 });
             break;
+          case 'mascotBlip':
+            glassTone(ctx, 480 + Math.random() * 320, now, 0.1, 0.03, 0.008, { filterFreq: 1600, wet: 0.25 });
+            break;
         }
         return;
       }
@@ -370,6 +383,9 @@ export function useSoundEffects(enabled: boolean, style: SoundStyle = 'wood', vo
         case 'mascotPoke':
           warmTone(ctx, 392.0, now, 0.35, 0.045, 0.03, { filterFreq: 800, wet: 0.35 });
           warmTone(ctx, 523.25, now + 0.045, 0.35, 0.04, 0.03, { filterFreq: 850, wet: 0.35 });
+          break;
+        case 'mascotBlip':
+          warmTone(ctx, 340 + Math.random() * 220, now, 0.1, 0.032, 0.008, { filterFreq: 750, wet: 0.2 });
           break;
       }
     },
