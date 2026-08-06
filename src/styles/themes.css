@@ -352,6 +352,35 @@
   --color-bronze: 120 100 82;
 }
 
+/*
+ * Inferno -- matching Thunderstorm's "own pick" energy. Coral goes deep
+ * ember-red, teal turns into a hot flame-orange (so the edge-match glow
+ * reads as fire catching), and violet is repurposed as a muted smoke-grey
+ * for the drifting wisps behind the flames.
+ */
+:root[data-theme="fire"] {
+  --color-navy: 26 14 10;
+  --color-navy-light: 42 24 17;
+  --color-navy-dark: 15 8 6;
+  --color-coral: 226 63 32;
+  --color-coral-light: 255 111 61;
+  --color-coral-dark: 178 42 18;
+  --color-teal: 255 152 0;
+  --color-teal-light: 255 183 77;
+  --color-teal-dark: 204 116 0;
+  --color-match: var(--color-teal);
+  --color-match-dark: var(--color-teal-dark);
+  --color-offwhite: 255 236 214;
+  --color-violet: 122 88 88;
+  --color-violet-light: 163 128 122;
+  --color-violet-dark: 82 58 58;
+  --color-gold: 255 200 60;
+  --color-gold-light: 255 224 133;
+  --color-gold-dark: 199 148 32;
+  --color-silver: 199 176 163;
+  --color-bronze: 156 90 45;
+}
+
 :root[data-theme="mono"] {
   --color-navy: 12 12 12;
   --color-navy-light: 26 26 26;

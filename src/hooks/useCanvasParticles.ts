@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export type ParticleBehavior = 'stars' | 'bubbles' | 'sand' | 'snow' | 'rain';
+export type ParticleBehavior = 'stars' | 'bubbles' | 'sand' | 'snow' | 'rain' | 'embers';
 
 interface Star {
   x: number;
@@ -45,12 +45,23 @@ interface RainDrop {
   speed: number;
 }
 
+interface Ember {
+  x: number;
+  y: number;
+  r: number;
+  speed: number;
+  wobble: number;
+  wobbleAmt: number;
+  flicker: number;
+}
+
 /**
  * Drives a small canvas particle field (twinkling stars, rising bubbles,
- * drifting sand, or falling snow) for the animated theme backgrounds. The
- * stars/bubbles behaviors were ported from the theme-directions mockup
- * artifact's draw loops; sand and snow follow the same pattern for
- * Desert's blowing-dust and Ice's snowfall effects.
+ * drifting sand, falling snow, falling rain, or rising embers) for the
+ * animated theme backgrounds. The stars/bubbles behaviors were ported
+ * from the theme-directions mockup artifact's draw loops; sand, snow,
+ * rain, and embers follow the same pattern for Desert's blowing dust,
+ * Ice's snowfall, Thunderstorm's rain, and Inferno's rising sparks.
  */
 export function useCanvasParticles(behavior: ParticleBehavior) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -212,6 +223,51 @@ export function useCanvasParticles(behavior: ParticleBehavior) {
             ctx.fill();
           }
         });
+        ctx.globalAlpha = 1;
+        if (!reduce) rafId = requestAnimationFrame(draw);
+      };
+      rafId = requestAnimationFrame(draw);
+    } else if (behavior === 'embers') {
+      // Embers: rise from the bottom rather than fall, drifting sideways
+      // like sand's blowing grains and flickering in brightness like
+      // stars' twinkle -- glowing via shadowBlur so they read as hot
+      // rather than flat orange dots.
+      const embers: Ember[] = Array.from({ length: 80 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        r: Math.random() * 1.8 + 0.5,
+        speed: Math.random() * 0.00045 + 0.00015,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleAmt: Math.random() * 0.012 + 0.004,
+        flicker: Math.random() * Math.PI * 2,
+      }));
+
+      const draw = (t: number) => {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        embers.forEach((e) => {
+          if (!reduce) {
+            e.y -= e.speed * 16;
+            if (e.y < -0.05) {
+              e.y = 1.05;
+              e.x = Math.random();
+            }
+          }
+          const x = (e.x + (reduce ? 0 : Math.sin(t * 0.0007 + e.wobble) * e.wobbleAmt)) * w;
+          const y = e.y * h;
+          const flick = reduce ? 0.85 : 0.55 + 0.45 * Math.sin(t * 0.004 + e.flicker);
+          // Hotter/brighter embers skew gold, cooler ones skew deep orange.
+          const hot = flick > 0.75;
+          ctx.globalAlpha = flick;
+          ctx.fillStyle = hot ? 'rgba(255, 214, 120, 0.95)' : 'rgba(255, 138, 46, 0.9)';
+          ctx.shadowColor = hot ? 'rgba(255, 200, 90, 0.8)' : 'rgba(255, 110, 30, 0.7)';
+          ctx.shadowBlur = e.r * devicePixelRatio * 3;
+          ctx.beginPath();
+          ctx.arc(x, y, e.r * devicePixelRatio, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
         if (!reduce) rafId = requestAnimationFrame(draw);
       };

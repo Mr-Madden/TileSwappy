@@ -282,6 +282,24 @@ const StormLayer: React.FC = () => {
   );
 };
 
+// Inferno -- Fire's rising embers and drifting smoke carry the ambient
+// mood, same tier as Thunderstorm's rain/clouds; the flare-up is the
+// occasional "spectacular" moment, echoing the lightning flash but
+// surging up from below instead of lighting up from above.
+const FireLayer: React.FC = () => {
+  const canvasRef = useCanvasParticles('embers');
+  return (
+    <div className="theme-bg-layer">
+      <div className="bg-effect-smoke s1" />
+      <div className="bg-effect-smoke s2" />
+      <div className="bg-effect-smoke s3" />
+      <canvas ref={canvasRef} />
+      <div className="bg-effect-flare" />
+      <div className="bg-effect-flare s2" />
+    </div>
+  );
+};
+
 const LAYERS: Record<string, React.FC | null> = {
   current: null,
   mono: null,
@@ -298,6 +316,7 @@ const LAYERS: Record<string, React.FC | null> = {
   autumn: AutumnLayer,
   deco: DecoLayer,
   storm: StormLayer,
+  fire: FireLayer,
 };
 
 export const ThemeBackground: React.FC<ThemeBackgroundProps> = ({ theme }) => {

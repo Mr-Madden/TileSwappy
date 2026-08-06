@@ -397,6 +397,32 @@
   animation-delay: -6s;
 }
 
+/* Inferno: slow drifting smoke wisps, always present */
+.bg-effect-smoke {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgb(var(--color-violet) / 0.4), transparent 70%);
+  filter: blur(20px);
+}
+.bg-effect-smoke.s1 { width: 50vw; height: 30vh; max-width: 440px; max-height: 260px; bottom: -10vh; left: -12vw; animation: theme-smoke-rise 20s ease-in-out infinite; }
+.bg-effect-smoke.s2 { width: 40vw; height: 24vh; max-width: 360px; max-height: 210px; bottom: -6vh; right: -14vw; animation: theme-smoke-rise 26s ease-in-out infinite; animation-delay: -8s; }
+.bg-effect-smoke.s3 { width: 30vw; height: 18vh; max-width: 280px; max-height: 160px; bottom: 10vh; left: 30vw; animation: theme-smoke-rise 16s ease-in-out infinite; animation-delay: -4s; }
+
+/* Inferno: a flare-up surging from below every so often -- the theme's
+   signature spectacular moment, same tier as Thunderstorm's lightning. */
+.bg-effect-flare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 100%, rgb(var(--color-gold) / 0.9), rgb(var(--color-coral) / 0.35) 45%, transparent 75%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: theme-flare-surge 10s ease-out infinite;
+}
+.bg-effect-flare.s2 {
+  animation-duration: 14s;
+  animation-delay: -6s;
+}
+
 /* Deco: gold sunburst */
 .bg-effect-sunburst {
   position: absolute;
@@ -533,6 +559,17 @@
   88% { opacity: 0.85; }
   90%, 100% { opacity: 0; }
 }
+@keyframes theme-smoke-rise {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.55; }
+  50% { transform: translateY(-8vh) scale(1.12); opacity: 0.8; }
+}
+@keyframes theme-flare-surge {
+  0%, 84% { opacity: 0; }
+  85% { opacity: 1; }
+  87% { opacity: 0.2; }
+  88% { opacity: 0.8; }
+  90%, 100% { opacity: 0; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .bg-effect-aurora,
@@ -555,6 +592,7 @@
   .bg-effect-scanlines,
   .bg-effect-dotgrid,
   .bg-effect-sunburst,
+  .bg-effect-flare,
   /* These effects vary duration/delay per instance via a compound
      class (e.g. .bg-effect-blob.b1), which has higher specificity than
      the plain .bg-effect-blob rule above -- list the compound selectors
@@ -569,7 +607,10 @@
   .bg-effect-facet.f3,
   .bg-effect-stormcloud.c1,
   .bg-effect-stormcloud.c2,
-  .bg-effect-stormcloud.c3 {
+  .bg-effect-stormcloud.c3,
+  .bg-effect-smoke.s1,
+  .bg-effect-smoke.s2,
+  .bg-effect-smoke.s3 {
     animation: none;
   }
 
