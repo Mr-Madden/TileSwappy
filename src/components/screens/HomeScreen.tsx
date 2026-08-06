@@ -185,39 +185,39 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       <button
         onClick={onOpenTutorial}
         aria-label="How to Play Tutorial"
-        className="fixed top-20 left-4 bg-navy-light hover:bg-navy-dark rounded-lg transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-2 gap-0.5"
+        className="fixed top-20 left-4 md:top-24 md:left-8 lg:left-12 bg-navy-light hover:bg-navy-dark rounded-lg transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-2 md:p-3 gap-0.5 md:gap-1"
       >
-        <HelpCircle size={18} className="text-teal" />
-        <span className="text-teal text-[9px] font-semibold">Tutorial</span>
+        <HelpCircle size={18} className="text-teal md:w-6 md:h-6" />
+        <span className="text-teal text-[9px] md:text-xs font-semibold">Tutorial</span>
       </button>
 
       {/* Settings Button - Top Right */}
       <button
         onClick={onOpenSettings}
         aria-label="Settings"
-        className="fixed top-20 right-4 bg-navy-light hover:bg-navy-dark rounded-lg transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-2 gap-0.5"
+        className="fixed top-20 right-4 md:top-24 md:right-8 lg:right-12 bg-navy-light hover:bg-navy-dark rounded-lg transition shadow-lg z-50 border border-navy-dark flex flex-col items-center p-2 md:p-3 gap-0.5 md:gap-1"
       >
-        <Settings size={18} className="text-offwhite" />
-        <span className="text-offwhite text-[9px] font-semibold">Settings</span>
+        <Settings size={18} className="text-offwhite md:w-6 md:h-6" />
+        <span className="text-offwhite text-[9px] md:text-xs font-semibold">Settings</span>
       </button>
 
-      <div className="max-w-md md:max-w-2xl lg:max-w-3xl w-full py-4">
+      <div className="max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl w-full py-4">
           {/* Logo and Title */}
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 md:mb-6">
             <div className="inline-block mb-2 rounded-2xl shadow-2xl">
               <TileSwappyLogo size={96} />
             </div>
             <div className="flex justify-center mb-1">
-              <TileSwappyWordmark sizeClassName="text-3xl" />
+              <TileSwappyWordmark sizeClassName="text-3xl md:text-4xl" />
             </div>
-            <p className="text-teal text-sm font-medium">Addictive tile puzzle madness</p>
+            <p className="text-teal text-sm md:text-base font-medium">Addictive tile puzzle madness</p>
           </div>
 
           {/* Main Game Content - No login required */}
           <div className="space-y-4">
             {/* Daily Puzzle Carousel */}
-            <div data-tour="daily-puzzles" className="bg-navy-light/10 backdrop-blur-sm rounded-2xl p-4 border border-navy-light">
-              <h2 className="text-offwhite text-base font-semibold mb-2 text-center">Daily Puzzles</h2>
+            <div data-tour="daily-puzzles" className="bg-navy-light/10 backdrop-blur-sm rounded-2xl p-4 md:p-6 border border-navy-light">
+              <h2 className="text-offwhite text-base md:text-lg font-semibold mb-2 text-center">Daily Puzzles</h2>
 
               <div
                 ref={carouselRef}
@@ -475,35 +475,35 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </p>
 
               {/* Stats Row */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 md:gap-3">
                 <button
                   data-button="archive"
                   onClick={onOpenArchive}
-                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 transition border border-navy-light"
+                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 md:p-3 transition border border-navy-light"
                 >
-                  <LayoutGrid size={18} className="text-offwhite mx-auto mb-0.5" />
-                  <p className="text-[13px] text-offwhite font-semibold">Archive</p>
-                  <p className="text-[11px] text-teal">Browse</p>
+                  <LayoutGrid size={18} className="text-offwhite mx-auto mb-0.5 md:w-6 md:h-6" />
+                  <p className="text-[13px] md:text-base text-offwhite font-semibold">Archive</p>
+                  <p className="text-[11px] md:text-sm text-teal">Browse</p>
                 </button>
 
                 <button
                   data-button="streak"
                   onClick={onOpenStreak}
-                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 transition border border-navy-light"
+                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 md:p-3 transition border border-navy-light"
                 >
-                  <Flame size={18} className="text-coral mx-auto mb-0.5" />
-                  <p className="text-[13px] text-offwhite font-semibold">Streak</p>
-                  <p className="text-[11px] text-teal">Track</p>
+                  <Flame size={18} className="text-coral mx-auto mb-0.5 md:w-6 md:h-6" />
+                  <p className="text-[13px] md:text-base text-offwhite font-semibold">Streak</p>
+                  <p className="text-[11px] md:text-sm text-teal">Track</p>
                 </button>
 
                 <button
                   data-button="stats"
                   onClick={onOpenStats}
-                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 transition border border-navy-light"
+                  className="bg-navy-dark hover:bg-navy rounded-xl p-2 md:p-3 transition border border-navy-light"
                 >
-                  <BarChart2 size={18} className="text-offwhite mx-auto mb-0.5" />
-                  <p className="text-[13px] text-offwhite font-semibold">Stats</p>
-                  <p className="text-[11px] text-teal">View</p>
+                  <BarChart2 size={18} className="text-offwhite mx-auto mb-0.5 md:w-6 md:h-6" />
+                  <p className="text-[13px] md:text-base text-offwhite font-semibold">Stats</p>
+                  <p className="text-[11px] md:text-sm text-teal">View</p>
                 </button>
               </div>
             </div>

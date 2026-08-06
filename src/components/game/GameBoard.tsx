@@ -194,8 +194,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   // isEdgeMatch/getRotatedEdge already compensated for internally, and
   // would get clipped into two mismatched halves by each tile's own
   // `overflow-hidden` across the grid's gap. A grid-level overlay avoids
-  // both problems. Matches the visual already promised in the tutorial
-  // (TutorialScreen.tsx's mocked-up green glowing seam bars).
+  // both problems.
   const seamGlowStyle = {
     boxShadow: '0 0 15px rgba(34, 197, 94, 0.8), 0 0 30px rgba(34, 197, 94, 0.4)'
   };
@@ -252,6 +251,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         Puzzle grid. Arrow keys move between tiles. Enter or Space selects a tile, then selects a second tile to swap them. R rotates a tile clockwise, Shift plus R rotates it counter-clockwise.
       </p>
       <div
+        data-tour="tile-grid"
         role="group"
         aria-label="Puzzle grid"
         aria-describedby="tile-grid-instructions"
@@ -337,14 +337,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           here as a second, absolutely-positioned cluster was the "extra
           buttons floating on the right" bug. */}
       {onZoomIn && onZoomOut && (
-        <div className="relative flex items-center gap-2">
-          <Tooltip label="Zoom out" position="top">
-            <button onClick={onZoomOut} aria-label="Zoom out" className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">-</button>
-          </Tooltip>
-          <div className="px-2 py-1 rounded bg-navy text-offwhite text-xs">{Math.round(zoomLevel * 100)}%</div>
-          <Tooltip label="Zoom in" position="top">
-            <button onClick={onZoomIn} aria-label="Zoom in" className="px-2 py-1 rounded bg-navy-dark text-offwhite text-xs">+</button>
-          </Tooltip>
+        <div className="relative flex items-center gap-2 md:gap-3">
+          <div data-tour="zoom-controls" className="flex items-center gap-2 md:gap-3">
+            <Tooltip label="Zoom out" position="top">
+              <button onClick={onZoomOut} aria-label="Zoom out" className="px-2 py-1 md:px-3 md:py-1.5 rounded bg-navy-dark text-offwhite text-xs md:text-sm">-</button>
+            </Tooltip>
+            <div className="px-2 py-1 md:px-3 md:py-1.5 rounded bg-navy text-offwhite text-xs md:text-sm">{Math.round(zoomLevel * 100)}%</div>
+            <Tooltip label="Zoom in" position="top">
+              <button onClick={onZoomIn} aria-label="Zoom in" className="px-2 py-1 md:px-3 md:py-1.5 rounded bg-navy-dark text-offwhite text-xs md:text-sm">+</button>
+            </Tooltip>
+          </div>
 
           {(previewImageUrl || (previewGradient && previewGradient.length > 0)) && (
             <>
@@ -354,21 +356,22 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   visibly collided when open. The gold active state plus
                   aria-label already carry the meaning. */}
               <button
+                data-tour="preview-button"
                 onClick={() => setShowPreview((v) => !v)}
                 aria-label="Peek at the solved picture"
                 aria-pressed={showPreview}
-                className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition ${
+                className={`flex items-center gap-1 px-2 py-1 md:px-3 md:py-1.5 rounded text-xs md:text-sm font-medium transition ${
                   showPreview ? 'bg-gold text-navy-dark' : 'bg-navy-dark text-offwhite hover:text-gold'
                 }`}
               >
-                <Eye size={13} />
+                <Eye size={13} className="md:w-4 md:h-4" />
               </button>
 
               {showPreview && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowPreview(false)} />
                   <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 bg-navy-light border-2 border-gold rounded-xl p-2 shadow-2xl">
-                    <div className="w-36 h-36 rounded-lg overflow-hidden bg-navy-dark">
+                    <div className="w-36 h-36 md:w-48 md:h-48 rounded-lg overflow-hidden bg-navy-dark">
                       {previewImageUrl ? (
                         <img
                           src={previewImageUrl}
@@ -383,7 +386,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                         />
                       )}
                     </div>
-                    <p className="text-[10px] text-offwhite/70 text-center mt-1 whitespace-nowrap">What you're building</p>
+                    <p className="text-[10px] md:text-xs text-offwhite/70 text-center mt-1 whitespace-nowrap">What you're building</p>
                   </div>
                 </>
               )}

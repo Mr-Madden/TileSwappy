@@ -263,6 +263,14 @@ export interface GameState {
   isPaused: boolean;
 
   pausedTime: number;
+
+  // True only during the gameboard walkthrough's "try it" steps -- lets
+  // selectTile/swapTiles/rotateTile bypass the isPaused guard so tiles
+  // genuinely respond, while isPaused itself (and therefore the timer)
+  // stays untouched. Deliberately NOT wired into undoLastMove/shuffleAll/
+  // useHint -- those keep their own dedicated pointing-only steps later
+  // in the tour where interaction should stay blocked as normal.
+  practiceMode: boolean;
 }
 
 // =====================

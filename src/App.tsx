@@ -9,6 +9,7 @@ import { TileSwappyLogo } from './components/TileSwappyLogo/TileSwappyLogo';
 import { ThemeBackground } from './components/common/ThemeBackground';
 import { ConfettiBurst } from './components/common/ConfettiBurst';
 import { MainMenuWalkthrough } from './components/MainMenuWalkthrough';
+import { GameboardWalkthrough } from './components/GameboardWalkthrough';
 import { TileMascot } from './components/TileMascot/TileMascot';
 import { MascotNarrator, MascotLine } from './components/TileMascot/MascotNarrator';
 import { THEMES, DEFAULT_THEME } from './theme/themes';
@@ -19,7 +20,6 @@ import { useDailyPuzzleNotifications } from './hooks/useDailyPuzzleNotifications
 import { showRewardedAd } from './services/adService';
 
 // Lazy load modals - they're not needed on initial load
-const TutorialScreen = lazy(() => import('./components/screens/TutorialScreen').then(module => ({ default: module.TutorialScreen })));
 const ArchiveModal = lazy(() => import('./components/modals/ArchiveModal').then(module => ({ default: module.ArchiveModal })));
 const SettingsModal = lazy(() => import('./components/modals/SettingModal').then(module => ({ default: module.SettingsModal })));
 const PlayerStatsModal = lazy(() => import('./components/modals/PlayerStatsModal').then(module => ({ default: module.PlayerStatsModal })));
@@ -49,6 +49,12 @@ const STORAGE_KEYS = {
   FREEZE_GRANT_MONTH: 'tileswappy_freeze_grant_month',
   EXTRA_HINTS: 'tileswappy_extra_hints'
 };
+
+// The gameboard walkthrough's dedicated throwaway puzzle -- both its own
+// trigger (handleOpenTutorialFromHome) and the completion handler check
+// this id, so real interaction during the Swap/Rotate steps is only ever
+// possible here, never on a puzzle the player actually cares about.
+const TUTORIAL_PRACTICE_PUZZLE_ID = 'tutorial-practice';
 
 const MAX_STREAK_FREEZES = 3;
 
@@ -139,15 +145,15 @@ const App: React.FC = () => {
   // bonus reaction line instead. Reset on dismiss so the NEXT milestone
   // celebration starts back on its own specific message.
   const [milestoneBonusLine, setMilestoneBonusLine] = useState<MascotLine | null>(null);
-  const [showTutorialOverlay, setShowTutorialOverlay] = useState(false);
+  const [showGameboardWalkthrough, setShowGameboardWalkthrough] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [hasShownTutorialForCurrentPuzzle, setHasShownTutorialForCurrentPuzzle] = useState(false);
-  // Whether the currently-open tutorial is the once-ever onboarding one
-  // shown right after the splash screen, vs. the player manually
-  // reopening "How to Play" (from the home menu or mid-game) -- only the
-  // former should dismiss the splash screen and chain into the main-menu
-  // walkthrough when it closes.
-  const [isOnboardingTutorial, setIsOnboardingTutorial] = useState(false);
+  // Set whenever the NEXT puzzle's pre-match countdown should hand off to
+  // the gameboard walkthrough instead of resuming play -- true first-time
+  // onboarding (handleStartScreenDismiss) and the home screen's manual
+  // "Tutorial" replay (which starts a fresh practice puzzle first, since
+  // the walkthrough needs a real board to point at) both set this.
+  const [pendingGameboardWalkthrough, setPendingGameboardWalkthrough] = useState(false);
   const [showMenuWalkthrough, setShowMenuWalkthrough] = useState(false);
   const [showPreMatchReveal, setShowPreMatchReveal] = useState(false);
   const [countdownValue, setCountdownValue] = useState(3);
@@ -362,7 +368,14 @@ const App: React.FC = () => {
     if (countdownValue <= 0) {
       playSound('countdownGo');
       setShowPreMatchReveal(false);
-      gameState.resumeGame();
+      if (pendingGameboardWalkthrough) {
+        // Hand off to the walkthrough instead of resuming -- it stays
+        // paused until GameboardWalkthrough's own onComplete resumes it.
+        setPendingGameboardWalkthrough(false);
+        setShowGameboardWalkthrough(true);
+      } else {
+        gameState.resumeGame();
+      }
       return;
     }
 
@@ -370,37 +383,40 @@ const App: React.FC = () => {
     const timer = setTimeout(() => setCountdownValue(v => v - 1), 1000);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPreMatchReveal, countdownValue]);
+  }, [showPreMatchReveal, countdownValue, pendingGameboardWalkthrough]);
 
-  const handleTutorialComplete = () => {
-    setShowTutorialOverlay(false);
-    if (isOnboardingTutorial) {
-      // The once-ever onboarding tutorial -- NOW dismiss the splash
-      // screen (it was deliberately left up behind the tutorial so
-      // there's nothing to see if the player backs out mid-tutorial
-      // some other way) and hand off to Tilo's menu walkthrough.
-      setIsOnboardingTutorial(false);
-      gameState.dismissStartScreen();
-      setShowMenuWalkthrough(true);
+  const handleGameboardWalkthroughComplete = () => {
+    setShowGameboardWalkthrough(false);
+    localStorage.setItem('tutorialCompleted', 'true');
+    // Safety net for "Skip tour" mid-practice-step -- onStepChange won't
+    // fire again to turn this off if the tour closes without passing
+    // through a later, non-practice step first.
+    gameState.setPracticeMode(false);
+
+    if (currentPuzzle?.id === TUTORIAL_PRACTICE_PUZZLE_ID) {
+      // Nothing here has real stakes -- drop the player back at Home to
+      // pick their actual first puzzle rather than stranding them
+      // mid-practice-puzzle.
+      setHasProcessedCompletion(false);
+      setShowCompletionAnimation(false);
+      gameState.resetGame();
     } else {
-      // Reopened manually (home menu's Tutorial button, or mid-game via
-      // "How to Play") -- just close it. resumeGame() is a safe no-op
-      // if the game was never paused/playing in the first place.
       gameState.resumeGame();
     }
   };
 
-  // The splash screen's "Touch to Start" -- first time ever (no
-  // tutorialCompleted flag), show the onboarding tutorial before the
-  // player can reach the main menu at all; every time after, go
-  // straight to the main menu like before.
+  // The splash screen's "Touch to Start". Tilo's menu walkthrough covers
+  // the home screen's own buttons; once that closes for a first-timer,
+  // the gameboard walkthrough auto-starts on the dedicated practice
+  // puzzle (see MainMenuWalkthrough's onComplete below) rather than
+  // hijacking whichever real puzzle the player picks first -- letting the
+  // walkthrough touch a real puzzle would let its "try it" steps make
+  // free, untimed progress on an actual attempt.
   const handleStartScreenDismiss = () => {
     const tutorialCompleted = localStorage.getItem('tutorialCompleted');
+    gameState.dismissStartScreen();
     if (!tutorialCompleted) {
-      setIsOnboardingTutorial(true);
-      setShowTutorialOverlay(true);
-    } else {
-      gameState.dismissStartScreen();
+      setShowMenuWalkthrough(true);
     }
   };
 
@@ -521,7 +537,19 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
   gameState.startGame(normalizedPuzzle);
 };
 
-
+  // Home screen's "Tutorial" button -- the gameboard walkthrough needs a
+  // real board to point at, so this starts a low-stakes gradient practice
+  // puzzle (same shape ArchiveModal's own practice catalog uses) rather
+  // than spending the player's actual daily puzzle on it.
+  const handleOpenTutorialFromHome = () => {
+    setPendingGameboardWalkthrough(true);
+    handleStartPuzzle({
+      id: TUTORIAL_PRACTICE_PUZZLE_ID,
+      title: 'Practice Puzzle',
+      difficulty: 'Easy',
+      gradient: ['#FF6B6B', '#4ECDC4', '#45B7D1']
+    });
+  };
 
   // navigator.vibrate is Android/Chrome only -- iOS Safari has no
   // Vibration API at all, so this is a graceful no-op there rather than
@@ -548,11 +576,9 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
   };
 
   const handleRotateTile = (tileId: string, direction: 1 | -1) => {
-    // direction 1 => +90 (clockwise), -1 => +270 (i.e. -90, counterclockwise)
-    // -- matches TutorialScreen's own rotateTile, which does `rotation +
-    // direction` directly. This mapping used to be inverted (270/90
-    // swapped), so a flick that the tutorial taught as one direction
-    // rotated the opposite way in real gameplay.
+    // direction 1 => +90 (clockwise), -1 => +270 (i.e. -90, counterclockwise).
+    // This mapping used to be inverted (270/90 swapped), so a flick one
+    // direction visually rotated the tile the opposite way.
     gameState.rotateTile(tileId, direction > 0 ? 90 : 270);
     triggerHaptic(10);
     playSound('rotate');
@@ -1116,13 +1142,18 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
           onOpenStreak={() => setShowStreak(true)}
           onOpenStats={() => setShowPlayerStats(true)}
           onOpenSettings={() => setShowSettings(true)}
-          onOpenTutorial={() => setShowTutorialOverlay(true)}
+          onOpenTutorial={handleOpenTutorialFromHome}
           suppressIdleHints={showMenuWalkthrough}
         />
       )}
 
       {showMenuWalkthrough && (
-        <MainMenuWalkthrough onComplete={() => setShowMenuWalkthrough(false)} />
+        <MainMenuWalkthrough
+          onComplete={() => {
+            setShowMenuWalkthrough(false);
+            handleOpenTutorialFromHome();
+          }}
+        />
       )}
 
       {showArchive && (
@@ -1173,10 +1204,12 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
         </Suspense>
       )}
 
-      {showTutorialOverlay && (
-        <Suspense fallback={<ModalLoader />}>
-          <TutorialScreen onComplete={handleTutorialComplete} />
-        </Suspense>
+      {showGameboardWalkthrough && (
+        <GameboardWalkthrough
+          onComplete={handleGameboardWalkthroughComplete}
+          onPracticeChange={gameState.setPracticeMode}
+          allowRealInteraction={currentPuzzle?.id === TUTORIAL_PRACTICE_PUZZLE_ID}
+        />
       )}
 
       {showPreMatchReveal && (
@@ -1679,28 +1712,31 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             </div>
           )}
 
-          <div className="flex-shrink-0 p-2 bg-navy">
-            <div className="max-w-2xl mx-auto">
+          <div className="flex-shrink-0 p-2 md:p-3 lg:p-4 bg-navy">
+            <div className="max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto">
               {/* Home/Menu, title+difficulty, and How to Play share one slim
                   row -- each side button is now icon+label (was icon-only,
                   compensated for with a hover-only Tooltip) since a label
                   visible at a glance beats a tooltip that touch devices
-                  can't trigger at all. */}
-              <div className="flex items-center justify-between gap-2 mb-1.5">
+                  can't trigger at all. Sizing scales up at md/lg so a wide
+                  desktop window (where this row's max-width now matches the
+                  bottom toolbar's) doesn't look like a small mobile strip
+                  floating in extra margin. */}
+              <div className="flex items-center justify-between gap-2 md:gap-3 mb-1.5 md:mb-2.5">
                 <button
                   onClick={() => { triggerHaptic(15); playSound('click'); handleQuitToHome(); }}
                   aria-label="Quit to home"
-                  className="flex-shrink-0 flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
+                  className="flex-shrink-0 flex flex-col items-center gap-0.5 px-2 py-1 md:px-3 md:py-1.5 lg:px-4 lg:py-2 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
                 >
-                  <Home size={16} />
-                  <span className="text-[9px] font-semibold leading-none">Home</span>
+                  <Home size={16} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                  <span className="text-[9px] md:text-xs lg:text-sm font-semibold leading-none">Home</span>
                 </button>
 
-                <div className="flex-1 min-w-0 flex items-baseline justify-center gap-1.5">
-                  <h1 className="text-sm font-bold text-offwhite truncate">
+                <div className="flex-1 min-w-0 flex items-baseline justify-center gap-1.5 md:gap-2">
+                  <h1 className="text-sm md:text-lg lg:text-xl font-bold text-offwhite truncate">
                     {currentPuzzle?.title || 'Daily Puzzle'}
                   </h1>
-                  <span className="text-[10px] text-teal flex-shrink-0">
+                  <span className="text-[10px] md:text-xs lg:text-sm text-teal flex-shrink-0">
                     {currentPuzzle?.difficulty || 'Medium'}
                   </span>
                 </div>
@@ -1709,54 +1745,52 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   onClick={() => {
                     triggerHaptic(10);
                     playSound('click');
-                    // The auto-shown first-time tutorial already pauses via
-                    // the effect below -- this button opens the same
-                    // overlay mid-game (to review it again), and needs the
-                    // same pause or the puzzle timer keeps running the
-                    // whole time it's open. handleTutorialComplete's
-                    // resumeGame() is a safe no-op if this is a repeat call.
+                    // Pauses for the same reason the first-time walkthrough
+                    // does -- the puzzle timer would otherwise keep running
+                    // the whole time it's open. handleGameboardWalkthroughComplete
+                    // resumes it when the tour closes.
                     gameState.pauseGame();
-                    setShowTutorialOverlay(true);
+                    setShowGameboardWalkthrough(true);
                   }}
                   aria-label="How to play"
-                  className="flex-shrink-0 flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg bg-teal/20 text-teal border border-teal hover:bg-teal hover:text-navy-dark transition"
+                  className="flex-shrink-0 flex flex-col items-center gap-0.5 px-2 py-1 md:px-3 md:py-1.5 lg:px-4 lg:py-2 rounded-lg bg-teal/20 text-teal border border-teal hover:bg-teal hover:text-navy-dark transition"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-[9px] font-semibold leading-none">Tutorial</span>
+                  <span className="text-[9px] md:text-xs lg:text-sm font-semibold leading-none">Tutorial</span>
                 </button>
 
                 <div className="relative flex-shrink-0">
                   <button
                     onClick={() => { triggerHaptic(10); playSound('click'); setShowGameMenu((v) => !v); }}
                     aria-label="Menu"
-                    className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
+                    className="flex flex-col items-center gap-0.5 px-2 py-1 md:px-3 md:py-1.5 lg:px-4 lg:py-2 rounded-lg bg-navy-light border border-navy-dark text-teal hover:text-coral transition"
                   >
-                    <Menu size={16} />
-                    <span className="text-[9px] font-semibold leading-none">Menu</span>
+                    <Menu size={16} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                    <span className="text-[9px] md:text-xs lg:text-sm font-semibold leading-none">Menu</span>
                   </button>
                   {showGameMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowGameMenu(false)} />
-                      <div className="absolute right-0 mt-2 w-40 bg-navy-light border border-navy-dark rounded-lg shadow-lg z-50 overflow-hidden">
+                      <div className="absolute right-0 mt-2 w-40 md:w-48 lg:w-56 bg-navy-light border border-navy-dark rounded-lg shadow-lg z-50 overflow-hidden">
                         <button
                           onClick={() => { triggerHaptic(10); playSound('click'); setShowArchive(true); setShowGameMenu(false); }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
+                          className="w-full flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 text-sm md:text-base text-offwhite hover:bg-navy-dark transition"
                         >
-                          <Calendar size={16} className="text-teal" /> Archive
+                          <Calendar size={16} className="text-teal md:w-[18px] md:h-[18px]" /> Archive
                         </button>
                         <button
                           onClick={() => { triggerHaptic(10); playSound('click'); setShowPlayerStats(true); setShowGameMenu(false); }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
+                          className="w-full flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 text-sm md:text-base text-offwhite hover:bg-navy-dark transition"
                         >
-                          <BarChart3 size={16} className="text-teal" /> Stats
+                          <BarChart3 size={16} className="text-teal md:w-[18px] md:h-[18px]" /> Stats
                         </button>
                         <button
                           onClick={() => { triggerHaptic(10); playSound('click'); setShowSettings(true); setShowGameMenu(false); }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-offwhite hover:bg-navy-dark transition"
+                          className="w-full flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 text-sm md:text-base text-offwhite hover:bg-navy-dark transition"
                         >
-                          <Settings size={16} className="text-teal" /> Settings
+                          <Settings size={16} className="text-teal md:w-[18px] md:h-[18px]" /> Settings
                         </button>
                       </div>
                     </>
@@ -1764,22 +1798,22 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-1.5">
-                <div className="text-center bg-navy-light rounded-lg py-1 border border-navy-dark">
-                  <div className="text-sm font-bold text-coral leading-tight">{gameState.gameState.moves}</div>
-                  <div className="text-[8px] text-teal leading-tight">Moves</div>
+              <div data-tour="stats-row" className="grid grid-cols-4 gap-1.5 md:gap-3 lg:gap-4">
+                <div className="text-center bg-navy-light rounded-lg py-1 md:py-2 lg:py-2.5 border border-navy-dark">
+                  <div className="text-sm md:text-lg lg:text-xl font-bold text-coral leading-tight">{gameState.gameState.moves}</div>
+                  <div className="text-[8px] md:text-[10px] lg:text-xs text-teal leading-tight">Moves</div>
                 </div>
-                <div className="text-center bg-navy-light rounded-lg py-1 border border-navy-dark">
-                  <div className="text-sm font-bold text-coral leading-tight">{gameState.gameState.undos}</div>
-                  <div className="text-[8px] text-teal leading-tight">Undos</div>
+                <div className="text-center bg-navy-light rounded-lg py-1 md:py-2 lg:py-2.5 border border-navy-dark">
+                  <div className="text-sm md:text-lg lg:text-xl font-bold text-coral leading-tight">{gameState.gameState.undos}</div>
+                  <div className="text-[8px] md:text-[10px] lg:text-xs text-teal leading-tight">Undos</div>
                 </div>
-                <div className="text-center bg-navy-light rounded-lg py-1 border border-navy-dark">
-                  <div className="text-sm font-bold font-mono text-coral leading-tight">{formatTime(gameState.gameState.currentTime)}</div>
-                  <div className="text-[8px] text-teal leading-tight">Time</div>
+                <div className="text-center bg-navy-light rounded-lg py-1 md:py-2 lg:py-2.5 border border-navy-dark">
+                  <div className="text-sm md:text-lg lg:text-xl font-bold font-mono text-coral leading-tight">{formatTime(gameState.gameState.currentTime)}</div>
+                  <div className="text-[8px] md:text-[10px] lg:text-xs text-teal leading-tight">Time</div>
                 </div>
-                <div className="text-center bg-navy-light rounded-lg py-1 border border-navy-dark">
-                  <div className="text-sm font-bold text-teal leading-tight">{Math.round((gameState.gameState.matchingEdges.size / 12) * 100)}%</div>
-                  <div className="text-[8px] text-teal leading-tight">Complete</div>
+                <div className="text-center bg-navy-light rounded-lg py-1 md:py-2 lg:py-2.5 border border-navy-dark">
+                  <div className="text-sm md:text-lg lg:text-xl font-bold text-teal leading-tight">{Math.round((gameState.gameState.matchingEdges.size / 12) * 100)}%</div>
+                  <div className="text-[8px] md:text-[10px] lg:text-xs text-teal leading-tight">Complete</div>
                 </div>
               </div>
             </div>
@@ -1808,7 +1842,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             />
           </div>
 
-          {gameState.gameState.isPaused && !showTutorialOverlay && !showPreMatchReveal && (
+          {gameState.gameState.isPaused && !showGameboardWalkthrough && !showPreMatchReveal && (
             <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
               <div className="bg-navy-light rounded-2xl p-8 max-w-sm w-full border-2 border-navy-dark">
                 <div className="text-center">
@@ -1867,14 +1901,18 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
             </div>
           )}
           
-          <div className="flex-shrink-0 bg-navy-light/90 backdrop-blur-md px-3 py-2 border-t border-navy-dark">
-            <div className="max-w-4xl mx-auto">
-              <div className="space-y-2 mb-2">
-                <div className="flex justify-center gap-2">
+          <div className="flex-shrink-0 bg-navy-light/90 backdrop-blur-md px-3 py-2 md:px-4 md:py-3 lg:px-6 lg:py-4 border-t border-navy-dark">
+            {/* Matches the header's max-width above (was max-w-4xl vs the
+                header's max-w-2xl) -- the mismatch was part of why the two
+                bars looked like different widths floating in a wide window. */}
+            <div className="max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto">
+              <div className="space-y-2 md:space-y-3 mb-2 md:mb-3">
+                <div className="flex justify-center gap-2 md:gap-3 lg:gap-4">
                   <button
+                    data-tour="hint-button"
                     onClick={handleHintClick}
                     disabled={gameState.gameState.status !== 'playing' || gameState.gameState.isPaused || hintAdState === 'loading'}
-                    className={`flex-1 max-w-[120px] px-2 py-1.5 rounded-lg border transition-all duration-200 text-xs font-medium flex items-center justify-center gap-1 ${
+                    className={`flex-1 max-w-[120px] md:max-w-[160px] lg:max-w-[200px] px-2 py-1.5 md:px-3 md:py-2 lg:px-4 lg:py-2.5 rounded-lg border transition-all duration-200 text-xs md:text-sm lg:text-base font-medium flex items-center justify-center gap-1 ${
                       gameState.gameState.status !== 'playing' || gameState.gameState.isPaused
                         ? 'bg-navy-dark/80 text-offwhite/40 cursor-not-allowed border-navy-dark'
                         : 'bg-gold/20 text-gold border-gold hover:bg-gold hover:text-navy-dark'
@@ -1882,27 +1920,28 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   >
                     {hintAdState === 'loading' ? (
                       <>
-                        <Film size={13} className="animate-pulse" /> Loading…
+                        <Film size={13} className="md:w-4 md:h-4 animate-pulse" /> Loading…
                       </>
                     ) : !freeHintUsedThisPuzzle ? (
                       <>
-                        <Lightbulb size={13} /> Hint
+                        <Lightbulb size={13} className="md:w-4 md:h-4" /> Hint
                       </>
                     ) : extraHints > 0 ? (
                       <>
-                        <Lightbulb size={13} /> Hint ({extraHints})
+                        <Lightbulb size={13} className="md:w-4 md:h-4" /> Hint ({extraHints})
                       </>
                     ) : (
                       <>
-                        <Film size={13} /> Hint
+                        <Film size={13} className="md:w-4 md:h-4" /> Hint
                       </>
                     )}
                   </button>
 
                   <button
+                    data-tour="undo-button"
                     onClick={() => { triggerHaptic(15); playSound('click'); gameState.undoLastMove(); }}
                     disabled={gameState.gameState.moveHistory.length === 0 || gameState.gameState.status !== 'playing'}
-                    className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    className={`flex-1 max-w-[120px] md:max-w-[160px] lg:max-w-[200px] px-3 py-1.5 md:px-4 md:py-2 lg:px-5 lg:py-2.5 rounded-lg text-xs md:text-sm lg:text-base font-medium transition-all duration-200 ${
                       gameState.gameState.moveHistory.length === 0 || gameState.gameState.status !== 'playing'
                         ? 'bg-navy-dark/80 text-offwhite/40 cursor-not-allowed border border-navy-dark'
                         : 'bg-offwhite text-navy border border-navy-dark hover:border-teal'
@@ -1911,11 +1950,12 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                     Undo
                   </button>
 
-                  <div className="flex justify-center gap-2">
+                  <div className="flex justify-center gap-2 md:gap-3 lg:gap-4">
                   <button
+                    data-tour="shuffle-button"
                     onClick={() => { triggerHaptic([10, 40, 10]); playSound('click'); gameState.shuffleAll(); }}
                     disabled={gameState.gameState.status !== 'playing'}
-                    className={`flex-1 max-w-[120px] px-3 py-1.5 rounded-lg border transition-all duration-200 text-xs font-medium ${
+                    className={`flex-1 max-w-[120px] md:max-w-[160px] lg:max-w-[200px] px-3 py-1.5 md:px-4 md:py-2 lg:px-5 lg:py-2.5 rounded-lg border transition-all duration-200 text-xs md:text-sm lg:text-base font-medium ${
                       gameState.gameState.status !== 'playing'
                         ? 'bg-navy-dark/80 text-offwhite/40 cursor-not-allowed border-navy-dark'
                         : 'bg-teal/20 text-teal border-teal hover:bg-teal hover:text-navy-dark'
@@ -1925,17 +1965,19 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                   </button>
 
                   <button
+                    data-tour="pause-button"
                     onClick={() => {
                       triggerHaptic(10);
                       playSound('click');
                       if (gameState.gameState.isPaused) gameState.resumeGame(); else gameState.pauseGame();
                     }}
-                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-offwhite text-navy rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs font-medium"
+                    className="flex-1 max-w-[120px] md:max-w-[160px] lg:max-w-[200px] px-3 py-1.5 md:px-4 md:py-2 lg:px-5 lg:py-2.5 bg-offwhite text-navy rounded-lg border border-navy-dark hover:border-coral transition-all duration-200 text-xs md:text-sm lg:text-base font-medium"
                   >
                     {gameState.gameState.isPaused ? 'Resume' : 'Pause'}
                   </button>
                 </div>
                   <button
+                    data-tour="restart-button"
                     onClick={() => {
                       // Restart always replays the SAME puzzle in place --
                       // this used to send an already-solved puzzle back to
@@ -1968,7 +2010,7 @@ const handleStartPuzzle = (puzzle?: any, puzzleDate?: string) => {
                       setFreeHintUsedThisPuzzle(false);
                       gameState.startGame(currentPuzzle);
                     }}
-                    className="flex-1 max-w-[120px] px-3 py-1.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-navy-dark transition-all duration-200 text-xs font-medium"
+                    className="flex-1 max-w-[120px] md:max-w-[160px] lg:max-w-[200px] px-3 py-1.5 md:px-4 md:py-2 lg:px-5 lg:py-2.5 bg-coral/20 text-coral rounded-lg border border-coral hover:bg-coral hover:text-navy-dark transition-all duration-200 text-xs md:text-sm lg:text-base font-medium"
                   >
                     Restart
                   </button>

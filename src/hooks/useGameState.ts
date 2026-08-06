@@ -132,7 +132,8 @@ export const useGameState = () => {
       moveHistory: [],
       matchingEdges: new Set(),
       isPaused: false,
-      pausedTime: 0
+      pausedTime: 0,
+      practiceMode: false
     });
 
   const pauseStartRef = useRef<number | null>(null);
@@ -203,7 +204,8 @@ export const useGameState = () => {
         selectedTile: null,
         matchingEdges: new Set(),
         isPaused: false,
-        pausedTime: 0
+        pausedTime: 0,
+        practiceMode: false
       }));
 
       updateMatches(tiles);
@@ -264,7 +266,8 @@ export const useGameState = () => {
               selectedTile: null,
               matchingEdges: new Set(),
               isPaused: false,
-              pausedTime: 0
+              pausedTime: 0,
+              practiceMode: false
             }));
 
             updateMatches(tiles);
@@ -343,7 +346,7 @@ export const useGameState = () => {
     (tileId: string, amount: 0 | 90 | 180 | 270 = 90) => {
       if (
         gameState.status !== 'playing' ||
-        gameState.isPaused
+        (gameState.isPaused && !gameState.practiceMode)
       ) {
         return;
       }
@@ -379,14 +382,14 @@ export const useGameState = () => {
         };
       });
     },
-    [gameState.status, gameState.isPaused, computeMatchFields]
+    [gameState.status, gameState.isPaused, gameState.practiceMode, computeMatchFields]
   );
 
   const swapTiles = useCallback(
     (tile1: string, tile2: string) => {
       if (
         gameState.status !== 'playing' ||
-        gameState.isPaused
+        (gameState.isPaused && !gameState.practiceMode)
       ) {
         return;
       }
@@ -441,14 +444,14 @@ export const useGameState = () => {
         };
       });
     },
-    [gameState.status, gameState.isPaused, computeMatchFields]
+    [gameState.status, gameState.isPaused, gameState.practiceMode, computeMatchFields]
   );
 
   const selectTile = useCallback(
     (id: string | null) => {
       if (
         gameState.status !== 'playing' ||
-        gameState.isPaused
+        (gameState.isPaused && !gameState.practiceMode)
       ) {
         return;
       }
@@ -458,7 +461,17 @@ export const useGameState = () => {
         selectedTile: id
       }));
     },
-    [gameState.status, gameState.isPaused]
+    [gameState.status, gameState.isPaused, gameState.practiceMode]
+  );
+
+  const setPracticeMode = useCallback(
+    (active: boolean) => {
+      setGameState(prev => ({
+        ...prev,
+        practiceMode: active
+      }));
+    },
+    []
   );
 
   const pauseGame = useCallback(
@@ -541,7 +554,8 @@ export const useGameState = () => {
         moveHistory: [],
         matchingEdges: new Set(),
         isPaused: false,
-        pausedTime: 0
+        pausedTime: 0,
+        practiceMode: false
       });
     },
     [resetZoom]
@@ -738,6 +752,7 @@ export const useGameState = () => {
     undoLastMove,
     useHint,
     hintedTileIds,
+    setPracticeMode,
     shuffleAll
   };
 };
